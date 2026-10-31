@@ -4,7 +4,10 @@ use bevy_seedling::prelude::AudioSample;
 use fedry_bevy_plugin::asset::ScriptModule;
 
 #[derive(Resource, AssetCollection)]
-pub struct GuiAssets {}
+pub struct GuiAssets {
+    #[asset(path = "fonts/UncialAntiqua-Regular.ttf")]
+    pub uncial_antiqua_font: Handle<Font>,
+}
 
 #[derive(Resource, AssetCollection)]
 #[allow(unused)]

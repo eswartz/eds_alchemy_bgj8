@@ -38,6 +38,7 @@ use eds_bevy_common::midi_synth::prelude::*;
 use eds_bevy_common::physics::*;
 use eds_bevy_common::prelude::*;
 
+use crate::assets::GuiAssets;
 use crate::game::bevy_funcs::register_funcs;
 use crate::game::firing::{FirePowerLimits, FiringPlugin, FiringState};
 use crate::game::gravity_sleep::GravitySleepPlugin;
@@ -117,6 +118,7 @@ impl Plugin for GamePlugin {
                     |mut commands: Commands| {
                         commands.set_state(LevelState::Configuring);
                     },
+                    register_styles,
                     setup_skybox,
                     unpause_scripting,
                 )
@@ -188,6 +190,10 @@ impl Plugin for GamePlugin {
 
         register_script_key::<GameScript>(app);
     }
+}
+
+pub(crate) fn register_styles(mut commands: Commands, gui_assets: Res<GuiAssets>) {
+    commands.insert_resource(InstructionFont(gui_assets.uncial_antiqua_font.clone()));
 }
 
 // #[derive(Resource, Default)]
