@@ -5,5 +5,8 @@
 # See above to fix error: feature `reqs` includes `gltf/EXT_texture_webp`, but `gltf` is not a dependency
 gltf = { git = "https://github.com/gltf-rs/gltf.git", branch = "main" }
 
-bevy_seedling = { git = "https://github.com/eswartz/bevy_seedling-fork.git", branch = "bevy-0.20" }
-firewheel = { git = "https://github.com/eswartz/Firewheel-fork.git", branch = "bevy-0.20" }
+# bevy_seedling = { git = "https://github.com/eswartz/bevy_seedling-fork.git", branch = "bevy-0.20" }
+# firewheel = { git = "https://github.com/eswartz/Firewheel-fork.git", branch = "bevy-0.20" }
+# firewheel-core = { git = "https://github.com/eswartz/Firewheel-fork.git", branch = "bevy-0.20" }
+# firewheel-ircam-hrtf = { git = "https://github.com/eswartz/bevy_seedling-fork.git", branch = "bevy-0.20" }
+# firewheel-web-audio = { git = "https://github.com/eswartz/bevy_seedling-fork.git", branch = "bevy-0.20" }

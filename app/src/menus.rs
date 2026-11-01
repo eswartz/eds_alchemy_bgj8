@@ -8,7 +8,6 @@ use fedry_bevy_plugin::prelude::ScriptControl;
 use strum::VariantArray;
 
 use crate::ExitRequest;
-use crate::assets::GuiAssets;
 use crate::game::Difficulty;
 use crate::game::LevelDifficulty;
 use eds_bevy_common::prelude::*;

@@ -22,18 +22,13 @@ use bevy::asset::uuid::Uuid;
 use bevy::color::palettes::tailwind;
 use bevy::ecs::world::CommandQueue;
 use bevy::mesh::*;
-use bevy::pbr::{ExtendedMaterial, MaterialExtension};
-use bevy::platform::collections::HashMap;
 use bevy::prelude::*;
-use bevy::render::render_resource::AsBindGroup;
-use bevy::shader::ShaderRef;
 use bevy::world_serialization::WorldInstanceReady;
 
 use fedry_bevy_plugin::prelude::{
     FedryScriptingPlugin, ScriptRoot, ScriptTypeBase, pause_scripting, register_script_key,
     unpause_scripting,
 };
-use fedry_runtime::prelude::RuntimeError;
 
 use eds_bevy_common::midi_synth::prelude::*;
 use eds_bevy_common::physics::*;
