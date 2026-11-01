@@ -5,6 +5,10 @@ members = ["app"]
 
 [workspace.package]
 
+[profile.dev]
+opt-level = 1
+debug = "none"  # for macOS :(
+
 [profile.dev.package.bevy_mikktspace]
 opt-level = 3
 [profile.dev.package."*"]
@@ -15,6 +19,7 @@ debug = "line-tables-only"
 # Remove expensive debug assertions due to <https://github.com/bevyengine/bevy/issues/14291>
 [profile.dev.package.wgpu-types]
 debug-assertions = false
+
 
 [profile.release]
 # Compile the entire crate as one unit.
@@ -180,3 +185,10 @@ strum = { version = "0.27.2", features = ["derive", "strum_macros"] }
 strum_macros = "0.27.2"
 
 bevy_yarnspinner = { git = "https://github.com/tcanabrava/YarnSpinner-Rust.git", branch = "bevy-0.20" }
+
+[patch.crates-io]
+bevy_seedling = { git = "https://github.com/eswartz/bevy_seedling-fork.git", branch = "bevy-0.20" }
+firewheel = { git = "https://github.com/eswartz/Firewheel-fork.git", branch = "bevy-0.20" }
+firewheel-core = { git = "https://github.com/eswartz/Firewheel-fork.git", branch = "bevy-0.20" }
+firewheel-ircam-hrtf = { git = "https://github.com/eswartz/bevy_seedling-fork.git", branch = "bevy-0.20" }
+firewheel-web-audio = { git = "https://github.com/eswartz/bevy_seedling-fork.git", branch = "bevy-0.20" }

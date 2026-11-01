@@ -40,13 +40,6 @@ use crate::game::firing::{FirePowerLimits, FiringPlugin, FiringState};
 use crate::game::gravity_sleep::GravitySleepPlugin;
 use crate::game::sound::SoundPlugin;
 
-// #[cfg(all(feature = "solari", feature = "dlss"))]
-// use bevy::anti_alias::dlss::{
-//     Dlss, DlssProjectId, DlssRayReconstructionFeature, DlssRayReconstructionSupported,
-// };
-#[cfg(feature = "solari")]
-use bevy::solari::prelude::{RaytracingMesh3d, SolariPlugins};
-
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
@@ -67,14 +60,17 @@ impl Plugin for GamePlugin {
             .insert_resource(Gravity((9.8 * Vec3::NEG_Y).into()))
             .add_systems(
                 PreUpdate,
-                // wake_up_spawned_if_floating.run_if(resource_changed::<Gravity>)
-                wake_up_spawned
-                    .run_if(resource_changed::<Gravity>)
-                    .run_if(not(is_in_menu))
-                    .run_if(in_state(ProgramState::InGame)),
+                (
+                    wake_up_spawned_if_floating.run_if(resource_changed::<Gravity>),
+                    wake_up_spawned
+                        .run_if(resource_changed::<Gravity>)
+                        .run_if(not(is_in_menu))
+                    )
+                    .run_if(in_state(ProgramState::InGame)
+                ),
             )
             .insert_resource(GrabbingBehavior {
-                ignore_mass: false,
+                ignore_mass: true,
                 ..default()
             })
             .init_resource::<LevelDifficulty>()
@@ -191,78 +187,6 @@ pub(crate) fn register_styles(mut commands: Commands, gui_assets: Res<GuiAssets>
         gui_assets.uncial_antiqua_font.clone(),
     ));
 }
-
-// #[derive(Resource, Default)]
-// pub struct PaletteMaterialHandles(
-//     HashMap<
-//         Handle<StandardMaterial>,
-//         Handle<ExtendedMaterial<StandardMaterial, PaletteMaterialExtension>>,
-//     >,
-// );
-
-// #[derive(Asset, AsBindGroup, Reflect, Debug, Clone, Default)]
-// pub struct PaletteMaterialExtension {}
-
-// const PM_SHADER_ASSET_PATH: &str = "shaders/palette_material.wgsl";
-
-// impl MaterialExtension for PaletteMaterialExtension {
-//     // fn vertex_shader() -> ShaderRef {
-//     //     PM_SHADER_ASSET_PATH.into()
-//     // }
-
-//     fn fragment_shader() -> ShaderRef {
-//         PM_SHADER_ASSET_PATH.into()
-//     }
-
-//     fn deferred_fragment_shader() -> ShaderRef {
-//         PM_SHADER_ASSET_PATH.into()
-//     }
-// }
-
-// #[derive(Component, Debug, Default, Clone, Reflect)]
-// #[component(storage = "SparseSet")]
-// #[reflect(Component, Default, Clone)]
-// #[type_path = "fedry"]
-// pub struct SpawnPaletteMaterial;
-
-// pub(crate) fn handle_palette(
-//     mut commands: Commands,
-//     // assets: Res<AssetServer>,
-//     mut pal_mats: ResMut<Assets<ExtendedMaterial<StandardMaterial, PaletteMaterialExtension>>>,
-//     mut pal_mat_cache: ResMut<PaletteMaterialHandles>,
-
-//     std_mats: Res<Assets<StandardMaterial>>,
-
-//     mat_q: Query<(Entity, &MeshMaterial3d<StandardMaterial>), With<SpawnPaletteMaterial>>,
-// ) -> Result {
-//     for (entity, std_mat_handle) in mat_q.iter() {
-//         let mut ent_commands = commands.entity(entity);
-
-//         let std_mat = std_mats.get(std_mat_handle.id()).ok_or_else(|| {
-//             RuntimeError::LiteralError(format!("no StandardMaterial on {entity}"))
-//         })?;
-//         let pal_mat = pal_mat_cache
-//             .0
-//             .entry(std_mat_handle.0.clone())
-//             .or_insert_with(|| {
-//                 pal_mats.add(ExtendedMaterial {
-//                     base: std_mat.clone(),
-//                     // base: StandardMaterial {
-//                     //     unlit: true,
-//                     //     base_color_texture: Some(assets.load("textures/palette.png")),
-//                     //     ..default()
-//                     // },
-//                     extension: default(),
-//                 })
-//             });
-
-//         ent_commands.remove::<SpawnPaletteMaterial>();
-//         ent_commands.remove::<MeshMaterial3d<StandardMaterial>>();
-//         ent_commands.insert(MeshMaterial3d(pal_mat.clone()));
-//     }
-
-//     Ok(())
-// }
 
 /// Current difficulty.
 #[derive(Resource, Default, Debug, Clone, PartialEq, Reflect)]
@@ -894,19 +818,19 @@ fn report_raycast(
     });
 }
 
-// /// Avian doesn't reliably wake up (or cause [RigidBody]s to move)
-// /// when changing Gravity. Maybe that's intentional, maybe a bug?
-// fn wake_up_spawned_if_floating(
-//     mut commands: Commands,
-//     collisions: Res<ContactGraph>,
-//     sleep_q: Query<Entity, (With<Sleeping>, With<Spawned>, Without<Player>)>
-// ) {
-//     for ent in sleep_q.iter() {
-//         if collisions.entities_colliding_with(ent).next().is_none() {
-//             commands.entity(ent).remove::<Sleeping>();
-//         }
-//     }
-// }
+/// Avian doesn't reliably wake up (or cause [RigidBody]s to move)
+/// when changing Gravity. Maybe that's intentional, maybe a bug?
+fn wake_up_spawned_if_floating(
+    mut commands: Commands,
+    collisions: Res<ContactGraph>,
+    sleep_q: Query<Entity, (With<Sleeping>, With<Spawned>, Without<Player>)>
+) {
+    for ent in sleep_q.iter() {
+        if collisions.entities_colliding_with(ent).next().is_none() {
+            commands.entity(ent).remove::<Sleeping>();
+        }
+    }
+}
 
 /// Avian doesn't reliably wake up (or cause [RigidBody]s to move)
 /// when changing Gravity. Maybe that's intentional, maybe a bug?
@@ -925,8 +849,3 @@ fn spawn_dialogue_runner(mut commands: Commands, project: Res<YarnProject>) {
     commands.spawn((Name::new("DIALOGUE"), dialogue_runner));
 }
 
-// fn cleanup_palette_materials(pal_mats: Option<ResMut<PaletteMaterialHandles>>) {
-//     if let Some(mut pal_mats) = pal_mats {
-//         pal_mats.0.clear();
-//     }
-// }
