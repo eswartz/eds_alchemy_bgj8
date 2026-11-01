@@ -1,0 +1,2 @@
+- Lifted from https://github.com/YarnSpinnerTool/YarnSpinner-Rust/tree/main/crates/example_dialogue_view and converted.
+-

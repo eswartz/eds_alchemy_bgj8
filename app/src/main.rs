@@ -6,11 +6,13 @@ mod audio;
 mod camera;
 mod game;
 mod menus;
+mod yarn_ui;
 
 use avian3d::PhysicsPlugins;
 use avian3d::collider_tree::ColliderTreeOptimization;
 use avian3d::debug_render::PhysicsGizmos;
 use bevy::log::{BoxedFmtLayer, LogPlugin};
+use bevy_yarnspinner::prelude::YarnSpinnerPlugin;
 // use bevy::render::error_handler::{RenderErrorHandler, RenderErrorPolicy};
 #[cfg(target_arch = "wasm32")]
 use console_log;
@@ -41,6 +43,7 @@ use crate::audio::AudioPlugin;
 use crate::camera::ensure_3d_camera;
 use crate::game::GamePlugin;
 use crate::menus::MenuPlugin;
+use crate::yarn_ui::AlchemyDialogViewPlugin;
 
 fn fmt_layer(_app: &mut App) -> Option<BoxedFmtLayer> {
     Some(Box::new(
@@ -166,6 +169,9 @@ fn main() -> AppExit {
             ..default()
         },
     )
+    // Yarn!
+    .add_plugins(YarnSpinnerPlugin::new())
+    .add_plugins(AlchemyDialogViewPlugin::new())
     // Our game
     .add_plugins(AppPlugin)
     .add_plugins(LifecyclePlugin)

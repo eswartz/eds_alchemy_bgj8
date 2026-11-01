@@ -7,6 +7,8 @@ use fedry_bevy_plugin::asset::ScriptModule;
 pub struct GuiAssets {
     #[asset(path = "fonts/UncialAntiqua-Regular.ttf")]
     pub uncial_antiqua_font: Handle<Font>,
+    #[asset(path = "fonts/SymbolsNerdFont-Regular.ttf")]
+    pub symbols_nerd_font: Handle<Font>,
 }
 
 #[derive(Resource, AssetCollection)]

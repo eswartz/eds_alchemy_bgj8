@@ -12,6 +12,7 @@ mod sound;
 // mod level_6;
 
 pub use action_handlers::*;
+use bevy_yarnspinner::prelude::YarnProject;
 use fedry_bevy_plugin::script_debug::ScriptDebugPlugin;
 
 use std::time::Duration;
@@ -94,15 +95,11 @@ impl Plugin for GamePlugin {
             .add_systems(OnExit(ProgramState::New), ensure_levels)
             .add_systems(
                 OnEnter(GameplayState::Setup),
-                (level_spawn_started, spawn_level).chain(),
+                (register_styles, level_spawn_started, spawn_level).chain(),
             )
             .add_systems(
                 OnExit(GameplayState::Setup),
                 (level_spawn_finished,).chain(),
-            )
-            .add_systems(
-                PreUpdate,
-                (add_raytracing_to_meshes, add_raytracing_to_lights),
             )
             .add_systems(
                 FixedUpdate,
@@ -118,9 +115,9 @@ impl Plugin for GamePlugin {
                     |mut commands: Commands| {
                         commands.set_state(LevelState::Configuring);
                     },
-                    register_styles,
                     setup_skybox,
                     unpause_scripting,
+                    spawn_dialogue_runner,
                 )
                     .chain(),
             )
@@ -184,6 +181,7 @@ impl Plugin for GamePlugin {
             .insert_resource(DepthMapStorage {
                 orig_to_edited: default(),
             })
+
             // .add_systems(PreUpdate, (handle_depth_map, tick_depth_map).chain())
             // .add_systems(OnEnter(LevelState::Advance), cleanup_palette_materials)
             ;
@@ -194,6 +192,9 @@ impl Plugin for GamePlugin {
 
 pub(crate) fn register_styles(mut commands: Commands, gui_assets: Res<GuiAssets>) {
     commands.insert_resource(InstructionFont(gui_assets.uncial_antiqua_font.clone()));
+    commands.insert_resource(crate::yarn_ui::AlchemyDialogFont(
+        gui_assets.uncial_antiqua_font.clone(),
+    ));
 }
 
 // #[derive(Resource, Default)]
@@ -407,71 +408,6 @@ pub(crate) fn level_spawn_finished(
 
     // Go for it, user (unless they did set_user_paused)
     pause.set_menu_paused(false);
-}
-
-#[cfg(not(feature = "solari"))]
-fn add_raytracing_to_meshes() {}
-
-#[cfg(feature = "solari")]
-fn add_raytracing_to_meshes(
-    mesh_query: Query<(Entity, &Mesh3d), Changed<Mesh3d>>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut commands: Commands,
-) {
-    for (ent, mesh3d) in mesh_query.iter() {
-        let Mesh3d(mesh_handle) = mesh3d;
-
-        // Ensure meshes are Solari compatible, editing them in-place.
-        let Some(mut mesh) = meshes.get_mut(mesh_handle.id()) else {
-            continue;
-        };
-        if !mesh.contains_attribute(Mesh::ATTRIBUTE_UV_0) {
-            let vertex_count = mesh.count_vertices();
-            mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, vec![[0.0, 0.0]; vertex_count]);
-        }
-        if !mesh.contains_attribute(Mesh::ATTRIBUTE_TANGENT) {
-            mesh.generate_tangents().unwrap();
-        }
-        if mesh.contains_attribute(Mesh::ATTRIBUTE_UV_1) {
-            mesh.remove_attribute(Mesh::ATTRIBUTE_UV_1);
-        }
-        if let Some(indices) = mesh.indices_mut()
-            && !matches!(indices, Indices::U32(_))
-        {
-            *indices = Indices::U32(indices.iter().map(|i| i as u32).collect());
-        }
-
-        // Add or replace raytracing mesh component
-        commands
-            .entity(ent)
-            .insert(RaytracingMesh3d(mesh_handle.clone()));
-    }
-}
-
-#[cfg(not(feature = "solari"))]
-fn add_raytracing_to_lights() {}
-
-#[cfg(feature = "solari")]
-fn add_raytracing_to_lights(
-    mut pt_query: Query<&mut PointLight, Changed<PointLight>>,
-    mut spot_query: Query<&mut SpotLight, Changed<SpotLight>>,
-    mut dir_query: Query<&mut DirectionalLight, Changed<DirectionalLight>>,
-) {
-    for mut light in pt_query.iter_mut() {
-        if light.shadow_maps_enabled {
-            light.shadow_maps_enabled = false;
-        }
-    }
-    for mut light in spot_query.iter_mut() {
-        if light.shadow_maps_enabled {
-            light.shadow_maps_enabled = false;
-        }
-    }
-    for mut light in dir_query.iter_mut() {
-        if light.shadow_maps_enabled {
-            light.shadow_maps_enabled = false;
-        }
-    }
 }
 
 fn added_player_start(q: Query<&Transform, Added<PlayerStart>>) -> bool {
@@ -986,6 +922,12 @@ fn wake_up_spawned(
     for ent in sleep_q.iter() {
         commands.entity(ent).remove::<Sleeping>();
     }
+}
+
+fn spawn_dialogue_runner(mut commands: Commands, project: Res<YarnProject>) {
+    let mut dialogue_runner = project.create_dialogue_runner(&mut commands);
+    dialogue_runner.start_node("HelloWorld");
+    commands.spawn((Name::new("DIALOGUE"), dialogue_runner));
 }
 
 // fn cleanup_palette_materials(pal_mats: Option<ResMut<PaletteMaterialHandles>>) {
