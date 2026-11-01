@@ -8,6 +8,9 @@ pub(crate) struct GameActionsPlugin;
 
 impl Plugin for GameActionsPlugin {
     fn build(&self, app: &mut App) {
+        #[cfg(feature = "input_bei")]
+        app.add_systems(Startup, create_input_map);
+
         app
             .add_systems(
                 Update,
@@ -24,6 +27,40 @@ impl Plugin for GameActionsPlugin {
             )
         ;
     }
+}
+
+
+#[cfg(feature = "input_bei")]
+pub(crate) fn create_input_map(mut commands: Commands) {
+    use bevy_enhanced_input::prelude::ActionOf;
+
+    use crate::actions::assign_extra_actions;
+
+    let menu_entity = commands.spawn((MenuContext, Name::new("MenuContext"))).id();
+    let include = (ActionOf::<MenuContext>::new(menu_entity),);
+    assign_stock_common_actions(commands.reborrow(), include.clone());
+    assign_stock_menu_actions(commands.reborrow(), include.clone());
+
+    ///////
+
+    let player_entity = commands
+        .spawn((PlayerContext, Name::new("PlayerContext")))
+        .id();
+
+    let include = (ActionOf::<PlayerContext>::new(player_entity),);
+    assign_stock_common_actions(commands.reborrow(), include.clone());
+    assign_stock_player_actions(commands.reborrow(), include.clone());
+    assign_extra_actions(commands.reborrow(), include.clone());
+
+    ///////
+
+    let dialog_entity = commands
+        .spawn((DialogContext, Name::new("DialogContext")))
+        .id();
+
+    let include = (ActionOf::<DialogContext>::new(dialog_entity),);
+    assign_stock_common_actions(commands.reborrow(), include.clone());
+    assign_stock_dialog_actions(commands.reborrow(), include.clone());
 }
 
 fn check_actions(

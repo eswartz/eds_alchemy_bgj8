@@ -20,8 +20,8 @@ use eds_bevy_common::midi_synth::synth::MidiSynthPlugin;
 use eds_bevy_common::physics::{SubstepCount, TimeToSleep};
 use std::sync::Arc;
 use std::time::Duration;
-// use wgpu::wgt::error::ErrorType;
 
+// use wgpu::wgt::error::ErrorType;
 use bevy::camera::visibility::RenderLayers;
 use bevy::color::palettes::tailwind::{self, RED_500};
 use bevy::prelude::*;
@@ -30,7 +30,6 @@ use bevy::{
     image::{ImageAddressMode, ImageSamplerDescriptor},
     winit::WinitSettings,
 };
-
 use bevy::render::renderer::RenderDevice;
 use bevy_asset_loader::prelude::*;
 use bevy_skein::SkeinPlugin;
@@ -48,9 +47,9 @@ use crate::yarn_ui::AlchemyDialogViewPlugin;
 fn fmt_layer(_app: &mut App) -> Option<BoxedFmtLayer> {
     Some(Box::new(
         bevy::log::tracing_subscriber::fmt::Layer::default()
-            .without_time()
+            // .without_time()
             .with_ansi(true)
-            .with_thread_ids(true)
+            // .with_thread_ids(true)
             .map_fmt_fields(bevy::log::tracing_subscriber::field::MakeExt::debug_alt)
             .with_writer(std::io::stderr),
     ))
@@ -244,9 +243,6 @@ fn main() -> AppExit {
     )
     .add_plugins(GamePlugin);
 
-    #[cfg(feature = "input_bei")]
-    app.add_systems(Startup, create_input_map);
-
     if dev_tools_enabled() {
         if !app.is_plugin_added::<StatsOverlayPlugin>() {
             app.add_plugins(StatsOverlayPlugin);
@@ -269,39 +265,6 @@ fn setup_adapter(device: Res<RenderDevice>) {
     device.wgpu_device().on_uncaptured_error(Arc::new(|err| {
         error!("{err}");
     }));
-}
-
-#[cfg(feature = "input_bei")]
-fn create_input_map(mut commands: Commands) {
-    use bevy_enhanced_input::prelude::ActionOf;
-
-    use crate::actions::assign_extra_actions;
-
-    let menu_entity = commands.spawn((MenuContext, Name::new("MenuContext"))).id();
-    let include = (ActionOf::<MenuContext>::new(menu_entity),);
-    assign_stock_common_actions(commands.reborrow(), include.clone());
-    assign_stock_menu_actions(commands.reborrow(), include.clone());
-
-    ///////
-
-    let player_entity = commands
-        .spawn((PlayerContext, Name::new("PlayerContext")))
-        .id();
-
-    let include = (ActionOf::<PlayerContext>::new(player_entity),);
-    assign_stock_common_actions(commands.reborrow(), include.clone());
-    assign_stock_player_actions(commands.reborrow(), include.clone());
-    assign_extra_actions(commands.reborrow(), include.clone());
-
-    ///////
-
-    let dialog_entity = commands
-        .spawn((DialogContext, Name::new("DialogContext")))
-        .id();
-
-    let include = (ActionOf::<DialogContext>::new(dialog_entity),);
-    assign_stock_common_actions(commands.reborrow(), include.clone());
-    assign_stock_dialog_actions(commands.reborrow(), include.clone());
 }
 
 #[derive(Component)]
