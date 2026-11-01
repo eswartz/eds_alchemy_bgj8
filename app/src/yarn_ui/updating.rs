@@ -1,15 +1,18 @@
-use crate::yarn_ui::AlchemyDialogViewSystemSet;
 use crate::yarn_ui::option_selection::OptionSelection;
-use crate::yarn_ui::setup::{DialogueContinueNode, DialogueNameNode, UiRootNode};
+use crate::yarn_ui::setup::{DialogueContinueNode, DialogueNameNode};
 use crate::yarn_ui::typewriter::Typewriter;
+use crate::yarn_ui::{AlchemyDialogViewSystemSet, DialogueRootNode};
 use bevy::prelude::*;
 use bevy_yarnspinner::{events::*, prelude::*};
+use eds_bevy_common::conditions::{is_dialog_active, is_paused};
 
 pub(crate) fn ui_updating_plugin(app: &mut App) {
     app.add_systems(
         Update,
         continue_dialogue
             .run_if(resource_exists::<Typewriter>)
+            .run_if(not(is_paused))
+            .run_if(is_dialog_active)
             .after(YarnSpinnerSystemSet)
             .in_set(AlchemyDialogViewSystemSet),
     )
@@ -35,13 +38,16 @@ pub struct SpeakerChangeEvent {
     pub speaking: bool,
 }
 
-fn show_dialog(_: On<DialogueStarted>, mut visibility: Single<&mut Visibility, With<UiRootNode>>) {
+fn show_dialog(
+    _: On<DialogueStarted>,
+    mut visibility: Single<&mut Visibility, With<DialogueRootNode>>,
+) {
     **visibility = Visibility::Inherited;
 }
 
 fn hide_dialog(
     _: On<DialogueCompleted>,
-    mut root_visibility: Single<&mut Visibility, With<UiRootNode>>,
+    mut root_visibility: Single<&mut Visibility, With<DialogueRootNode>>,
 ) {
     **root_visibility = Visibility::Hidden;
 }
@@ -78,10 +84,10 @@ fn continue_dialogue(
     mut dialogue_runners: Query<&mut DialogueRunner>,
     mut typewriter: ResMut<Typewriter>,
     option_selection: Option<Res<OptionSelection>>,
-    mut root_visibility: Single<&mut Visibility, With<UiRootNode>>,
+    mut root_visibility: Single<&mut Visibility, With<DialogueRootNode>>,
     mut continue_visibility: Single<
         &mut Visibility,
-        (With<DialogueContinueNode>, Without<UiRootNode>),
+        (With<DialogueContinueNode>, Without<DialogueRootNode>),
     >,
 ) {
     let explicit_continue = keys.just_pressed(KeyCode::Space)

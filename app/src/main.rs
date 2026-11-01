@@ -172,7 +172,7 @@ fn main() -> AppExit {
     // Yarn!
     .add_plugins(YarnSpinnerPlugin::new())
     .add_plugins(AlchemyDialogViewPlugin::new())
-    // Our game
+    // Common
     .add_plugins(AppPlugin)
     .add_plugins(LifecyclePlugin)
     .add_plugins(MenuPlugin)
@@ -205,7 +205,8 @@ fn main() -> AppExit {
     .add_plugins(PlayerMovementPlugin)
     .add_plugins(PlayerControllerPlugin)
     .add_plugins(PlayerEnvironmentPlugin)
-    //
+    // This game
+    .insert_resource(UiFontPath("fonts/UncialAntiqua-Regular.ttf".into()))
     .add_plugins(GameActionsPlugin)
     .insert_resource(OurUser(default()))
     .insert_resource(PlayerMode::Fps)
@@ -291,6 +292,16 @@ fn create_input_map(mut commands: Commands) {
     assign_stock_common_actions(commands.reborrow(), include.clone());
     assign_stock_player_actions(commands.reborrow(), include.clone());
     assign_extra_actions(commands.reborrow(), include.clone());
+
+    ///////
+
+    let dialog_entity = commands
+        .spawn((DialogContext, Name::new("DialogContext")))
+        .id();
+
+    let include = (ActionOf::<DialogContext>::new(dialog_entity),);
+    assign_stock_common_actions(commands.reborrow(), include.clone());
+    assign_stock_dialog_actions(commands.reborrow(), include.clone());
 }
 
 #[derive(Component)]

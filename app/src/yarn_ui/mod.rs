@@ -60,8 +60,13 @@ impl AlchemyDialogViewPlugin {
     }
 }
 
+/// Set the font that appears in dialogs.
 #[derive(Resource)]
 pub struct AlchemyDialogFont(pub Handle<Font>);
+
+/// Marker for the [`Node`] that is the root of the dialog UI.
+#[derive(Debug, Default, Component)]
+pub struct DialogueRootNode;
 
 mod option_selection;
 mod setup;

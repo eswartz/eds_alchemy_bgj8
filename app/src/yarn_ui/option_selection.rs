@@ -1,6 +1,6 @@
-use crate::yarn_ui::setup::{DialogueNode, OptionButton, OptionsNode, UiRootNode, spawn_options};
+use crate::yarn_ui::setup::{DialogueNode, OptionButton, OptionsNode, spawn_options};
 use crate::yarn_ui::typewriter::{Typewriter, TypewriterFinishedEvent};
-use crate::yarn_ui::{AlchemyDialogFont, AlchemyDialogViewSystemSet};
+use crate::yarn_ui::{AlchemyDialogFont, AlchemyDialogViewSystemSet, DialogueRootNode};
 use bevy::color::palettes::css;
 use bevy::picking::hover::Hovered;
 use bevy::platform::collections::HashMap;
@@ -10,6 +10,7 @@ use bevy::ui::Pressed;
 use bevy::ui_widgets::Button;
 use bevy::window::{CursorIcon, PrimaryWindow, SystemCursorIcon};
 use bevy_yarnspinner::{events::*, prelude::*};
+use eds_bevy_common::conditions::{is_dialog_active, is_paused};
 
 pub(crate) fn option_selection_plugin(app: &mut App) {
     app.add_systems(
@@ -23,6 +24,8 @@ pub(crate) fn option_selection_plugin(app: &mut App) {
             ),
         )
             .chain()
+            .run_if(not(is_paused))
+            .run_if(is_dialog_active)
             .after(YarnSpinnerSystemSet)
             .in_set(AlchemyDialogViewSystemSet),
     );
@@ -55,7 +58,7 @@ fn create_options(
     mut commands: Commands,
     children: Query<&Children>,
     options_node: Single<(Entity, &mut Node, &mut Visibility), With<OptionsNode>>,
-    mut root_visibility: Single<&mut Visibility, (With<UiRootNode>, Without<OptionsNode>)>,
+    mut root_visibility: Single<&mut Visibility, (With<DialogueRootNode>, Without<OptionsNode>)>,
     typewriter: Res<Typewriter>,
     font: Res<AlchemyDialogFont>,
 ) {
@@ -151,7 +154,7 @@ fn despawn_options<T: Event>(
     mut commands: Commands,
     options_node: Single<(Entity, &mut Node, &mut Visibility), With<OptionsNode>>,
     mut dialogue_node_text: Single<&mut Text, With<DialogueNode>>,
-    mut root_visibility: Single<&mut Visibility, (With<UiRootNode>, Without<OptionsNode>)>,
+    mut root_visibility: Single<&mut Visibility, (With<DialogueRootNode>, Without<OptionsNode>)>,
 ) {
     commands.remove_resource::<OptionSelection>();
     let (entity, mut node, mut visibility) = options_node.into_inner();

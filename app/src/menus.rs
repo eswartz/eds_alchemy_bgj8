@@ -106,7 +106,7 @@ impl MenuItemHandler for SimpleMenuActions {
 
 fn on_enter_main_menu(
     mut commands: Commands,
-    gui_assets: Res<GuiAssets>,
+    style: Res<MenuStyle>,
     mut history: ResMut<MenuItemSelectionHistory>,
     level_list: Res<LevelList>,
     current_level: Option<Res<CurrentLevel>>,
@@ -120,7 +120,7 @@ fn on_enter_main_menu(
         Text2d::new(GAME_TITLE),
         TextFont {
             font_size: FontSize::Px(128.0),
-            font: gui_assets.uncial_antiqua_font.clone().into(),
+            font: style.font.clone().into(),
             ..default()
         },
         Text2dShadow {
@@ -143,10 +143,10 @@ fn on_enter_main_menu(
         commands,
         OverlayState::MainMenu,
         ProgramState::LaunchMenu,
-        gui_assets.uncial_antiqua_font.clone(),
-        1.0,
+        &style,
         &history,
-    );
+    )
+    .page();
 
     add_level_selector(
         &mut builder,
@@ -172,7 +172,7 @@ fn on_enter_main_menu(
 }
 
 fn on_enter_game_menu(
-    gui_assets: Res<GuiAssets>,
+    style: Res<MenuStyle>,
     program_state: Res<State<ProgramState>>,
     mut commands: Commands,
     mut history: ResMut<MenuItemSelectionHistory>,
@@ -205,10 +205,10 @@ fn on_enter_game_menu(
         commands,
         OverlayState::GameMenu,
         *program_state.get(),
-        gui_assets.uncial_antiqua_font.clone(),
-        1.0,
+        &style,
         &history,
-    );
+    )
+    .page();
 
     add_level_selector(
         &mut builder,
@@ -234,7 +234,7 @@ fn on_enter_game_menu(
 }
 
 fn on_enter_options_menu(
-    gui_assets: Res<GuiAssets>,
+    style: Res<MenuStyle>,
     commands: Commands,
     program_state: Res<State<ProgramState>>,
     mut history: ResMut<MenuItemSelectionHistory>,
@@ -243,10 +243,10 @@ fn on_enter_options_menu(
         commands,
         OverlayState::OptionsMenu,
         *program_state.get(),
-        gui_assets.uncial_antiqua_font.clone(),
-        1.0,
+        &style,
         &history,
     )
+    .page()
     .add_item("Audio", (), SimpleMenuActions::AudioMenu)
     .add_item("Video", (), SimpleMenuActions::VideoMenu)
     .add_item("Controls", (), SimpleMenuActions::ControlsMenu)
@@ -255,14 +255,13 @@ fn on_enter_options_menu(
 }
 
 fn on_enter_escape_menu(
-    gui_assets: Option<Res<GuiAssets>>,
+    style: If<Res<MenuStyle>>,
     commands: Commands,
     mut history: ResMut<MenuItemSelectionHistory>,
     level_list: Res<LevelList>,
     current_level: Option<Res<CurrentLevel>>,
     mut paused: ResMut<PauseState>,
 ) {
-    let Some(gui_assets) = gui_assets else { return };
     let Some(current_level) = current_level else {
         return;
     };
@@ -274,10 +273,10 @@ fn on_enter_escape_menu(
         commands,
         OverlayState::EscapeMenu,
         ProgramState::InGame,
-        gui_assets.uncial_antiqua_font.clone(),
-        1.0,
+        &style,
         &history,
-    );
+    )
+    .page();
     builder
         .add_item("Audio", (), SimpleMenuActions::AudioMenu)
         .add_item("Video", (), SimpleMenuActions::VideoMenu)
@@ -354,14 +353,10 @@ pub(crate) enum VolumeMenuActions {
 impl MenuItemHandler for VolumeMenuActions {}
 
 fn on_enter_audio_menu(
-    gui_assets: Res<GuiAssets>,
+    style: Res<MenuStyle>,
     mut commands: Commands,
     program_state: Res<State<ProgramState>>,
     mut history: ResMut<MenuItemSelectionHistory>,
-    // mut master_vol_q: Single<&mut UserVolume, With<MainBus>>,
-    // mut music_vol_q: Single<&mut UserVolume, With<SamplerPool<Music>>>,
-    // mut fx_vol_q: Single<&mut UserVolume, With<SamplerPool<Sfx>>>,
-    // mut ui_vol_q: Single<&mut UserVolume, With<SamplerPool<UiSfx>>>,
 ) {
     macro_rules! make_volume_getter_setter_mute {
         ($getter:ident $setter:ident $get_mute:ident $set_mute:ident => $bus_or_pool:path) => {
@@ -413,10 +408,10 @@ fn on_enter_audio_menu(
         commands,
         OverlayState::AudioMenu,
         *program_state.get(),
-        gui_assets.uncial_antiqua_font.clone(),
-        1.0,
+        &style,
         &history,
     )
+    .page()
     .add_item(
         "Master Volume",
         (
@@ -462,7 +457,7 @@ enum ControlMenuToggleActions {
 impl MenuItemHandler for ControlMenuToggleActions {}
 
 fn on_enter_controls_menu(
-    gui_assets: Res<GuiAssets>,
+    style: Res<MenuStyle>,
     program_state: Res<State<ProgramState>>,
     mut commands: Commands,
     mut history: ResMut<MenuItemSelectionHistory>,
@@ -526,10 +521,11 @@ fn on_enter_controls_menu(
         commands,
         OverlayState::ControlsMenu,
         *program_state.get(),
-        gui_assets.uncial_antiqua_font.clone(),
-        0.75,
+        &style,
         &history,
     )
+    .with_font_scale(0.75)
+    .page()
     .add_item(
         "Move Left/Right Power",
         MenuSlider::new(
@@ -639,7 +635,7 @@ fn on_enter_controls_menu(
 }
 
 fn on_enter_video_menu(
-    gui_assets: Res<GuiAssets>,
+    style: Res<MenuStyle>,
     program_state: Res<State<ProgramState>>,
     mut commands: Commands,
     mut history: ResMut<MenuItemSelectionHistory>,
@@ -685,10 +681,10 @@ fn on_enter_video_menu(
         commands,
         OverlayState::VideoMenu,
         *program_state.get(),
-        gui_assets.uncial_antiqua_font.clone(),
-        1.0,
+        &style,
         &history,
     )
+    .page()
     .add_item(
         "Field of View",
         MenuSlider::new(

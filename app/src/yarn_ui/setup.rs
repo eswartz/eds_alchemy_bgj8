@@ -3,21 +3,19 @@ use bevy::picking::hover::Hovered;
 use bevy::prelude::*;
 use bevy::ui_widgets::Button;
 use bevy_yarnspinner::prelude::*;
-use eds_bevy_common::states_sets::{GameplayState, LevelState};
+use eds_bevy_common::states_sets::{GameplayState, LevelState, OverlayState};
 
 use crate::assets::GuiAssets;
-use crate::yarn_ui::AlchemyDialogFont;
+use crate::yarn_ui::{AlchemyDialogFont, DialogueRootNode};
 
 pub(crate) fn ui_setup_plugin(app: &mut App) {
     app.add_systems(Startup, |mut commands: Commands| {
         commands.insert_resource(AlchemyDialogFont(default()));
     })
-    .add_systems(OnEnter(LevelState::LevelLoaded), setup);
+    .add_systems(OnEnter(LevelState::LevelLoaded), setup)
+    .add_systems(OnEnter(OverlayState::ModalDialog), show_dialogue)
+    .add_systems(OnExit(OverlayState::ModalDialog), hide_dialogue);
 }
-
-/// Marker for the [`Node`] that is the root of the UI
-#[derive(Debug, Default, Component)]
-pub struct UiRootNode;
 
 #[derive(Debug, Default, Component)]
 pub(crate) struct DialogueNode;
@@ -33,6 +31,17 @@ pub(crate) struct OptionsNode;
 
 #[derive(Debug, Component)]
 pub(crate) struct OptionButton(pub OptionId);
+
+fn show_dialogue(mut query: Query<&mut Visibility, With<DialogueRootNode>>) {
+    for mut vis in query.iter_mut() {
+        *vis = Visibility::Inherited;
+    }
+}
+fn hide_dialogue(mut query: Query<&mut Visibility, With<DialogueRootNode>>) {
+    for mut vis in query.iter_mut() {
+        *vis = Visibility::Hidden;
+    }
+}
 
 fn setup(mut commands: Commands, font: Res<AlchemyDialogFont>, gui_assets: Res<GuiAssets>) {
     // root node
@@ -55,7 +64,7 @@ fn setup(mut commands: Commands, font: Res<AlchemyDialogFont>, gui_assets: Res<G
                 ..default()
             },
             Visibility::Hidden,
-            UiRootNode,
+            DialogueRootNode,
         ))
         .with_children(|parent| {
             parent.spawn((

@@ -1,10 +1,12 @@
 use crate::yarn_ui::option_selection::OptionSelection;
-use crate::yarn_ui::setup::{DialogueContinueNode, DialogueNode, UiRootNode, create_dialog_text};
+use crate::yarn_ui::setup::{DialogueContinueNode, DialogueNode, create_dialog_text};
 use crate::yarn_ui::updating::SpeakerChangeEvent;
-use crate::yarn_ui::{AlchemyDialogFont, AlchemyDialogViewSystemSet};
+use crate::yarn_ui::{AlchemyDialogFont, AlchemyDialogViewSystemSet, DialogueRootNode};
 use bevy::platform::time::Instant;
 use bevy::prelude::*;
 use bevy_yarnspinner::{events::*, prelude::*};
+use eds_bevy_common::conditions::{is_dialog_active, is_paused};
+use eds_bevy_common::states_sets::OverlayState;
 // use unicode_segmentation::UnicodeSegmentation;
 
 pub(crate) fn typewriter_plugin(app: &mut App) {
@@ -17,6 +19,8 @@ pub(crate) fn typewriter_plugin(app: &mut App) {
             bob_continue,
         )
             .chain()
+            .run_if(not(is_paused))
+            .run_if(is_dialog_active)
             .after(YarnSpinnerSystemSet)
             .in_set(AlchemyDialogViewSystemSet),
     )
@@ -103,7 +107,7 @@ fn write_text(
     mut typewriter: ResMut<Typewriter>,
     option_selection: Option<Res<OptionSelection>>,
     mut speaker_change_events: MessageWriter<SpeakerChangeEvent>,
-    mut root_visibility: Single<&mut Visibility, With<UiRootNode>>,
+    mut root_visibility: Single<&mut Visibility, With<DialogueRootNode>>,
     font: Res<AlchemyDialogFont>,
 ) {
     let mut text_entity = commands.entity(*text);
@@ -151,12 +155,20 @@ fn show_continue(
     }
 }
 
-pub(crate) fn despawn(_: On<DialogueCompleted>, mut commands: Commands) {
-    commands.remove_resource::<Typewriter>();
+pub(crate) fn spawn(_: On<DialogueStarted>, mut commands: Commands) {
+    commands.set_state(OverlayState::ModalDialog);
+    commands.init_resource::<Typewriter>();
 }
 
-pub(crate) fn spawn(_: On<DialogueStarted>, mut commands: Commands) {
-    commands.init_resource::<Typewriter>();
+pub(crate) fn despawn(
+    _: On<DialogueCompleted>,
+    overlay: Res<State<OverlayState>>,
+    mut commands: Commands,
+) {
+    if *overlay == OverlayState::ModalDialog {
+        commands.set_state(OverlayState::Hidden);
+    }
+    commands.remove_resource::<Typewriter>();
 }
 
 fn bob_continue(
