@@ -48,6 +48,7 @@ fn show_dialog(
 fn hide_dialog(
     _: On<DialogueCompleted>,
     mut root_visibility: Single<&mut Visibility, With<DialogueRootNode>>,
+    mut typewriter: Option<ResMut<Typewriter>>,
 ) {
     **root_visibility = Visibility::Hidden;
 }

@@ -163,8 +163,12 @@ pub(crate) fn spawn(_: On<DialogueStarted>, mut commands: Commands) {
 pub(crate) fn despawn(
     _: On<DialogueCompleted>,
     overlay: Res<State<OverlayState>>,
+    text: Single<Entity, With<DialogueNode>>,
     mut commands: Commands,
 ) {
+    let mut text_entity = commands.entity(*text);
+    text_entity.despawn_related::<Children>();
+
     if *overlay == OverlayState::ModalDialog {
         commands.set_state(OverlayState::Hidden);
     }
