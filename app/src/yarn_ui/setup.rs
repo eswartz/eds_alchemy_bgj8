@@ -10,6 +10,7 @@ use crate::yarn_ui::{AlchemyDialogFont, DialogueRootNode};
 
 // const DIALOG_WIDTH: f32 = 800.0 * 0.8;
 const DIALOG_WIDTH_PERCENT: f32 = 80.0;
+const OPTION_WIDTH_PERCENT: f32 = 80.0;
 const DIALOG_WIDTH: Val = Val::Percent(DIALOG_WIDTH_PERCENT);
 const TEXT_BORDER_HORIZONTAL: Val = Val::Percent(4.0);
 const TEXT_BORDER_TOP: f32 = 30.0;
@@ -136,6 +137,7 @@ fn setup(mut commands: Commands, font: Res<AlchemyDialogFont>, gui_assets: Res<G
                             justify_content: JustifyContent::FlexEnd,
                             align_items: AlignItems::FlexStart,
                             margin: UiRect::top(Val::Px(20.0)),
+                            width: Val::Percent(OPTION_WIDTH_PERCENT),
                             ..default()
                         },
                         Visibility::Hidden,
@@ -208,6 +210,7 @@ pub(crate) fn spawn_options<'a, T>(
                     fmt_name("option button"),
                     Node {
                         justify_content: JustifyContent::FlexStart,
+                        width: Val::Percent(100.0),
                         ..default()
                     },
                 ))
@@ -216,6 +219,18 @@ pub(crate) fn spawn_options<'a, T>(
                         .spawn((
                             fmt_name("option text"),
                             Button,
+                            // UiDebugOptions {
+                            //     enabled: true,
+                            //     outline_border_box: true,
+                            //     outline_padding_box: false,
+                            //     outline_content_box: false,
+                            //     outline_scrollbars: true,
+                            //     line_width: 2.,
+                            //     line_color_override: None,
+                            //     show_hidden: false,
+                            //     show_clipped: true,
+                            //     ignore_border_radius: true,
+                            // },
                             Hovered::default(),
                             Text::default(),
                             style::options(),
@@ -251,6 +266,7 @@ mod style {
         const INDENT_MODIFIER: f32 = 1.0;
         Node {
             margin: UiRect::horizontal(TEXT_BORDER_HORIZONTAL),
+            width: Val::Percent(OPTION_WIDTH_PERCENT),
             // max_width: Val::Px(800.0 - 10.0 * 2.0 * INDENT_MODIFIER),
             // max_width: Val::Vw(80.0),
             ..default()

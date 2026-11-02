@@ -7,21 +7,29 @@ use bevy::platform::collections::HashMap;
 use bevy::prelude::*;
 use bevy::text::TextLayoutInfo;
 use bevy::ui::Pressed;
-use bevy::ui_widgets::Button;
+use bevy::ui_widgets::{Activate, Button, ButtonPlugin};
 use bevy::window::{CursorIcon, PrimaryWindow, SystemCursorIcon};
 use bevy_yarnspinner::{events::*, prelude::*};
 use eds_bevy_common::conditions::{is_dialog_active, is_paused};
+use eds_bevy_common::debug_egui::debug_gui_wants_keyboard_input;
 
 pub(crate) fn option_selection_plugin(app: &mut App) {
+    if !app.is_plugin_added::<ButtonPlugin>() {
+        app.add_plugins(ButtonPlugin);
+    }
+    app.add_observer(activate_option);
     app.add_systems(
         Update,
         (
             create_options.run_if(resource_added::<OptionSelection>),
             hack_sync_option_text_min_height.run_if(resource_exists::<OptionSelection>),
             show_options,
-            select_option.run_if(
-                resource_exists::<OptionSelection>.and_then(any_with_component::<PrimaryWindow>),
-            ),
+            select_option
+                .run_if(
+                    resource_exists::<OptionSelection>
+                        .and_then(any_with_component::<PrimaryWindow>),
+                )
+                .run_if(not(debug_gui_wants_keyboard_input)),
         )
             .chain()
             .run_if(not(is_paused))
@@ -40,6 +48,7 @@ struct HasSelectedOptionEvent;
 #[derive(Debug, Clone, PartialEq, Default, Resource)]
 pub(crate) struct OptionSelection {
     options: Vec<DialogueOption>,
+    selected: Option<OptionId>,
 }
 
 impl OptionSelection {
@@ -49,7 +58,10 @@ impl OptionSelection {
             .filter(|o| o.is_available)
             .cloned()
             .collect();
-        Self { options }
+        Self {
+            options,
+            selected: None,
+        }
     }
 }
 
@@ -106,14 +118,14 @@ fn select_option(
     >,
     mut dialogue_runners: Query<&mut DialogueRunner>,
     mut text_writer: TextUiWriter,
-    option_selection: Res<OptionSelection>,
+    mut option_selection: ResMut<OptionSelection>,
     window: Single<Entity, With<PrimaryWindow>>,
 ) {
     if !typewriter.is_finished() {
         return;
     }
 
-    let mut selection = None;
+    let mut selection = option_selection.selected.take();
     let key_to_option: HashMap<_, _> = NUMBER_KEYS
         .into_iter()
         .zip(NUMPAD_KEYS)
@@ -153,6 +165,22 @@ fn select_option(
     }
     if has_selected_id {
         commands.trigger(HasSelectedOptionEvent);
+    }
+}
+
+fn activate_option(
+    event: On<Activate>,
+    buttons: Query<&OptionButton, With<Button>>,
+    selection: Option<ResMut<OptionSelection>>,
+    typewriter: If<Res<Typewriter>>,
+) {
+    if !typewriter.is_finished() {
+        return;
+    }
+    if let Some(mut selection) = selection
+        && let Ok(button) = buttons.get(event.entity)
+    {
+        selection.selected.get_or_insert(button.0);
     }
 }
 

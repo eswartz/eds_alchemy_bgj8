@@ -190,7 +190,8 @@ rustc-hash = "2.1.1"
 strum = { version = "0.27.2", features = ["derive", "strum_macros"] }
 strum_macros = "0.27.2"
 
-bevy_yarnspinner = { git = "https://github.com/tcanabrava/YarnSpinner-Rust.git", branch = "bevy-0.20" }
+# bevy_yarnspinner = { git = "https://github.com/tcanabrava/YarnSpinner-Rust.git", branch = "bevy-0.20" }
+bevy_yarnspinner = { git = "https://github.com/eswartz/YarnSpinner-Rust-fork.git", branch = "bevy-0.20" }
 
 [patch.crates-io]
 bevy_seedling = { git = "https://github.com/eswartz/bevy_seedling-fork.git", branch = "bevy-0.20" }
