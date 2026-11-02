@@ -8,6 +8,13 @@ use eds_bevy_common::states_sets::{GameplayState, LevelState, OverlayState};
 use crate::assets::GuiAssets;
 use crate::yarn_ui::{AlchemyDialogFont, DialogueRootNode};
 
+// const DIALOG_WIDTH: f32 = 800.0 * 0.8;
+const DIALOG_WIDTH_PERCENT: f32 = 80.0;
+const DIALOG_WIDTH: Val = Val::Percent(DIALOG_WIDTH_PERCENT);
+const TEXT_BORDER_HORIZONTAL: Val = Val::Percent(4.0);
+const TEXT_BORDER_TOP: f32 = 30.0;
+const TEXT_BORDER_BOTTOM: f32 = TEXT_BORDER_TOP + 10.0;
+
 pub(crate) fn ui_setup_plugin(app: &mut App) {
     app.add_systems(Startup, |mut commands: Commands| {
         commands.insert_resource(AlchemyDialogFont(default()));
@@ -65,7 +72,7 @@ fn setup(mut commands: Commands, font: Res<AlchemyDialogFont>, gui_assets: Res<G
                 grid_template_columns: vec![RepeatedGridTrack::minmax(
                     1,
                     MinTrackSizingFunction::Auto,
-                    MaxTrackSizingFunction::Px(DIALOG_WIDTH),
+                    MaxTrackSizingFunction::Percent(DIALOG_WIDTH_PERCENT),
                 )],
                 ..default()
             },
@@ -79,7 +86,7 @@ fn setup(mut commands: Commands, font: Res<AlchemyDialogFont>, gui_assets: Res<G
                 text_style::name(&font.0),
                 Node {
                     margin: UiRect {
-                        left: Val::Px(TEXT_BORDER_HORIZONTAL / 2.0),
+                        left: TEXT_BORDER_HORIZONTAL / 2.0,
                         bottom: Val::Px(-8.0),
                         ..default()
                     },
@@ -100,8 +107,8 @@ fn setup(mut commands: Commands, font: Res<AlchemyDialogFont>, gui_assets: Res<G
                         padding: UiRect {
                             top: Val::Px(TEXT_BORDER_TOP),
                             bottom: Val::Px(TEXT_BORDER_BOTTOM),
-                            left: Val::Px(TEXT_BORDER_HORIZONTAL),
-                            right: Val::Px(TEXT_BORDER_HORIZONTAL),
+                            left: TEXT_BORDER_HORIZONTAL,
+                            right: TEXT_BORDER_HORIZONTAL,
                         },
                         border_radius: BorderRadius::all(Val::Px(20.0)),
                         ..default()
@@ -164,7 +171,7 @@ fn setup(mut commands: Commands, font: Res<AlchemyDialogFont>, gui_assets: Res<G
 }
 
 fn fmt_name(name: &str) -> Name {
-    Name::new(format!("Yarn Spinner example dialogue view node: {name}"))
+    Name::new(format!("YS: {name}"))
 }
 
 pub(crate) fn create_dialog_text(
@@ -231,24 +238,21 @@ pub(crate) fn spawn_options<'a, T>(
     });
 }
 
-const DIALOG_WIDTH: f32 = 800.0 * 0.8;
-const TEXT_BORDER_HORIZONTAL: f32 = 120.0;
-const TEXT_BORDER_TOP: f32 = 30.0;
-const TEXT_BORDER_BOTTOM: f32 = TEXT_BORDER_TOP + 10.0;
-
 mod style {
     use super::*;
     pub(crate) fn standard() -> Node {
         Node {
-            max_width: Val::Px(DIALOG_WIDTH - 2.0 * TEXT_BORDER_HORIZONTAL),
+            // max_width: Val::Px(DIALOG_WIDTH - 2.0 * TEXT_BORDER_HORIZONTAL),
+            max_width: DIALOG_WIDTH,
             ..default()
         }
     }
     pub(crate) fn options() -> Node {
         const INDENT_MODIFIER: f32 = 1.0;
         Node {
-            margin: UiRect::horizontal(Val::Px((INDENT_MODIFIER - 1.0) * TEXT_BORDER_HORIZONTAL)),
-            max_width: Val::Px(DIALOG_WIDTH - 2.0 * INDENT_MODIFIER * TEXT_BORDER_HORIZONTAL),
+            margin: UiRect::horizontal(TEXT_BORDER_HORIZONTAL),
+            // max_width: Val::Px(800.0 - 10.0 * 2.0 * INDENT_MODIFIER),
+            // max_width: Val::Vw(80.0),
             ..default()
         }
     }

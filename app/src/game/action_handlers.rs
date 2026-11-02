@@ -9,6 +9,7 @@ use bevy::prelude::*;
 use bevy_enhanced_input::prelude::*;
 
 #[cfg(feature = "input_bei")]
+use crate::game::firing::{FirePowerLimits, FiringState};
 use crate::game::firing::{FireActionState, cancel_projectile, prepare_projectile};
 use crate::game::*;
 
@@ -25,10 +26,10 @@ impl Plugin for ActionHandlersPlugin {
                 .run_if(in_state(ProgramState::InGame)),
             )
 
-            .add_observer(on_firing_start)
-            .add_observer(on_firing_hold)
-            .add_observer(on_firing_release)
-            .add_observer(on_firing_cancel)
+            // .add_observer(on_firing_start)
+            // .add_observer(on_firing_hold)
+            // .add_observer(on_firing_release)
+            // .add_observer(on_firing_cancel)
             .add_observer(on_flashlight_toggle)
             .add_observer(on_grab_toggle)
         ;

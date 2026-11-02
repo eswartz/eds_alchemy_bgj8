@@ -124,15 +124,15 @@ impl Plugin for GamePlugin {
                     .run_if(in_state(LevelState::Playing))
                     .run_if(in_state(ProgramState::InGame)),
             )
-            .add_systems(OnEnter(LevelState::Playing), show_power_bar)
-            .add_systems(OnExit(LevelState::Playing), remove_power_bar)
-            .add_systems(
-                Update,
-                update_power_bar
-                    .run_if(not(is_paused))
-                    .run_if(in_state(ProgramState::InGame))
-                    .run_if(in_state(GameplayState::Playing)),
-            )
+            // .add_systems(OnEnter(LevelState::Playing), show_power_bar)
+            // .add_systems(OnExit(LevelState::Playing), remove_power_bar)
+            // .add_systems(
+            //     Update,
+            //     update_power_bar
+            //         .run_if(not(is_paused))
+            //         .run_if(in_state(ProgramState::InGame))
+            //         .run_if(in_state(GameplayState::Playing)),
+            // )
             .add_systems(OnEnter(LevelState::Won), won_level)
             .add_systems(OnEnter(LevelState::Lost), lost_level)
             .add_systems(OnEnter(LevelState::Enter), start_game)
@@ -584,139 +584,6 @@ fn check_lost_level(
     commands.set_state(LevelState::Enter);
 }
 
-/// The power bar strength image inside [HandStatusArea].
-#[derive(Component)]
-pub struct PowerBarStrength;
-
-/// The power bar image border inside [HandStatusArea].
-#[derive(Component)]
-pub struct PowerBarBorder;
-
-/// The power bar text inside [HandStatusArea].
-#[derive(Component)]
-pub struct PowerBarText;
-
-fn show_power_bar(
-    mut commands: Commands,
-    gui_area: GuiAreaMarkerLocator,
-    assets: Res<CommonGuiAssets>,
-) {
-    gui_area.with_first(GuiAreaMarker::HandStatusArea, |ent| {
-        commands
-            .entity(ent)
-            .insert(UiNodeAlpha(0.0))
-            .with_children(|builder| {
-                builder.spawn((
-                    Name::new("PowerBarBorder"),
-                    PowerBarBorder,
-                    Visibility::Inherited,
-                    UiNodeAlpha(1.0),
-                    ImageNode::new(assets.power_bar_border.clone()).with_color(Color::WHITE),
-                    ZIndex(1),
-                    Node {
-                        position_type: PositionType::Absolute,
-                        top: px(0),
-                        width: Val::Vw(10.),
-                        max_width: Val::Vw(10.),
-                        min_width: Val::Px(128.),
-                        aspect_ratio: Some(4.0),
-                        align_content: AlignContent::Start,
-                        ..default()
-                    },
-                ));
-                builder.spawn((
-                    Name::new("PowerBarStrength"),
-                    PowerBarStrength,
-                    Visibility::Inherited,
-                    UiNodeAlpha(1.0),
-                    ImageNode::new(assets.power_bar_strength.clone()).with_color(Color::WHITE),
-                    ZIndex(0),
-                    Node {
-                        position_type: PositionType::Absolute,
-                        top: px(0),
-                        width: Val::Vw(10.),
-                        max_width: Val::Vw(10.),
-                        min_width: Val::Px(128.),
-                        aspect_ratio: Some(4.0),
-                        align_content: AlignContent::Start,
-                        ..default()
-                    },
-                ));
-                builder.spawn((
-                    Name::new("InHandText"),
-                    PowerBarText,
-                    Visibility::Inherited,
-                    UiNodeAlpha(1.0),
-                    Node {
-                        top: px(32),
-                        ..default()
-                    },
-                    TextFont {
-                        font: assets.std_ui.clone().into(),
-                        font_size: FontSize::Px(24.0),
-                        weight: FontWeight::BOLD,
-                        ..default()
-                    },
-                    TextColor(Color::Srgba(tailwind::RED_700)),
-                    TextShadow {
-                        offset: Vec2::splat(1.0),
-                        color: Color::WHITE,
-                    },
-                    Text::new("POWER"),
-                ));
-            });
-    });
-}
-
-fn remove_power_bar(
-    mut commands: Commands,
-    gui_area: GuiAreaMarkerLocator,
-    child_q: Query<&Children>,
-) {
-    gui_area.with_first(GuiAreaMarker::HandStatusArea, |ent| {
-        for kid in child_q.iter_descendants(ent) {
-            commands.entity(kid).try_despawn();
-        }
-    });
-}
-
-fn update_power_bar(
-    fire_power: Res<FiringState>,
-    limits: Res<FirePowerLimits>,
-    gui_area: GuiAreaMarkerLocator,
-    images: Res<Assets<Image>>,
-    mut ui_alpha_q: Query<&mut UiNodeAlpha>,
-    text_q: Single<Entity, With<PowerBarText>>,
-    image_q: Single<&mut ImageNode, With<PowerBarStrength>>,
-) {
-    gui_area.with_first(GuiAreaMarker::HandStatusArea, move |ent| {
-        let Ok(mut alpha) = ui_alpha_q.get_mut(ent) else {
-            return;
-        };
-        if fire_power.is_active() {
-            let a = (fire_power.power() / limits.max).clamp(0.0, 1.0);
-            alpha.0 = 1.0;
-
-            let text_ent = text_q.into_inner();
-            if let Ok(mut text_alpha) = ui_alpha_q.get_mut(text_ent) {
-                text_alpha.0 = (a + 0.125).clamp(0.0, 1.0);
-            }
-
-            let mut image = image_q.into_inner();
-            if let Some(the_image) = images.get(image.image.id()) {
-                image.rect = Some(Rect::new(
-                    0.0,
-                    0.0,
-                    the_image.width() as f32 * a,
-                    the_image.height() as f32,
-                ));
-            }
-        } else {
-            alpha.0 = 0.0;
-        }
-    });
-}
-
 fn setup_skybox(
     mut commands: Commands,
     skybox_q: Query<Entity, (With<SkyboxModel>,)>,
@@ -856,6 +723,7 @@ fn wake_up_spawned(
 
 fn spawn_dialogue_runner(mut commands: Commands, project: Res<YarnProject>) {
     let mut dialogue_runner = project.create_dialogue_runner(&mut commands);
-    dialogue_runner.start_node("HelloWorld");
+    dialogue_runner.stop();
+    dialogue_runner.start_node("Hello");
     commands.spawn((Name::new("DIALOGUE"), dialogue_runner));
 }

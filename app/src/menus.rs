@@ -11,6 +11,8 @@ use crate::game::Difficulty;
 use crate::game::LevelDifficulty;
 use eds_bevy_common::prelude::*;
 
+const GAME_TITLE: &str = "Bevy's Rose";
+
 pub struct MenuPlugin;
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
@@ -25,8 +27,6 @@ impl Plugin for MenuPlugin {
             .add_systems(OnEnter(OverlayState::ControlsMenu), on_enter_controls_menu);
     }
 }
-
-const GAME_TITLE: &str = "Blender Alchemy";
 
 #[derive(Debug)]
 pub(crate) enum SimpleMenuActions {

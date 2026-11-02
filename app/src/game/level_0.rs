@@ -8,8 +8,12 @@ use fedry_bevy_plugin::Scripting;
 
 use fedry_bevy_plugin::prelude::*;
 
+pub(crate) const INSTRUCTIONS: &str = r#"
+This game has no end.
+"#;
+
 pub(crate) const ID: &str = "level0";
-pub(crate) const NAME: &str = "Level 0";
+pub(crate) const NAME: &str = "Chapter 0";
 
 fn register_level(mut list: ResMut<LevelList>, maps: Res<MapAssets>) {
     list.0.push(LevelInfo {
@@ -44,12 +48,7 @@ fn on_level_loaded(
 ) -> Result {
     let ctx = ctx_p.as_ctx();
 
-    commands.insert_resource(InstructionText(
-        r#"
-        DON'T DIE...?
-        "#
-        .to_string(),
-    ));
+    commands.insert_resource(InstructionText(INSTRUCTIONS.to_string()));
 
     commands.insert_resource(BoomMass(100.0));
     // let script =

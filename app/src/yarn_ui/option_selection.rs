@@ -138,10 +138,17 @@ fn select_option(
         commands.entity(*window).insert(CursorIcon::System(icon));
         *text_writer.color(entity, 2) = TextColor(color);
     }
-    let has_selected_id = selection.is_some();
+    let mut has_selected_id = false;
     if let Some(id) = selection {
         for mut dialogue_runner in dialogue_runners.iter_mut() {
-            dialogue_runner.select_option(id).unwrap();
+            if dialogue_runner.is_waiting_for_option_selection() {
+                let result = dialogue_runner.select_option(id);
+                if let Err(err) = result {
+                    error!("{err}");
+                } else {
+                    has_selected_id = true;
+                }
+            }
         }
     }
     if has_selected_id {
