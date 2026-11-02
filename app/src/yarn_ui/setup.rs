@@ -13,6 +13,7 @@ pub(crate) fn ui_setup_plugin(app: &mut App) {
         commands.insert_resource(AlchemyDialogFont(default()));
     })
     .add_systems(OnEnter(LevelState::LevelLoaded), setup)
+    .add_systems(OnExit(GameplayState::Playing), remove_dialogue)
     .add_systems(OnEnter(OverlayState::ModalDialog), show_dialogue)
     .add_systems(OnExit(OverlayState::ModalDialog), hide_dialogue);
 }
@@ -40,6 +41,11 @@ fn show_dialogue(mut query: Query<&mut Visibility, With<DialogueRootNode>>) {
 fn hide_dialogue(mut query: Query<&mut Visibility, With<DialogueRootNode>>) {
     for mut vis in query.iter_mut() {
         *vis = Visibility::Hidden;
+    }
+}
+fn remove_dialogue(mut commands: Commands, mut query: Query<Entity, With<DialogueRootNode>>) {
+    for ent in query.iter_mut() {
+        commands.entity(ent).despawn();
     }
 }
 

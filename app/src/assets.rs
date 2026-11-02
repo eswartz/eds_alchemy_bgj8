@@ -9,6 +9,9 @@ pub struct GuiAssets {
     pub uncial_antiqua_font: Handle<Font>,
     #[asset(path = "fonts/SymbolsNerdFont-Regular.ttf")]
     pub symbols_nerd_font: Handle<Font>,
+
+    #[asset(path = "textures/background.webp")]
+    pub menu_background_image: Handle<Image>,
 }
 
 #[derive(Resource, AssetCollection)]

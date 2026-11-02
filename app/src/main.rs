@@ -11,6 +11,7 @@ mod yarn_ui;
 use avian3d::PhysicsPlugins;
 use avian3d::collider_tree::ColliderTreeOptimization;
 use avian3d::debug_render::PhysicsGizmos;
+use bevy::color::palettes;
 use bevy::log::{BoxedFmtLayer, LogPlugin};
 use bevy_yarnspinner::prelude::YarnSpinnerPlugin;
 // use bevy::render::error_handler::{RenderErrorHandler, RenderErrorPolicy};
@@ -25,12 +26,12 @@ use std::time::Duration;
 use bevy::camera::visibility::RenderLayers;
 use bevy::color::palettes::tailwind::{self, RED_500};
 use bevy::prelude::*;
+use bevy::render::renderer::RenderDevice;
 use bevy::{
     asset::AssetMetaCheck,
     image::{ImageAddressMode, ImageSamplerDescriptor},
     winit::WinitSettings,
 };
-use bevy::render::renderer::RenderDevice;
 use bevy_asset_loader::prelude::*;
 use bevy_skein::SkeinPlugin;
 
@@ -205,7 +206,6 @@ fn main() -> AppExit {
     .add_plugins(PlayerControllerPlugin)
     .add_plugins(PlayerEnvironmentPlugin)
     // This game
-    .insert_resource(UiFontPath("fonts/UncialAntiqua-Regular.ttf".into()))
     .add_plugins(GameActionsPlugin)
     .insert_resource(OurUser(default()))
     .insert_resource(PlayerMode::Fps)

@@ -309,7 +309,7 @@ pub(crate) enum SliderMenuActions {
     TurnSensitivityXSlider,
     TurnSensitivityYSlider,
     TurnSensitivityZSlider,
-    // ZoomSensitivityYSlider,
+    ZoomSensitivityYSlider,
 }
 
 impl MenuItemHandler for SliderMenuActions {}
@@ -450,7 +450,7 @@ fn on_enter_audio_menu(
 enum ControlMenuToggleActions {
     TurnInvertX,
     TurnInvertY,
-    // ZoomInvertY,
+    ZoomInvertY,
 }
 
 impl MenuItemHandler for ControlMenuToggleActions {}
@@ -510,11 +510,11 @@ fn on_enter_controls_menu(
     make_getter_setter!(get_turn_x set_turn_x => turn_scale x);
     make_getter_setter!(get_turn_y set_turn_y => turn_scale y);
     make_getter_setter!(get_turn_z set_turn_z => turn_scale z);
-    // make_getter_setter!(get_zoom_y set_zoom_y => zoom_scale y);
+    make_getter_setter!(get_zoom_y set_zoom_y => zoom_scale y);
 
     make_toggle!(get_invert_turn_x set_invert_turn_x => invert_turn_x);
     make_toggle!(get_invert_turn_y set_invert_turn_y => invert_turn_y);
-    // make_toggle!(get_invert_zoom_y set_invert_zoom_y => invert_zoom_y);
+    make_toggle!(get_invert_zoom_y set_invert_zoom_y => invert_zoom_y);
 
     MenuItemBuilder::new(
         commands,
@@ -523,7 +523,7 @@ fn on_enter_controls_menu(
         &style,
         &history,
     )
-    .with_font_scale(0.75)
+    .with_font_size_scale(0.75)
     .page()
     .add_item(
         "Move Left/Right Power",
@@ -575,60 +575,23 @@ fn on_enter_controls_menu(
         ControlMenuToggleActions::TurnInvertY,
     )
     .add_item(
-        "Turn X Power",
+        "Zoom Y Power",
         MenuSlider::new(
-            get_turn_x,
-            set_turn_x,
-            || Some(PlayerControllerSettings::default().turn_scale.x),
+            get_zoom_y,
+            set_zoom_y,
+            || Some(PlayerControllerSettings::default().zoom_scale.y),
             sens_to_ui,
             sens_from_ui,
             -5.0f32..=5.0f32,
             0.1,
         ),
-        SliderMenuActions::TurnSensitivityXSlider,
+        SliderMenuActions::ZoomSensitivityYSlider,
     )
     .add_item(
-        "Turn Y Power",
-        MenuSlider::new(
-            get_turn_y,
-            set_turn_y,
-            || Some(PlayerControllerSettings::default().turn_scale.y),
-            sens_to_ui,
-            sens_from_ui,
-            -5.0f32..=5.0f32,
-            0.1,
-        ),
-        SliderMenuActions::TurnSensitivityYSlider,
+        "Invert Zoom Y",
+        (MenuToggle::new(get_invert_zoom_y, set_invert_zoom_y),),
+        ControlMenuToggleActions::ZoomInvertY,
     )
-    .add_item(
-        "Turn Z Power",
-        MenuSlider::new(
-            get_turn_z,
-            set_turn_z,
-            || Some(PlayerControllerSettings::default().turn_scale.z),
-            sens_to_ui,
-            sens_from_ui,
-            -5.0f32..=5.0f32,
-            0.1,
-        ),
-        SliderMenuActions::TurnSensitivityZSlider,
-    )
-    // .add_item(
-    //     "Zoom Y Power",
-    //     MenuSlider::new(
-    //         get_zoom_y,
-    //         set_zoom_y,
-    //         || Some(PlayerControllerSettings::default().zoom_scale.y),
-    //         sens_to_ui,
-    //         sens_from_ui,
-    //         -5.0f32..=5.0f32,
-    //         0.1,
-    //     ),
-    //     SliderMenuActions::ZoomSensitivityYSlider,
-    // )
-    // .add_item("Invert Zoom Y", (
-    //     MenuToggle::new(get_invert_zoom_y, set_invert_zoom_y),
-    // ), ControlMenuToggleActions::ZoomInvertY)
     .add_item("Back", (), SimpleMenuActions::Back)
     .finish(&mut history);
 }

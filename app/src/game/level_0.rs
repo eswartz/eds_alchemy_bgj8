@@ -1,16 +1,10 @@
 use crate::assets::*;
 use crate::game::BoomMass;
 use crate::game::GameScript;
-use anyhow::anyhow;
-use bevy::math::Affine2;
-use bevy::world_serialization::WorldInstanceReady;
-use eds_bevy_common::physics::*;
 use eds_bevy_common::prelude::*;
 
 use bevy::prelude::*;
 use fedry_bevy_plugin::Scripting;
-use rand::RngExt;
-use rand::prelude::IndexedRandom;
 
 use fedry_bevy_plugin::prelude::*;
 
@@ -52,7 +46,7 @@ fn on_level_loaded(
 
     commands.insert_resource(InstructionText(
         r#"
-            DON'T DIE
+        DON'T DIE...?
         "#
         .to_string(),
     ));

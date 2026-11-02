@@ -1,7 +1,6 @@
 mod action_handlers;
 mod bevy_funcs;
 mod firing;
-mod gravity_sleep;
 mod level_0;
 mod sound;
 // mod level_1;
@@ -11,7 +10,7 @@ mod sound;
 // mod level_5;
 // mod level_6;
 
-pub use action_handlers::*;
+use bevy::color::palettes;
 use bevy_yarnspinner::prelude::YarnProject;
 use fedry_bevy_plugin::script_debug::ScriptDebugPlugin;
 
@@ -35,29 +34,32 @@ use eds_bevy_common::physics::*;
 use eds_bevy_common::prelude::*;
 
 use crate::assets::GuiAssets;
-use crate::game::bevy_funcs::register_funcs;
+use crate::game::bevy_funcs::register_script_funcs;
 use crate::game::firing::{FirePowerLimits, FiringPlugin, FiringState};
-use crate::game::gravity_sleep::GravitySleepPlugin;
 use crate::game::sound::SoundPlugin;
+pub use action_handlers::*;
 
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        #[cfg(feature = "solari")]
-        {
-            app.add_plugins(SolariPlugins);
-        }
-
-        app.add_plugins(ActionHandlersPlugin)
+        // let menu_page_color: Color =
+        //     LinearRgba::blend([c1.to_linear(), c2.to_linear()].into_iter()).to into();
+        app
+            .insert_resource(Gravity((9.8 * Vec3::NEG_Y).into()))
+            //
+            .insert_resource(UiFontPath("fonts/UncialAntiqua-Regular.ttf".into()))
+            // .insert_resource(MenuStyle::default().with_page_color(menu_page_color))
+            //
+            .add_plugins(ActionHandlersPlugin)
             .add_plugins(FiringPlugin)
             .add_plugins(SoundPlugin)
             .add_plugins(FedryScriptingPlugin)
-            .add_plugins(GravitySleepPlugin)
+            .add_systems(Startup, register_script_funcs)
             .add_plugins(ScriptDebugPlugin)
             .add_plugins(DetailNormalPlugin)
             .add_plugins(SplitIntoCubesPlugin)
-            .insert_resource(Gravity((9.8 * Vec3::NEG_Y).into()))
+            //
             .add_systems(
                 PreUpdate,
                 (
@@ -83,10 +85,11 @@ impl Plugin for GamePlugin {
             // .add_plugins(level_6::LevelPlugin)
             .insert_resource(BaseEntity(Entity::PLACEHOLDER, Transform::IDENTITY))
             .add_observer(on_scene_ready)
+            .add_systems(OnEnter(ProgramState::New), setup_styles)
             .add_systems(OnExit(ProgramState::New), ensure_levels)
             .add_systems(
                 OnEnter(GameplayState::Setup),
-                (register_styles, level_spawn_started, spawn_level).chain(),
+                (level_spawn_started, spawn_level).chain(),
             )
             .add_systems(
                 OnExit(GameplayState::Setup),
@@ -99,7 +102,6 @@ impl Plugin for GamePlugin {
                     .run_if(added_player_start) // <<< only once per session, in practice
                     .run_if(in_state(GameplayState::Playing)),
             )
-            .add_systems(Startup, register_funcs)
             .add_systems(
                 OnEnter(LevelState::LevelLoaded),
                 (
@@ -181,11 +183,21 @@ impl Plugin for GamePlugin {
     }
 }
 
-pub(crate) fn register_styles(mut commands: Commands, gui_assets: Res<GuiAssets>) {
-    commands.insert_resource(InstructionFont(gui_assets.uncial_antiqua_font.clone()));
-    commands.insert_resource(crate::yarn_ui::AlchemyDialogFont(
-        gui_assets.uncial_antiqua_font.clone(),
-    ));
+pub(crate) fn setup_styles(
+    mut commands: Commands,
+    gui_assets: Res<GuiAssets>,
+    mut menu_style: ResMut<MenuStyle>,
+) {
+    let the_font = &gui_assets.uncial_antiqua_font;
+
+    *menu_style = menu_style
+        .clone()
+        .with_font(the_font.clone())
+        .with_page_color(Color::BLACK.into()) // .
+        .with_page_image(Some(gui_assets.menu_background_image.clone())) // .
+    ;
+    commands.insert_resource(InstructionFont(the_font.clone()));
+    commands.insert_resource(crate::yarn_ui::AlchemyDialogFont(the_font.clone()));
 }
 
 /// Current difficulty.
@@ -823,7 +835,7 @@ fn report_raycast(
 fn wake_up_spawned_if_floating(
     mut commands: Commands,
     collisions: Res<ContactGraph>,
-    sleep_q: Query<Entity, (With<Sleeping>, With<Spawned>, Without<Player>)>
+    sleep_q: Query<Entity, (With<Sleeping>, With<Spawned>, Without<Player>)>,
 ) {
     for ent in sleep_q.iter() {
         if collisions.entities_colliding_with(ent).next().is_none() {
@@ -848,4 +860,3 @@ fn spawn_dialogue_runner(mut commands: Commands, project: Res<YarnProject>) {
     dialogue_runner.start_node("HelloWorld");
     commands.spawn((Name::new("DIALOGUE"), dialogue_runner));
 }
-
