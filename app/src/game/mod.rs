@@ -1,8 +1,10 @@
 mod action_handlers;
 mod bevy_funcs;
+mod dialogue;
 mod firing;
-mod level_0;
 mod sound;
+
+mod level_0;
 // mod level_1;
 // mod level_2;
 // mod level_3;
@@ -10,7 +12,6 @@ mod sound;
 // mod level_5;
 // mod level_6;
 
-use bevy_yarnspinner::prelude::YarnProject;
 use fedry_bevy_plugin::script_debug::ScriptDebugPlugin;
 
 use std::time::Duration;
@@ -34,9 +35,17 @@ use eds_bevy_common::prelude::*;
 
 use crate::assets::GuiAssets;
 use crate::game::bevy_funcs::register_script_funcs;
+use crate::game::dialogue::decorate_dialog_cues;
+use crate::game::dialogue::spawn_dialogue_runner;
 use crate::game::firing::{FirePowerLimits, FiringPlugin, FiringState};
 use crate::game::sound::SoundPlugin;
 pub use action_handlers::*;
+
+/// Start dialogue at the given node name.
+#[derive(Debug, Component, Reflect)]
+#[reflect(Component)]
+#[type_path = "game"]
+pub(crate) struct DialogueCue(pub String);
 
 pub struct GamePlugin;
 
@@ -110,6 +119,7 @@ impl Plugin for GamePlugin {
                     setup_skybox,
                     unpause_scripting,
                     spawn_dialogue_runner,
+                    decorate_dialog_cues,
                 )
                     .chain(),
             )
@@ -719,11 +729,4 @@ fn wake_up_spawned(
     for ent in sleep_q.iter() {
         commands.entity(ent).remove::<Sleeping>();
     }
-}
-
-fn spawn_dialogue_runner(mut commands: Commands, project: Res<YarnProject>) {
-    let mut dialogue_runner = project.create_dialogue_runner(&mut commands);
-    dialogue_runner.stop();
-    dialogue_runner.start_node("Hello");
-    commands.spawn((Name::new("DIALOGUE"), dialogue_runner));
 }

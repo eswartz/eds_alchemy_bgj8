@@ -149,7 +149,8 @@ bevy_seedling = { git = "https://github.com/eswartz/bevy_seedling-fork.git", bra
 ] }
 
 
-bevy_skein = { version = "0.7.0" }
+# bevy_skein = { version = "0.7.0" }
+bevy_skein = { git = "https://github.com/eswartz/skein-fork.git", branch = "main" }
 
 bevy_asset_loader = { version = "0.28.0", features = [
     "2d",
