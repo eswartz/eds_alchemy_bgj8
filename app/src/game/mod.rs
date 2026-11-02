@@ -10,7 +10,6 @@ mod sound;
 // mod level_5;
 // mod level_6;
 
-use bevy::color::palettes;
 use bevy_yarnspinner::prelude::YarnProject;
 use fedry_bevy_plugin::script_debug::ScriptDebugPlugin;
 

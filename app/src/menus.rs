@@ -1,7 +1,6 @@
-use bevy::camera::visibility::RenderLayers;
 use bevy::ecs::world::CommandQueue;
 use bevy::prelude::*;
-use bevy::sprite::Text2dShadow;
+use bevy::text::LineHeight;
 use bevy_seedling::prelude::MainBus;
 use bevy_seedling::prelude::Volume;
 use fedry_bevy_plugin::prelude::ScriptControl;
@@ -27,7 +26,7 @@ impl Plugin for MenuPlugin {
     }
 }
 
-const GAME_TITLE: &str = "Alchemy";
+const GAME_TITLE: &str = "Blender Alchemy";
 
 #[derive(Debug)]
 pub(crate) enum SimpleMenuActions {
@@ -114,30 +113,6 @@ fn on_enter_main_menu(
 
     // Do not clear CurrentLevel. `Play` goes there and acts as Reset...
 
-    commands.spawn((
-        DespawnOnReset(OverlayState::MainMenu),
-        Text2d::new(GAME_TITLE),
-        TextFont {
-            font_size: FontSize::Px(128.0),
-            font: style.font.clone().into(),
-            ..default()
-        },
-        Text2dShadow {
-            offset: Vec2::new(8.0, -8.0),
-            color: Color::BLACK,
-            ..default()
-        },
-        // bevy_pretty_text::prelude::Typewriter::new(30.),
-        // bevy_pretty_text::prelude::Breathe {
-        //     min: 0.975,
-        //     max: 1.025,
-        //     ..default()
-        // },
-        // PrettyTextMaterial(glyph_mats.add(TitleShader::default())),
-        RenderLayers::layer(RENDER_LAYER_UI),
-        Transform::from_xyz(0., 250.0, 0.),
-    ));
-
     let mut builder = MenuItemBuilder::new(
         commands,
         OverlayState::MainMenu,
@@ -146,6 +121,29 @@ fn on_enter_main_menu(
         &history,
     )
     .page();
+
+    let title_style: MenuStyle = (*style).clone().with_font_size_scale(3.0);
+    builder.add_label(
+        GAME_TITLE,
+        &title_style,
+        (
+            LineHeight::RelativeToFont(1.0),
+            // FixedNode,
+            // Node {
+            //     width: Val::Percent(100.),
+            //     height: Val::Percent(10.),
+            //     flex_direction: FlexDirection::Column,
+            //     align_items: AlignItems::Center,
+            //     align_content: AlignContent::Center,
+            //     justify_content: JustifyContent::Center,
+            //     top: Val::Em(0.5),
+            //     bottom: Val::Em(1.5),
+            //     // left: Val::Em(1.0),
+            //     // right: Val::Em(10.0),
+            //     ..default()
+            // },
+        ),
+    );
 
     add_level_selector(
         &mut builder,
@@ -306,9 +304,9 @@ pub(crate) enum SliderMenuActions {
     MoveSensitivityXSlider,
     MoveSensitivityYSlider,
     MoveSensitivityZSlider,
-    TurnSensitivityXSlider,
-    TurnSensitivityYSlider,
-    TurnSensitivityZSlider,
+    // TurnSensitivityXSlider,
+    // TurnSensitivityYSlider,
+    // TurnSensitivityZSlider,
     ZoomSensitivityYSlider,
 }
 
