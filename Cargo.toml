@@ -5,21 +5,15 @@ members = ["app"]
 
 [workspace.package]
 
-[profile.dev]
-# opt-level = 1
-debug = "none" # for macOS :(
+[profile.dev.package.eds-alchemy]
+opt-level = 0
+[profile.dev.package.eds_bevy_common]
+opt-level = 0
+[profile.dev.package.fedry_bevy_plugin]
+opt-level = 0
 
 [profile.dev.package.bevy_mikktspace]
 opt-level = 3
-[profile.dev.package.eds_bevy_common]
-opt-level = 0
-debug = "line-tables-only"
-[profile.dev.package.eds-alchemy]
-opt-level = 0
-debug = "line-tables-only"
-[profile.dev.package.fedry_bevy_plugin]
-opt-level = 0
-debug = "line-tables-only"
 
 [profile.dev.package."*"]
 opt-level = 1
