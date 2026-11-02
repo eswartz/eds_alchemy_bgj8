@@ -178,10 +178,6 @@ fn main() -> AppExit {
     .add_plugins(MenuPlugin)
     .add_plugins(GuiPlugin)
     .add_plugins(VideoPlugin)
-    .insert_resource(VideoSettings {
-        oit_settings: OrderIndependentTransparencyQuality::Off,
-        ..default()
-    })
     .add_plugins(WorldStatePlugin)
     .add_plugins(LightsPlugin)
     .add_plugins(FlashlightPlugin)

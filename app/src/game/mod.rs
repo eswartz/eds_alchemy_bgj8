@@ -51,22 +51,19 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        // let menu_page_color: Color =
-        //     LinearRgba::blend([c1.to_linear(), c2.to_linear()].into_iter()).to into();
         app
             .insert_resource(Gravity((9.8 * Vec3::NEG_Y).into()))
             //
             .insert_resource(UiFontPath("fonts/UncialAntiqua-Regular.ttf".into()))
-            // .insert_resource(MenuStyle::default().with_page_color(menu_page_color))
             //
             .add_plugins(ActionHandlersPlugin)
             // .add_plugins(FiringPlugin)
-            // .add_plugins(SoundPlugin)
-            // .add_plugins(FedryScriptingPlugin)
-            // .add_systems(Startup, register_script_funcs)
-            // .add_plugins(ScriptDebugPlugin)
-            // .add_plugins(DetailNormalPlugin)
-            // .add_plugins(SplitIntoCubesPlugin)
+            .add_plugins(SoundPlugin)
+            .add_plugins(FedryScriptingPlugin)
+            .add_systems(Startup, register_script_funcs)
+            .add_plugins(ScriptDebugPlugin)
+            .add_plugins(DetailNormalPlugin)
+            .add_plugins(SplitIntoCubesPlugin)
             //
             .add_systems(
                 PreUpdate,
@@ -604,21 +601,20 @@ fn setup_skybox(
 ) {
     let Ok(cam) = cam_q.single() else { return };
 
-    // // If there isn't one in the level, add a default.
-    // if skybox_q.is_empty() {
-    //     //let with_reflection_probe = Some(SkyboxReflectionProbeModel::default());  // looks ... not so good when real lights are present
-    //     let with_reflection_probe = None;
+    // If there isn't one in the level, add a default.
+    if skybox_q.is_empty() {
+        //let with_reflection_probe = Some(SkyboxReflectionProbeModel::default());  // looks ... not so good when real lights are present
+        let with_reflection_probe = None;
 
-    //     commands.entity(cam).insert(SkyboxModel {
-    //         image: Some(skyboxes.starmap_2020.clone()),
-    //         brightness: bevy::prelude::light_consts::lux::HALLWAY,
-    //         mapping: CubemapMapping::PxNxPyFxFyNyFxFyPzNz,
-    //         with_reflection_probe,
-    //         ..default()
-    //     });
-    // }
-    // commands.insert_resource(SkyboxSetup::WaitingSkybox);
-    commands.insert_resource(SkyboxSetup::Finished);
+        commands.entity(cam).insert(SkyboxModel {
+            image: Some(skyboxes.starmap_2020.clone()),
+            brightness: bevy::prelude::light_consts::lux::HALLWAY,
+            mapping: CubemapMapping::PxNxPyFxFyNyFxFyPzNz,
+            with_reflection_probe,
+            ..default()
+        });
+    }
+    commands.insert_resource(SkyboxSetup::WaitingSkybox);
 }
 
 /// When placed on an entity, ensure a [MidiSynth] is wired up
