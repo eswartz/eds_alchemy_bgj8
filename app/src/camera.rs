@@ -1,15 +1,14 @@
-
 use bevy::render::occlusion_culling::OcclusionCulling;
 use bevy::render::view::ColorGrading;
 use bevy_seedling::prelude::*;
 
 use bevy::camera::Exposure;
+use bevy::camera::Hdr;
 use bevy::camera::visibility::RenderLayers;
 use bevy::core_pipeline::prepass::DepthPrepass;
 use bevy::prelude::*;
 use bevy::render::renderer::RenderAdapter;
 use bevy::render::renderer::RenderDevice;
-use bevy::camera::Hdr;
 
 use eds_bevy_common::prelude::*;
 
@@ -62,61 +61,45 @@ pub(crate) fn ensure_3d_camera(
 }
 
 fn configure_world_camera(mut ent_commands: EntityCommands, use_clustered: bool) {
-    ent_commands.insert((
+    ent_commands.insert(((
+        DespawnOnExit(GameplayState::Playing),
         (
-            DespawnOnExit(GameplayState::Playing),
-
-            (
-                Name::new("WorldCamera"),
-                WorldCamera,
-                Camera3d::default(),
-                RenderLayers::layer(RENDER_LAYER_DEFAULT),
-
-                Exposure { ev100: 10.0 },
-                Camera {
-                    order: 1,
-                    clear_color: Color::BLACK.into(),
-                    ..default()
-                },
-
-                DistanceFog {
-                    color: Color::hsl(0.0, 0.0, 0.5),
-                    falloff: FogFalloff::ExponentialSquared { density: 0.001 },
-                    ..default()
-                },
-
-                Hdr,
-
-                Projection::Perspective(PerspectiveProjection {
-                    fov: 75f32.to_radians(),
-                    far: 1000.0,
-                    near: 0.01,
-                    ..default()
-                }),
-
-                // [video::VideoSettings] updates this later.
-                Msaa::Off,
-
-                DepthPrepass,
-                OcclusionCulling,
-            ),
-            (
-                PlayerCamera(CameraMode::FirstPerson),
-                OurCamera::default(),
-                Transform::from_xyz(0., 1., 0.),
-            ),
-
-            // Audio is from the perspective of the camera.
-            SpatialListener3D::default(),
-
-            children![
-                (
-                    Name::new("LIGHT"),
-                    Flashlight::default(),
-                )
-            ],
+            Name::new("WorldCamera"),
+            WorldCamera,
+            Camera3d::default(),
+            RenderLayers::layer(RENDER_LAYER_DEFAULT),
+            Exposure { ev100: 10.0 },
+            Camera {
+                order: 1,
+                clear_color: Color::BLACK.into(),
+                ..default()
+            },
+            DistanceFog {
+                color: Color::hsl(0.0, 0.0, 0.5),
+                falloff: FogFalloff::ExponentialSquared { density: 0.001 },
+                ..default()
+            },
+            Hdr,
+            Projection::Perspective(PerspectiveProjection {
+                fov: 75f32.to_radians(),
+                far: 1000.0,
+                near: 0.01,
+                ..default()
+            }),
+            // [video::VideoSettings] updates this later.
+            Msaa::Off,
+            DepthPrepass,
+            OcclusionCulling,
         ),
-    ));
+        (
+            PlayerCamera(CameraMode::FirstPerson),
+            OurCamera::default(),
+            Transform::from_xyz(0., 1., 0.),
+        ),
+        // Audio is from the perspective of the camera.
+        SpatialListener3D::default(),
+        children![(Name::new("LIGHT"), Flashlight::default(),)],
+    ),));
 
     if !use_clustered {
         ent_commands.insert(DepthPrepass);
@@ -124,38 +107,32 @@ fn configure_world_camera(mut ent_commands: EntityCommands, use_clustered: bool)
 }
 
 fn configure_viewer_camera(mut ent_commands: EntityCommands, use_clustered: bool) {
-    ent_commands.insert((
-        (
-            DespawnOnExit(GameplayState::Playing),
-
-            Name::new("ViewCamera"),
-            ViewerCamera,
-            Camera3d::default(),
-            RenderLayers::layer(RENDER_LAYER_VIEW),
-
-            Exposure { ev100: 1.0 },
-            Camera {
-                order: 2,
-                clear_color: ClearColorConfig::None,
-                ..default()
-            },
-
-            Projection::Perspective(PerspectiveProjection {
-                fov: 90f32.to_radians(),
-                near: 0.01,
-                ..default()
-            }),
-
-            // must match WorldCamera
-            Hdr,
-            // [video::VideoSettings] updates this later.
-            Msaa::Off,
-        ),
-    ));
+    ent_commands.insert(((
+        DespawnOnExit(GameplayState::Playing),
+        Name::new("ViewCamera"),
+        ViewerCamera,
+        Camera3d::default(),
+        RenderLayers::layer(RENDER_LAYER_VIEW),
+        Exposure { ev100: 1.0 },
+        Camera {
+            order: 2,
+            clear_color: ClearColorConfig::None,
+            ..default()
+        },
+        Projection::Perspective(PerspectiveProjection {
+            fov: 90f32.to_radians(),
+            near: 0.01,
+            ..default()
+        }),
+        // must match WorldCamera
+        Hdr,
+        // [video::VideoSettings] updates this later.
+        Msaa::Off,
+    ),));
 
     if !use_clustered {
-        // ent_commands.insert(DepthPrepass);
-            ent_commands.insert(ColorGrading::default());
+        ent_commands.insert(DepthPrepass);
+        ent_commands.insert(ColorGrading::default());
     }
 }
 

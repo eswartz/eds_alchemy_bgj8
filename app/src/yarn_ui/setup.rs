@@ -1,8 +1,10 @@
+use bevy::camera::visibility::RenderLayers;
 use bevy::ecs::system::EntityCommands;
 use bevy::picking::hover::Hovered;
 use bevy::prelude::*;
 use bevy::ui_widgets::Button;
 use bevy_yarnspinner::prelude::*;
+use eds_bevy_common::layers::{RENDER_LAYER_DEFAULT, RENDER_LAYER_UI};
 use eds_bevy_common::states_sets::{GameplayState, LevelState, OverlayState};
 
 use crate::assets::GuiAssets;
@@ -63,6 +65,7 @@ fn setup(mut commands: Commands, font: Res<AlchemyDialogFont>, gui_assets: Res<G
         .spawn((
             DespawnOnExit(GameplayState::Playing),
             fmt_name("root"),
+            RenderLayers::layer(RENDER_LAYER_UI),
             Node {
                 display: Display::Grid,
                 width: Val::Percent(100.0),

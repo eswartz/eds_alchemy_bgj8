@@ -1,38 +1,35 @@
 use rand::RngExt as _;
 use rand::seq::IndexedRandom as _;
 
-use bevy_seedling::sample::PlaybackSettings;
-use bevy_seedling::prelude::*;
 use bevy::prelude::*;
+use bevy_seedling::prelude::*;
+use bevy_seedling::sample::PlaybackSettings;
 
 #[cfg(feature = "input_bei")]
 use bevy_enhanced_input::prelude::*;
 
+use crate::game::firing::{FireActionState, cancel_projectile, prepare_projectile};
 #[cfg(feature = "input_bei")]
 use crate::game::firing::{FirePowerLimits, FiringState};
-use crate::game::firing::{FireActionState, cancel_projectile, prepare_projectile};
 use crate::game::*;
 
 pub struct ActionHandlersPlugin;
 
 impl Plugin for ActionHandlersPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_systems(
-                FixedUpdate,
-                play_player_out_of_bounds
+        app.add_systems(
+            FixedUpdate,
+            play_player_out_of_bounds
                 .run_if(not(is_paused))
                 .run_if(in_state(LevelState::Playing))
                 .run_if(in_state(ProgramState::InGame)),
-            )
-
-            // .add_observer(on_firing_start)
-            // .add_observer(on_firing_hold)
-            // .add_observer(on_firing_release)
-            // .add_observer(on_firing_cancel)
-            .add_observer(on_flashlight_toggle)
-            .add_observer(on_grab_toggle)
-        ;
+        )
+        // .add_observer(on_firing_start)
+        // .add_observer(on_firing_hold)
+        // .add_observer(on_firing_release)
+        // .add_observer(on_firing_cancel)
+        .add_observer(on_flashlight_toggle)
+        .add_observer(on_grab_toggle);
     }
 }
 
@@ -47,12 +44,7 @@ pub(crate) fn play_player_out_of_bounds(
         if let HitDeathboxMessage::Player(_) = hit {
             commands.spawn((
                 UiSfx,
-                SamplePlayer::new(
-                    (*[&fx.swoosh]
-                        .choose(&mut rng)
-                        .unwrap())
-                    .clone(),
-                ),
+                SamplePlayer::new((*[&fx.swoosh].choose(&mut rng).unwrap()).clone()),
                 PlaybackSettings {
                     speed: rng.random_range(0.9..1.1),
                     ..default()
@@ -66,14 +58,20 @@ pub(crate) fn play_player_out_of_bounds(
 #[cfg(feature = "input_bei")]
 fn on_firing_start(
     _fire: On<Start<actions::Firing>>,
-    alt_fire: Single<&TriggerState, (With<Action<actions::AltFiring>>, With<ActionOf<PlayerContext>>)>,
+    alt_fire: Single<
+        &TriggerState,
+        (
+            With<Action<actions::AltFiring>>,
+            With<ActionOf<PlayerContext>>,
+        ),
+    >,
     mut commands: Commands,
     mut fire_state: ResMut<FiringState>,
     limits: Res<FirePowerLimits>,
     grabbed_opt: Option<Res<GrabbedItem>>,
 ) {
     if !matches!(*alt_fire, TriggerState::None) {
-        return
+        return;
     }
     (*fire_state).start(&limits);
     if grabbed_opt.is_none() {
@@ -84,12 +82,18 @@ fn on_firing_start(
 #[cfg(feature = "input_bei")]
 fn on_firing_hold(
     fire: On<Fire<actions::Firing>>,
-    alt_fire: Single<&TriggerState, (With<Action<actions::AltFiring>>, With<ActionOf<PlayerContext>>)>,
+    alt_fire: Single<
+        &TriggerState,
+        (
+            With<Action<actions::AltFiring>>,
+            With<ActionOf<PlayerContext>>,
+        ),
+    >,
     mut fire_state: ResMut<FiringState>,
     limits: Res<FirePowerLimits>,
 ) {
     if !matches!(*alt_fire, TriggerState::None) {
-        return
+        return;
     }
     (*fire_state).update(fire.fired_secs, &limits);
 }
@@ -97,7 +101,13 @@ fn on_firing_hold(
 #[cfg(feature = "input_bei")]
 fn on_firing_release(
     _fire: On<Complete<actions::Firing>>,
-    alt_fire: Single<&TriggerState, (With<Action<actions::AltFiring>>, With<ActionOf<PlayerContext>>)>,
+    alt_fire: Single<
+        &TriggerState,
+        (
+            With<Action<actions::AltFiring>>,
+            With<ActionOf<PlayerContext>>,
+        ),
+    >,
     mut commands: Commands,
     mut params: If<FireActionState>,
     spatial: If<SpatialQuery>,
@@ -105,7 +115,7 @@ fn on_firing_release(
     xfrm_q: Query<&Transform>,
 ) {
     if !matches!(*alt_fire, TriggerState::None) {
-        return
+        return;
     }
 
     (*params).fire_projectile(commands.reborrow(), &*spatial, meshes, xfrm_q);
@@ -116,10 +126,9 @@ fn on_firing_release(
 fn on_firing_cancel(
     _fire: On<Fire<actions::AltFiring>>,
     mut fire_action: Single<
-        &mut TriggerState, (
-            With<Action<actions::Firing>>,
-            With<ActionOf<PlayerContext>>,
-        )>,
+        &mut TriggerState,
+        (With<Action<actions::Firing>>, With<ActionOf<PlayerContext>>),
+    >,
     mut fire_state: If<ResMut<FiringState>>,
     mut commands: Commands,
 ) {
@@ -138,7 +147,7 @@ fn on_flashlight_toggle(
 ) {
     let Ok(camera) = camera_q.single() else {
         warn!("no single PlayerCamera");
-        return
+        return;
     };
 
     for ent in child_q.iter_descendants(camera) {
@@ -152,9 +161,9 @@ fn on_flashlight_toggle(
 fn on_grab_toggle(
     _fire: On<Start<actions::ToggleSelect>>,
     mut commands: Commands,
-    mut highlighting_mode: ResMut<HighlightingMode>,
+    mut highlighting_mode: If<ResMut<HighlightingMode>>,
 ) {
-    *highlighting_mode = highlighting_mode.original_or_enabled().toggle_enabled();
+    **highlighting_mode = highlighting_mode.original_or_enabled().toggle_enabled();
     if highlighting_mode.is_disabled() {
         commands.run_system_cached(clear_highlighted);
     }

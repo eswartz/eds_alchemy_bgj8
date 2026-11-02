@@ -37,16 +37,16 @@ impl Plugin for LevelPlugin {
 
 fn on_level_loaded(
     mut commands: Commands,
-    world: Res<WorldMarkerEntity>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
+    // world: Res<WorldMarkerEntity>,
+    // mut materials: ResMut<Assets<StandardMaterial>>,
 
-    scripting: Scripting<GameScript>,
-    assets: Res<AssetServer>,
-    script_assets: Res<ScriptAssets>,
-    model_assets: Res<ModelAssets>,
-    ctx_p: ConvertContextParam,
+    // scripting: Scripting<GameScript>,
+    // assets: Res<AssetServer>,
+    // script_assets: Res<ScriptAssets>,
+    // model_assets: Res<ModelAssets>,
+    // ctx_p: ConvertContextParam,
 ) -> Result {
-    let ctx = ctx_p.as_ctx();
+    // let ctx = ctx_p.as_ctx();
 
     commands.insert_resource(InstructionText(INSTRUCTIONS.to_string()));
 

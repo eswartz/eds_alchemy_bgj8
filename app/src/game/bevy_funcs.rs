@@ -6,7 +6,7 @@ use fedry_runtime::prelude::*;
 ///
 /// :see [fedry_bevy_plugin::bevy_funcs] for the common ones.
 ///
-pub(crate) fn register_script_funcs(mut commands: Commands, runtime: Res<ScriptRuntime>) {
+pub(crate) fn register_script_funcs(mut commands: Commands, runtime: If<Res<ScriptRuntime>>) {
     let rt = &runtime.rt;
     let bevy_system_service = rt
         .get_service::<BevySystemService>()

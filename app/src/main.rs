@@ -178,6 +178,10 @@ fn main() -> AppExit {
     .add_plugins(MenuPlugin)
     .add_plugins(GuiPlugin)
     .add_plugins(VideoPlugin)
+    .insert_resource(VideoSettings {
+        oit_settings: OrderIndependentTransparencyQuality::Off,
+        ..default()
+    })
     .add_plugins(WorldStatePlugin)
     .add_plugins(LightsPlugin)
     .add_plugins(FlashlightPlugin)
@@ -195,9 +199,9 @@ fn main() -> AppExit {
     .add_plugins(DeathboxPlugin::default())
     .add_plugins(ParallaxDepthPlugin)
     .add_plugins(AudioPlugin)
-    .add_plugins(MidiSynthPlugin)
-    .add_plugins(SynthPlugin)
-    .add_plugins(ClientSynthPlugin)
+    // .add_plugins(MidiSynthPlugin)
+    // .add_plugins(SynthPlugin)
+    // .add_plugins(ClientSynthPlugin)
     .add_plugins(MenuAudioPlugin)
     .add_plugins(PlayerCameraPlugin)
     .add_plugins(PlayerInputPlugin)
@@ -224,7 +228,7 @@ fn main() -> AppExit {
     //     ..PlayerInputSettings::for_space()
     // })
     .insert_resource(GlobalAmbientLight {
-        brightness: 25.0,
+        brightness: 250.0,
         ..default()
     })
     .configure_loading_state(

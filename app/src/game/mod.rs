@@ -60,13 +60,13 @@ impl Plugin for GamePlugin {
             // .insert_resource(MenuStyle::default().with_page_color(menu_page_color))
             //
             .add_plugins(ActionHandlersPlugin)
-            .add_plugins(FiringPlugin)
-            .add_plugins(SoundPlugin)
-            .add_plugins(FedryScriptingPlugin)
-            .add_systems(Startup, register_script_funcs)
-            .add_plugins(ScriptDebugPlugin)
-            .add_plugins(DetailNormalPlugin)
-            .add_plugins(SplitIntoCubesPlugin)
+            // .add_plugins(FiringPlugin)
+            // .add_plugins(SoundPlugin)
+            // .add_plugins(FedryScriptingPlugin)
+            // .add_systems(Startup, register_script_funcs)
+            // .add_plugins(ScriptDebugPlugin)
+            // .add_plugins(DetailNormalPlugin)
+            // .add_plugins(SplitIntoCubesPlugin)
             //
             .add_systems(
                 PreUpdate,
@@ -188,7 +188,7 @@ impl Plugin for GamePlugin {
             // .add_systems(OnEnter(LevelState::Advance), cleanup_palette_materials)
             ;
 
-        register_script_key::<GameScript>(app);
+        // register_script_key::<GameScript>(app);
     }
 }
 
@@ -413,7 +413,7 @@ pub(crate) fn spawn_level(
     level_list: Res<LevelList>,
     level_index: Res<LevelIndex>,
     world: Res<WorldMarkerEntity>,
-    mut script_root: ResMut<ScriptRoot>,
+    script_root: Option<ResMut<ScriptRoot>>,
 ) {
     setup_level(commands.reborrow(), &level_list, &level_index);
 
@@ -425,7 +425,9 @@ pub(crate) fn spawn_level(
     log::info!("Entering level {}", level.label);
 
     // Put any script content here.
-    script_root.0 = world.0;
+    if let Some(mut script_root) = script_root {
+        script_root.0 = world.0;
+    }
 
     commands
         .spawn((
@@ -602,20 +604,21 @@ fn setup_skybox(
 ) {
     let Ok(cam) = cam_q.single() else { return };
 
-    // If there isn't one in the level, add a default.
-    if skybox_q.is_empty() {
-        //let with_reflection_probe = Some(SkyboxReflectionProbeModel::default());  // looks ... not so good when real lights are present
-        let with_reflection_probe = None;
+    // // If there isn't one in the level, add a default.
+    // if skybox_q.is_empty() {
+    //     //let with_reflection_probe = Some(SkyboxReflectionProbeModel::default());  // looks ... not so good when real lights are present
+    //     let with_reflection_probe = None;
 
-        commands.entity(cam).insert(SkyboxModel {
-            image: Some(skyboxes.starmap_2020.clone()),
-            brightness: bevy::prelude::light_consts::lux::HALLWAY,
-            mapping: CubemapMapping::PxNxPyFxFyNyFxFyPzNz,
-            with_reflection_probe,
-            ..default()
-        });
-    }
-    commands.insert_resource(SkyboxSetup::WaitingSkybox);
+    //     commands.entity(cam).insert(SkyboxModel {
+    //         image: Some(skyboxes.starmap_2020.clone()),
+    //         brightness: bevy::prelude::light_consts::lux::HALLWAY,
+    //         mapping: CubemapMapping::PxNxPyFxFyNyFxFyPzNz,
+    //         with_reflection_probe,
+    //         ..default()
+    //     });
+    // }
+    // commands.insert_resource(SkyboxSetup::WaitingSkybox);
+    commands.insert_resource(SkyboxSetup::Finished);
 }
 
 /// When placed on an entity, ensure a [MidiSynth] is wired up
