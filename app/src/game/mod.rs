@@ -608,7 +608,7 @@ fn setup_skybox(
         let with_reflection_probe = None;
 
         commands.entity(cam).insert(SkyboxModel {
-            image: Some(skyboxes.dresden_station_night.clone()),
+            image: Some(skyboxes.starmap_2020.clone()),
             brightness: bevy::prelude::light_consts::lux::HALLWAY,
             mapping: CubemapMapping::PxNxPyFxFyNyFxFyPzNz,
             with_reflection_probe,

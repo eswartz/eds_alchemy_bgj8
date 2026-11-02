@@ -29,12 +29,11 @@ pub(crate) fn spawn_dialogue_runner(mut commands: Commands, project: Res<YarnPro
 pub(crate) fn decorate_dialog_cues(
     mut commands: Commands,
     cue_q: Query<Entity, With<DialogueCue>>,
-    reqs_q: Query<(&Sensor, &RigidBody, &CollisionEventsEnabled)>,
+    reqs_q: Query<(&RigidBody, &CollisionEventsEnabled)>,
 ) {
     for ent in cue_q.iter() {
-        dbg!(ent);
         if reqs_q.get(ent).is_err() {
-            error!("DialogCue on entity {ent} has no Sensor, RigidBody, CollisionEventsEnabled");
+            error!("DialogCue on entity {ent} has no RigidBody, CollisionEventsEnabled");
             continue;
         }
         commands.entity(ent).observe(on_enter_dialog_cue);
@@ -46,9 +45,7 @@ pub(crate) fn on_enter_dialog_cue(
     cue_q: Query<&DialogueCue>,
     mut runner: Single<&mut DialogueRunner, With<MyDialogueRunner>>,
 ) {
-    dbg!(&event);
     if let Ok(cue) = cue_q.get(event.collider1) {
-        dbg!(cue);
         if !runner.is_running() {
             runner.start_node(&cue.0);
         }
