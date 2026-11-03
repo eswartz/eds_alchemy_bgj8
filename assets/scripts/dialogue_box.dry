@@ -7,8 +7,6 @@ mod entries {
     use $sys.calls.*;
 
     def hello(param: String) {
-        print("hello ", param, "\n")
-
         let size = 0.475 * 2.0
         let dist = 0.5 * 2
         var y: IntF = 0
