@@ -11,14 +11,12 @@ mod yarn_ui;
 use avian3d::PhysicsPlugins;
 use avian3d::collider_tree::ColliderTreeOptimization;
 use avian3d::debug_render::PhysicsGizmos;
-use bevy::color::palettes;
 use bevy::log::{BoxedFmtLayer, LogPlugin};
 use bevy_yarnspinner::prelude::YarnSpinnerPlugin;
 // use bevy::render::error_handler::{RenderErrorHandler, RenderErrorPolicy};
 #[cfg(target_arch = "wasm32")]
 use console_log;
-use eds_bevy_common::midi_synth::synth::MidiSynthPlugin;
-use eds_bevy_common::physics::{SubstepCount, TimeToSleep};
+use eds_bevy_common::physics::{SolverConfig, SubstepCount, TimeToSleep};
 use std::sync::Arc;
 use std::time::Duration;
 

@@ -103,7 +103,7 @@ impl MenuItemHandler for SimpleMenuActions {
 }
 
 fn on_enter_main_menu(
-    mut commands: Commands,
+    commands: Commands,
     style: Res<MenuStyle>,
     mut history: ResMut<MenuItemSelectionHistory>,
     level_list: Res<LevelList>,

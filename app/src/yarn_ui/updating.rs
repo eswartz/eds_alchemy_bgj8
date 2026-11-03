@@ -5,6 +5,7 @@ use crate::yarn_ui::{AlchemyDialogViewSystemSet, DialogueRootNode};
 use bevy::prelude::*;
 use bevy_yarnspinner::{events::*, prelude::*};
 use eds_bevy_common::conditions::{is_dialog_active, is_paused};
+use eds_bevy_common::debug_egui::debug_gui_wants_input;
 
 pub(crate) fn ui_updating_plugin(app: &mut App) {
     app.add_systems(
@@ -13,6 +14,7 @@ pub(crate) fn ui_updating_plugin(app: &mut App) {
             .run_if(resource_exists::<Typewriter>)
             .run_if(not(is_paused))
             .run_if(is_dialog_active)
+            .run_if(not(debug_gui_wants_input))
             .after(YarnSpinnerSystemSet)
             .in_set(AlchemyDialogViewSystemSet),
     )
@@ -48,7 +50,6 @@ fn show_dialog(
 fn hide_dialog(
     _: On<DialogueCompleted>,
     mut root_visibility: Single<&mut Visibility, With<DialogueRootNode>>,
-    mut typewriter: Option<ResMut<Typewriter>>,
 ) {
     **root_visibility = Visibility::Hidden;
 }

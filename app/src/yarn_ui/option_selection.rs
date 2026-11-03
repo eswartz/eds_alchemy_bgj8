@@ -11,7 +11,7 @@ use bevy::ui_widgets::{Activate, Button, ButtonPlugin};
 use bevy::window::{CursorIcon, PrimaryWindow, SystemCursorIcon};
 use bevy_yarnspinner::{events::*, prelude::*};
 use eds_bevy_common::conditions::{is_dialog_active, is_paused};
-use eds_bevy_common::debug_egui::debug_gui_wants_keyboard_input;
+use eds_bevy_common::debug_egui::debug_gui_wants_input;
 
 pub(crate) fn option_selection_plugin(app: &mut App) {
     if !app.is_plugin_added::<ButtonPlugin>() {
@@ -29,7 +29,7 @@ pub(crate) fn option_selection_plugin(app: &mut App) {
                     resource_exists::<OptionSelection>
                         .and_then(any_with_component::<PrimaryWindow>),
                 )
-                .run_if(not(debug_gui_wants_keyboard_input)),
+                .run_if(not(debug_gui_wants_input)),
         )
             .chain()
             .run_if(not(is_paused))
@@ -150,6 +150,7 @@ fn select_option(
         commands.entity(*window).insert(CursorIcon::System(icon));
         *text_writer.color(entity, 2) = TextColor(color);
     }
+
     let mut has_selected_id = false;
     if let Some(id) = selection {
         for mut dialogue_runner in dialogue_runners.iter_mut() {

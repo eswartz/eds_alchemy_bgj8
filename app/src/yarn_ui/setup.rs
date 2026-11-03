@@ -4,13 +4,12 @@ use bevy::picking::hover::Hovered;
 use bevy::prelude::*;
 use bevy::ui_widgets::Button;
 use bevy_yarnspinner::prelude::*;
-use eds_bevy_common::layers::{RENDER_LAYER_DEFAULT, RENDER_LAYER_UI};
+use eds_bevy_common::layers::RENDER_LAYER_UI;
 use eds_bevy_common::states_sets::{GameplayState, LevelState, OverlayState};
 
 use crate::assets::GuiAssets;
 use crate::yarn_ui::{AlchemyDialogFont, DialogueRootNode};
 
-// const DIALOG_WIDTH: f32 = 800.0 * 0.8;
 const DIALOG_WIDTH_PERCENT: f32 = 80.0;
 const OPTION_WIDTH_PERCENT: f32 = 80.0;
 const DIALOG_WIDTH: Val = Val::Percent(DIALOG_WIDTH_PERCENT);
@@ -266,12 +265,9 @@ mod style {
         }
     }
     pub(crate) fn options() -> Node {
-        const INDENT_MODIFIER: f32 = 1.0;
         Node {
             margin: UiRect::horizontal(TEXT_BORDER_HORIZONTAL),
             width: Val::Percent(OPTION_WIDTH_PERCENT),
-            // max_width: Val::Px(800.0 - 10.0 * 2.0 * INDENT_MODIFIER),
-            // max_width: Val::Vw(80.0),
             ..default()
         }
     }

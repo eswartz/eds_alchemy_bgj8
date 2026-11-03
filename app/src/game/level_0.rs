@@ -1,12 +1,6 @@
 use crate::assets::*;
-use crate::game::BoomMass;
-use crate::game::GameScript;
-use eds_bevy_common::prelude::*;
-
 use bevy::prelude::*;
-use fedry_bevy_plugin::Scripting;
-
-use fedry_bevy_plugin::prelude::*;
+use eds_bevy_common::prelude::*;
 
 pub(crate) const INSTRUCTIONS: &str = r#"
 This game has no end.
@@ -35,27 +29,6 @@ impl Plugin for LevelPlugin {
     }
 }
 
-fn on_level_loaded(
-    mut commands: Commands,
-    // world: Res<WorldMarkerEntity>,
-    // mut materials: ResMut<Assets<StandardMaterial>>,
-
-    // scripting: Scripting<GameScript>,
-    // assets: Res<AssetServer>,
-    // script_assets: Res<ScriptAssets>,
-    // model_assets: Res<ModelAssets>,
-    // ctx_p: ConvertContextParam,
-) -> Result {
-    // let ctx = ctx_p.as_ctx();
-
+fn on_level_loaded(mut commands: Commands) {
     commands.insert_resource(InstructionText(INSTRUCTIONS.to_string()));
-
-    commands.insert_resource(BoomMass(100.0));
-    // let script =
-    //     scripting.new_script_from_module_id(script_assets.level_0.id(), ExecutionMode::Async)?;
-    // let runtime = scripting.runtime;
-
-    // let script_module = script.module();
-
-    Ok(())
 }
