@@ -1,29 +1,42 @@
 use bevy::prelude::*;
-use bevy_yarnspinner::prelude::{DialogueRunner, YarnProject};
+use bevy_yarnspinner::prelude::{DialogueRunner, YarnProject, YarnValue};
 use eds_bevy_common::{
-    layers::GameLayer,
-    physics::{
-        ColliderConstructor, ColliderConstructorHierarchy, CollisionEventsEnabled, CollisionLayers,
-        CollisionStart, RigidBody, Sensor,
-    },
+    physics::{CollisionEventsEnabled, CollisionStart, RigidBody},
     states_sets::LevelState,
 };
+use fedry_bevy_plugin::{
+    Scripting,
+    asset::ScriptModule,
+    script::{ExecutionMode, Script},
+    script_runtime::ScriptRuntime,
+};
+use fedry_runtime::{object_ptr::ObjectPtr, types::NativeReal};
 
-use crate::game::DialogueCue;
+use crate::{
+    assets::ScriptAssets,
+    game::{DialogueCue, GameScript},
+};
 
 #[derive(Component, Default, Debug, Reflect)]
 #[reflect(Component)]
 #[type_path = "game"]
 pub(crate) struct MyDialogueRunner;
 
-pub(crate) fn spawn_dialogue_runner(mut commands: Commands, project: Res<YarnProject>) {
-    let dialogue_runner = project.create_dialogue_runner(&mut commands);
+pub(crate) fn spawn_dialogue_runner(mut commands: Commands, project: Res<YarnProject>) -> Result {
+    let mut dialogue_runner = project.create_dialogue_runner(&mut commands);
+    dialogue_runner.commands_mut().add_command(
+        "attach_script",
+        commands.register_system(command_attach_script),
+    );
+
     commands.spawn((
         DespawnOnExit(LevelState::Playing),
         Name::new("DIALOGUE"),
         dialogue_runner,
         MyDialogueRunner,
     ));
+
+    Ok(())
 }
 
 pub(crate) fn decorate_dialog_cues(
@@ -50,4 +63,53 @@ pub(crate) fn on_enter_dialog_cue(
             runner.start_node(&cue.0);
         }
     }
+}
+
+/// Attach a [Script] with the given name (entry in [ScriptModule]) and a single argument.
+fn command_attach_script(
+    In((name, arg)): In<(String, YarnValue)>,
+    mut commands: Commands,
+    runner_q: Single<Entity, With<MyDialogueRunner>>,
+    scripting: Scripting<GameScript>,
+    script_assets: Res<ScriptAssets>,
+) {
+    dbg!(&name, &arg);
+
+    let script = scripting
+        .new_script_from_module_id(script_assets.dialogue_box.id(), ExecutionMode::Async)
+        .unwrap();
+
+    let ent = *runner_q;
+    let rt = &scripting.runtime.rt;
+
+    script
+        .data()
+        .map_mut()
+        .insert(rt.to_atom("task"), rt.for_string(name).unwrap());
+
+    let param_obj = match arg {
+        YarnValue::String(s) => {
+            if let Ok(v) = s.parse::<f64>() {
+                rt.for_typed_real(&rt.types().rfast_type, v as NativeReal)
+                    .unwrap()
+            } else if s == "false" {
+                ObjectPtr::for_false()
+            } else if s == "true" {
+                ObjectPtr::for_true()
+            } else {
+                rt.for_string(s).unwrap()
+            }
+        }
+        YarnValue::Number(n) => rt
+            .for_typed_real(&rt.types().rfast_type, n as NativeReal)
+            .unwrap(),
+        YarnValue::Boolean(b) => ObjectPtr::for_bool(b),
+    };
+
+    script
+        .data()
+        .map_mut()
+        .insert(rt.to_atom("param"), param_obj);
+
+    commands.entity(ent).insert(script);
 }

@@ -34,4 +34,7 @@ pub struct MapAssets {
 pub struct ModelAssets {}
 
 #[derive(Resource, AssetCollection)]
-pub struct ScriptAssets {}
+pub struct ScriptAssets {
+    #[asset(path = "scripts/dialogue_box.dry")]
+    pub dialogue_box: Handle<ScriptModule>,
+}

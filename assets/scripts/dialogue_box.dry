@@ -1,0 +1,39 @@
+use $sys.calls.*;
+
+def on_init(ctx: Struct, ent: Uns64, data: Struct) {
+}
+
+mod entries {
+    use $sys.calls.*;
+
+    def hello(param: String) {
+        print("hello ", param, "\n")
+    }
+
+    def spawn(param: IntF) {
+        print("spawn ", param, "\n")
+    }
+
+    def FUNCS = [:,
+        hello,
+        spawn,
+    ]
+}
+
+def on_update(ctx: Struct, ent: Uns64, data: Struct) {
+    if let task = data.task then
+        data.task = nil
+        struct_get(entries.FUNCS, task)(data.param)
+    end
+}
+
+let module = [:,
+    on_init,
+    on_update,
+    init_data: [
+        task: nil,
+        param: nil,
+    ],
+]
+
+module

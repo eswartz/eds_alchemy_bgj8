@@ -185,7 +185,7 @@ impl Plugin for GamePlugin {
             // .add_systems(OnEnter(LevelState::Advance), cleanup_palette_materials)
             ;
 
-        // register_script_key::<GameScript>(app);
+        register_script_key::<GameScript>(app);
     }
 }
 
