@@ -34,6 +34,7 @@ use eds_bevy_common::physics::*;
 use eds_bevy_common::prelude::*;
 
 use crate::assets::GuiAssets;
+use crate::assets::ModelAssets;
 use crate::game::bevy_funcs::register_script_funcs;
 use crate::game::dialogue::decorate_dialog_cues;
 use crate::game::dialogue::spawn_dialogue_runner;
@@ -77,7 +78,7 @@ impl Plugin for GamePlugin {
                 ),
             )
             .insert_resource(GrabbingBehavior {
-                ignore_mass: true,
+                ignore_mass: false,
                 ..default()
             })
             .init_resource::<LevelDifficulty>()
@@ -194,7 +195,7 @@ pub(crate) fn setup_styles(
     gui_assets: Res<GuiAssets>,
     mut menu_style: ResMut<MenuStyle>,
 ) {
-    let the_font = &gui_assets.uncial_antiqua_font;
+    let the_font = &gui_assets.main_font;
 
     *menu_style = menu_style
         .clone()
@@ -347,9 +348,14 @@ pub(crate) fn level_spawn_finished(
     pause.set_menu_paused(false);
 }
 
-fn added_player_start(q: Query<&Transform, Added<PlayerStart>>) -> bool {
-    let flag = q.iter().next().is_some();
-    flag
+fn added_player_start(q: Query<&Transform, Added<PlayerStart>>, mut commands: Commands) -> bool {
+    let Some(xfrm) = q.iter().next() else {
+        return false;
+    };
+
+    commands.insert_resource(StationaryCameraTransform(*xfrm));
+
+    true
 }
 
 pub(crate) fn spawn_player_on_start(world: &mut World) {
@@ -381,6 +387,12 @@ pub(crate) fn spawn_player_on_start(world: &mut World) {
         },
         xfrm,
     ));
+
+    // Set model.
+    let models = world.resource::<ModelAssets>();
+    commands
+        .entity(player_ent)
+        .insert(WorldAssetRoot(models.player.clone()));
 
     queue.apply(world);
 }

@@ -1,8 +1,9 @@
-use eds_bevy_common::prelude::*;
+#![allow(deprecated, reason = "old BEI")]
 use bevy::prelude::*;
 #[cfg(feature = "input_bei")]
 use bevy_enhanced_input::prelude::*;
 use eds_bevy_common::physics::*;
+use eds_bevy_common::prelude::*;
 
 pub(crate) struct GameActionsPlugin;
 
@@ -11,24 +12,18 @@ impl Plugin for GameActionsPlugin {
         #[cfg(feature = "input_bei")]
         app.add_systems(Startup, create_input_map);
 
-        app
-            .add_systems(
-                Update,
-                (
-                    check_actions,
-                )
-                    .run_if(not(is_paused))
-                    .run_if(not(is_in_menu))
-                    .run_if(is_level_active)
-                    .run_if(not(debug_gui_wants_direct_input))
-                    .run_if(in_state(LevelState::Playing))
-                    .run_if(in_state(ProgramState::InGame))
-                ,
-            )
-        ;
+        app.add_systems(
+            Update,
+            (check_actions,)
+                .run_if(not(is_paused))
+                .run_if(not(is_in_menu))
+                .run_if(is_level_active)
+                .run_if(not(debug_gui_wants_direct_input))
+                .run_if(in_state(LevelState::Playing))
+                .run_if(in_state(ProgramState::InGame)),
+        );
     }
 }
-
 
 #[cfg(feature = "input_bei")]
 pub(crate) fn create_input_map(mut commands: Commands) {
@@ -65,39 +60,69 @@ pub(crate) fn create_input_map(mut commands: Commands) {
 
 fn check_actions(
     mut gravity_opt: Option<ResMut<avian3d::prelude::Gravity>>,
-    #[cfg(feature = "input_bei")]
-    grav_off: Query<&ActionEvents, (With<Action<game_actions::SetGravityOff>>, With<ActionOf<PlayerContext>>)>,
+    #[cfg(feature = "input_bei")] grav_off: Query<
+        &ActionEvents,
+        (
+            With<Action<game_actions::SetGravityOff>>,
+            With<ActionOf<PlayerContext>>,
+        ),
+    >,
 
-    #[cfg(feature = "input_bei")]
-    grav_tiny: Query<&ActionEvents, (With<Action<game_actions::SetGravityTiny>>, With<ActionOf<PlayerContext>>)>,
+    #[cfg(feature = "input_bei")] grav_tiny: Query<
+        &ActionEvents,
+        (
+            With<Action<game_actions::SetGravityTiny>>,
+            With<ActionOf<PlayerContext>>,
+        ),
+    >,
 
-    #[cfg(feature = "input_bei")]
-    grav_half: Query<&ActionEvents, (With<Action<game_actions::SetGravityHalf>>, With<ActionOf<PlayerContext>>)>,
+    #[cfg(feature = "input_bei")] grav_half: Query<
+        &ActionEvents,
+        (
+            With<Action<game_actions::SetGravityHalf>>,
+            With<ActionOf<PlayerContext>>,
+        ),
+    >,
 
-    #[cfg(feature = "input_bei")]
-    grav_normal: Query<&ActionEvents, (With<Action<game_actions::SetGravityNormal>>, With<ActionOf<PlayerContext>>)>,
+    #[cfg(feature = "input_bei")] grav_normal: Query<
+        &ActionEvents,
+        (
+            With<Action<game_actions::SetGravityNormal>>,
+            With<ActionOf<PlayerContext>>,
+        ),
+    >,
 
     mut player_mode: ResMut<PlayerMode>,
 ) {
     #[cfg(feature = "input_bei")]
-    let Some(gravity) = gravity_opt.as_mut() else { return };
+    let Some(gravity) = gravity_opt.as_mut() else {
+        return;
+    };
 
-    let Some(events) = grav_off.iter().next() else { return };
+    let Some(events) = grav_off.iter().next() else {
+        return;
+    };
     if events.contains(ActionEvents::START) {
         gravity.0 = Vector::ZERO;
         *player_mode = PlayerMode::Space;
     }
-    let Some(events) = grav_tiny.iter().next() else { return };
+    let Some(events) = grav_tiny.iter().next() else {
+        return;
+    };
     if events.contains(ActionEvents::START) {
         gravity.0 = Vector::new(0.0, -1.0, 0.0);
         *player_mode = PlayerMode::Space;
     }
-    let Some(events) = grav_half.iter().next() else { return };
+    let Some(events) = grav_half.iter().next() else {
+        return;
+    };
     if events.contains(ActionEvents::START) {
         gravity.0 = Vector::new(0.0, -5.0, 0.0);
         *player_mode = PlayerMode::Fps;
     }
-    let Some(events) = grav_normal.iter().next() else { return };
+    let Some(events) = grav_normal.iter().next() else {
+        return;
+    };
     if events.contains(ActionEvents::START) {
         gravity.0 = Vector::new(0.0, -9.8, 0.0);
         *player_mode = PlayerMode::Fps;
@@ -126,10 +151,7 @@ pub mod game_actions {
 }
 
 #[cfg(feature = "input_bei")]
-pub fn assign_extra_actions(
-    mut commands: Commands,
-    include: impl Bundle + Clone,
-) {
+pub fn assign_extra_actions(mut commands: Commands, include: impl Bundle + Clone) {
     // We need this when mod keys distinguish actions.
     let consume = ActionSettings {
         consume_input: true,
@@ -151,8 +173,8 @@ pub fn assign_extra_actions(
         bindings![
             KeyCode::Digit0.with_mod_keys(MOD_CTRL_COMMAND),
             KeyCode::Numpad0.with_mod_keys(MOD_CTRL_COMMAND),
-            ],
-        ));
+        ],
+    ));
     commands.spawn((
         include.clone(),
         Action::<game_actions::SetGravityHalf>::new(),
@@ -177,9 +199,7 @@ pub fn assign_extra_actions(
     commands.spawn((
         include.clone(),
         Action::<actions::TogglePhysics>::new(),
-        bindings![
-            KeyCode::ScrollLock,
-        ],
+        bindings![KeyCode::ScrollLock,],
     ));
     commands.spawn((
         include.clone(),
@@ -195,9 +215,7 @@ pub fn assign_extra_actions(
         include.clone(),
         Action::<actions::ChangeCamera>::new(),
         consume.clone(),
-        bindings![
-            KeyCode::KeyV.with_mod_keys(MOD_CTRL_COMMAND),
-        ],
+        bindings![KeyCode::KeyV.with_mod_keys(MOD_CTRL_COMMAND),],
     ));
 
     commands.spawn((
@@ -210,11 +228,10 @@ pub fn assign_extra_actions(
             Spawn((
                 Binding::mouse_wheel(),
                 SwizzleAxis::YYY,
-                default_mouse_wheel_scale(1.0)
+                default_mouse_wheel_scale(1.0),
             )),
             Bidirectional::new(KeyCode::ArrowUp, KeyCode::ArrowDown),
             Bidirectional::new(GamepadButton::RightTrigger2, GamepadButton::LeftTrigger2),
         )),
     ));
-
 }

@@ -16,6 +16,7 @@ use bevy_yarnspinner::prelude::YarnSpinnerPlugin;
 // use bevy::render::error_handler::{RenderErrorHandler, RenderErrorPolicy};
 #[cfg(target_arch = "wasm32")]
 use console_log;
+use eds_bevy_common::midi_synth::synth::MidiSynthPlugin;
 use eds_bevy_common::physics::{SolverConfig, SubstepCount, TimeToSleep};
 use std::sync::Arc;
 use std::time::Duration;
@@ -193,9 +194,9 @@ fn main() -> AppExit {
     .add_plugins(DeathboxPlugin::default())
     .add_plugins(ParallaxDepthPlugin)
     .add_plugins(AudioPlugin)
-    // .add_plugins(MidiSynthPlugin)
-    // .add_plugins(SynthPlugin)
-    // .add_plugins(ClientSynthPlugin)
+    .add_plugins(MidiSynthPlugin)
+    .add_plugins(SynthPlugin)
+    .add_plugins(ClientSynthPlugin)
     .add_plugins(MenuAudioPlugin)
     .add_plugins(PlayerCameraPlugin)
     .add_plugins(PlayerInputPlugin)

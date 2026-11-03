@@ -5,8 +5,9 @@ use fedry_bevy_plugin::asset::ScriptModule;
 
 #[derive(Resource, AssetCollection)]
 pub struct GuiAssets {
-    #[asset(path = "fonts/UncialAntiqua-Regular.ttf")]
-    pub uncial_antiqua_font: Handle<Font>,
+    // #[asset(path = "fonts/UncialAntiqua-Regular.ttf")]
+    #[asset(path = "fonts/IrishGrover-Regular.ttf")]
+    pub main_font: Handle<Font>,
     #[asset(path = "fonts/SymbolsNerdFont-Regular.ttf")]
     pub symbols_nerd_font: Handle<Font>,
 
@@ -31,7 +32,10 @@ pub struct MapAssets {
 }
 
 #[derive(Resource, AssetCollection)]
-pub struct ModelAssets {}
+pub struct ModelAssets {
+    #[asset(path = "models/player.glb#Scene0")]
+    pub player: Handle<WorldAsset>,
+}
 
 #[derive(Resource, AssetCollection)]
 pub struct ScriptAssets {

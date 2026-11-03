@@ -434,13 +434,13 @@ fn spawn_noise_on_collision(
             let rel_ang_abs = src_ang_vel.abs() - ang_vel.0.abs();
             let ang_length = rel_ang_abs.length() /* rad */ * std::f32::consts::PI * 0.125 /* m */;
             if vel_length + ang_length < 1.0 {
-                // They're moving slowly  other, ignore
+                // They're moving slowly relative to each other, ignore
                 continue;
             }
 
             // Distinguish between "small" impulses and "large" impulses using the log scale.
             let impulse_log = (event.total_normal_impulse_magnitude() + 0.01).log10();
-            let silent = impulse_log < 0.05;
+            let silent = impulse_log < 0.5;
             if silent {
                 // Too weak to make a noise.
                 continue;
@@ -454,7 +454,7 @@ fn spawn_noise_on_collision(
                 let vel_rel_n = norm_rel_vel.dot(normal);
                 let vel_rel_t = rel_vel - norm_rel_vel.dot(normal) * normal;
                 let sliding_speed = vel_rel_t.length();
-                let max_slide_speed = if one_is_player { 4.0 } else { 2.0 };
+                let max_slide_speed = if one_is_player { 6.0 } else { 4.0 };
                 let sliding = vel_rel_n.abs() < 0.25 && sliding_speed > max_slide_speed;
 
                 sliding
@@ -546,13 +546,12 @@ fn spawn_noise_on_collision(
             // But changing speed means work (at least the first time for a given sample).
             let rate = rng.random_range(speed_range);
             // Reduce the actual retimed sample to a quantized amount since we have all the f32 range possible.
-            // let Some(rate_quant) = QuantizedFloat::rounded_to_pow2(rate) else { continue };
             // The rate is reduced to a low fraction (a slow operation)
             // and the rest as a pitch shift.
-            let Some(rate_quant) = QuantizedFloat::rounded_to_multiple(rate, 1.0 / 5.0) else {
+            let Some(rate_quant) = QuantizedFloat::rounded_to_multiple(rate, 1.0 / 4.0) else {
                 continue;
             };
-            let rate_fract = rate / rate_quant.as_f32();
+            let rate_fract = rate - rate_quant.as_f32();
 
             // Stretch the sample in time.
             let retimed_sample = retimed_samples
@@ -566,7 +565,7 @@ fn spawn_noise_on_collision(
                 bevy_seedling::prelude::PlaybackSettings::default()
                     .despawn()
                     .with_playback(true)
-                    .with_play_from(PlayFrom::Seconds(rng.random_range(0.0..0.05)))
+                    .with_play_from(PlayFrom::Seconds(rng.random_range(0.0..0.1))) // try to avoid stacking the same sound over and over
                     // Apply the rest of the "time" stretch here.
                     .with_speed(1.0 + rate_fract as f64),
                 sample_effects![

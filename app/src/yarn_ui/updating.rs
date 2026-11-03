@@ -92,8 +92,9 @@ fn continue_dialogue(
         (With<DialogueContinueNode>, Without<DialogueRootNode>),
     >,
 ) {
-    let explicit_continue = keys.just_pressed(KeyCode::Space)
-        || keys.just_pressed(KeyCode::Enter)
+    let explicit_continue = /* keys.just_pressed(KeyCode::Space)
+        || keys.just_pressed(KeyCode::Enter) */
+        keys.get_just_pressed().count() != 0
         || mouse_buttons.just_pressed(MouseButton::Left)
         || touches.any_just_pressed();
     if explicit_continue && !typewriter.is_finished() {

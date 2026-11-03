@@ -5,6 +5,7 @@ position: -36,-75
 <<if not $once_hello>>
 <<set $once_hello to true>>
 <<attach_script "hello" "x">>
+<<jump End>>
 Welcome.
 This place is pretty empty.
 Time limits and all. Lots of time. Lots of limits.
@@ -24,6 +25,7 @@ Time limits and all. Lots of time. Lots of limits.
 Neep.
 <<else>>
 Whatever.
+<<dialogue_over>>
 <<endif>>
 
 
@@ -33,4 +35,9 @@ title: Wow
 position: 117,180
 ---
 You suck!
+===
+
+title: End
+---
+OK.
 ===

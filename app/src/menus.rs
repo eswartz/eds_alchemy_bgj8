@@ -11,7 +11,8 @@ use crate::game::Difficulty;
 use crate::game::LevelDifficulty;
 use eds_bevy_common::prelude::*;
 
-const GAME_TITLE: &str = "Bevy's Rose";
+const GAME_TITLE: &str = "Humanity's End";
+const TITLE_FONT_SCALE: f32 = 2.0;
 
 pub struct MenuPlugin;
 impl Plugin for MenuPlugin {
@@ -122,7 +123,7 @@ fn on_enter_main_menu(
     )
     .page();
 
-    let title_style: MenuStyle = (*style).clone().with_font_size_scale(3.0);
+    let title_style: MenuStyle = (*style).clone().with_font_size_scale(TITLE_FONT_SCALE);
     builder.add_label(
         GAME_TITLE,
         &title_style,
@@ -321,6 +322,7 @@ pub(crate) enum EnumMenuActions {
     ShadowQualityEnum,
     TextureQualityEnum,
     GlassQualityEnum,
+    TransparencyQualityEnum,
 }
 
 impl MenuItemHandler for EnumMenuActions {
@@ -505,9 +507,9 @@ fn on_enter_controls_menu(
     make_getter_setter!(get_move_x set_move_x => move_scale x);
     make_getter_setter!(get_move_y set_move_y => move_scale y);
     make_getter_setter!(get_move_z set_move_z => move_scale z);
-    make_getter_setter!(get_turn_x set_turn_x => turn_scale x);
-    make_getter_setter!(get_turn_y set_turn_y => turn_scale y);
-    make_getter_setter!(get_turn_z set_turn_z => turn_scale z);
+    // make_getter_setter!(get_turn_x set_turn_x => turn_scale x);
+    // make_getter_setter!(get_turn_y set_turn_y => turn_scale y);
+    // make_getter_setter!(get_turn_z set_turn_z => turn_scale z);
     make_getter_setter!(get_zoom_y set_zoom_y => zoom_scale y);
 
     make_toggle!(get_invert_turn_x set_invert_turn_x => invert_turn_x);
@@ -631,11 +633,12 @@ fn on_enter_video_menu(
         };
     }
 
-    make_res_enum_getter_setter!(get_shadow set_shadow => ShadowQuality VideoSettings shadow_quality);
-    make_res_enum_getter_setter!(get_glass set_glass => GlassQuality VideoSettings glass_quality);
+    make_res_enum_getter_setter!(get_tex_qual set_tex_qual => TextureQuality VideoSettings texture_quality);
     make_res_enum_getter_setter!(get_anti set_anti => Antialiasing VideoSettings antialiasing);
     make_res_enum_getter_setter!(get_mesh_qual set_mesh_qual => MeshQuality VideoSettings mesh_quality);
-    make_res_enum_getter_setter!(get_tex_qual set_tex_qual => TextureQuality VideoSettings texture_quality);
+    make_res_enum_getter_setter!(get_shadow set_shadow => ShadowQuality VideoSettings shadow_quality);
+    make_res_enum_getter_setter!(get_glass set_glass => GlassQuality VideoSettings glass_quality);
+    make_res_enum_getter_setter!(get_transparency set_transparency => OrderIndependentTransparencyQuality VideoSettings oit_settings);
 
     MenuItemBuilder::new(
         commands,
@@ -657,16 +660,6 @@ fn on_enter_video_menu(
             5.0,
         ),
         SliderMenuActions::FovSlider,
-    )
-    .add_item(
-        "Glass Refraction Quality",
-        (MenuEnum::new(
-            get_glass,
-            set_glass,
-            || GlassQuality::VARIANTS.len(),
-            |index| GlassQuality::VARIANTS[index].to_string(),
-        ),),
-        EnumMenuActions::GlassQualityEnum,
     )
     .add_item(
         "Antialiasing",
@@ -707,6 +700,26 @@ fn on_enter_video_menu(
             |index| ShadowQuality::VARIANTS[index].to_string(),
         ),
         EnumMenuActions::ShadowQualityEnum,
+    )
+    .add_item(
+        "Glass Refraction Quality",
+        (MenuEnum::new(
+            get_glass,
+            set_glass,
+            || GlassQuality::VARIANTS.len(),
+            |index| GlassQuality::VARIANTS[index].to_string(),
+        ),),
+        EnumMenuActions::GlassQualityEnum,
+    )
+    .add_item(
+        "Transparency Quality",
+        (MenuEnum::new(
+            get_transparency,
+            set_transparency,
+            || OrderIndependentTransparencyQuality::VARIANTS.len(),
+            |index| OrderIndependentTransparencyQuality::VARIANTS[index].to_string(),
+        ),),
+        EnumMenuActions::TransparencyQualityEnum,
     )
     .add_item("Back", (), SimpleMenuActions::Back)
     .finish(&mut history);

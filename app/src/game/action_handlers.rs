@@ -145,6 +145,7 @@ fn on_flashlight_toggle(
     child_q: Query<&Children>,
     mut flashlight_q: Query<&mut Flashlight>,
 ) {
+    // if debug_gui_wants_keyboard_input(r)
     let Ok(camera) = camera_q.single() else {
         warn!("no single PlayerCamera");
         return;
