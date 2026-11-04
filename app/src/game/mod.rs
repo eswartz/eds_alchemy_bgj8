@@ -1,5 +1,6 @@
 mod action_handlers;
 mod bevy_funcs;
+mod damage_effect;
 mod dialogue;
 mod firing;
 mod sound;
@@ -36,6 +37,7 @@ use eds_bevy_common::prelude::*;
 use crate::assets::GuiAssets;
 use crate::assets::ModelAssets;
 use crate::game::bevy_funcs::register_script_funcs;
+use crate::game::damage_effect::DamageEffectPlugin;
 use crate::game::dialogue::decorate_dialog_cues;
 use crate::game::dialogue::spawn_dialogue_runner;
 use crate::game::firing::{FirePowerLimits, FiringPlugin, FiringState};
@@ -50,13 +52,31 @@ pub(crate) struct DialogueCue(pub String);
 
 pub struct GamePlugin;
 
+#[derive(Message, Debug)]
+struct AddPlayerDamage {
+    player: Entity,
+    giver: Entity,
+    amount: f32,
+}
+
+#[derive(Resource, Debug, Default, Reflect)]
+#[reflect(Resource)]
+#[type_path = "game"]
+struct PlayerHealth {
+    /// current
+    value: f32,
+    /// increase per second
+    heal_rate: i32,
+    /// max allowable
+    max_health: i32,
+}
+
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app
             .insert_resource(Gravity((9.8 * Vec3::NEG_Y).into()))
             //
-            .insert_resource(UiFontPath("fonts/UncialAntiqua-Regular.ttf".into()))
-            //
+            .add_message::<AddPlayerDamage>()
             .add_plugins(ActionHandlersPlugin)
             // .add_plugins(FiringPlugin)
             .add_plugins(SoundPlugin)
@@ -82,6 +102,7 @@ impl Plugin for GamePlugin {
                 ..default()
             })
             .init_resource::<LevelDifficulty>()
+            .add_plugins(DamageEffectPlugin)
             .add_plugins(level_0::LevelPlugin)
             // .add_plugins(level_1::LevelPlugin)
             // .add_plugins(level_2::LevelPlugin)
@@ -155,6 +176,7 @@ impl Plugin for GamePlugin {
             .add_systems(
                 FixedUpdate,
                 (
+                    check_player_health,
                     check_next_level,
                     check_won_level
                         .run_if(in_state(LevelState::Won))
@@ -393,6 +415,22 @@ pub(crate) fn spawn_player_on_start(world: &mut World) {
     commands
         .entity(player_ent)
         .insert(WorldAssetRoot(models.player.clone()));
+
+    commands
+        .spawn((
+            ChildOf(player_ent),
+            CollisionEventsEnabled,
+            Sensor,
+            Collider::sphere(0.2),
+            Transform::from_xyz(0.0, 1.0, 0.0),
+        ))
+        .observe(bonk_on_the_head);
+
+    commands.insert_resource(PlayerHealth {
+        value: 100.0,
+        heal_rate: 1,
+        max_health: 100,
+    });
 
     queue.apply(world);
 }
@@ -739,5 +777,56 @@ fn wake_up_spawned(
 ) {
     for ent in sleep_q.iter() {
         commands.entity(ent).remove::<Sleeping>();
+    }
+}
+
+fn bonk_on_the_head(
+    event: On<CollisionStart>,
+    vel_q: Query<&LinearVelocity>,
+    mut commands: Commands,
+) {
+    let Some(player) = &event.body1 else {
+        return;
+    };
+    let Ok(player_vel) = vel_q.get(*player) else {
+        return;
+    };
+    let Ok(other_vel) = vel_q.get(event.collider2) else {
+        return;
+    };
+    let offs = other_vel.0 - player_vel.0;
+    if offs.y < -1.0 {
+        commands.write_message(AddPlayerDamage {
+            player: *player,
+            giver: event.body2.unwrap_or(event.collider2),
+            amount: offs.y.abs(),
+        });
+    }
+}
+
+fn check_player_health(
+    mut health: If<ResMut<PlayerHealth>>,
+    mut reader: MessageReader<AddPlayerDamage>,
+    time: Res<Time>,
+) {
+    if health.value <= 0.0 {
+        return;
+    };
+
+    let mut total_amount = 0.0f32;
+    for msg in reader.read() {
+        total_amount += msg.amount;
+    }
+
+    let mut new_value = health.value;
+
+    new_value =
+        (health.max_health as f32).min(new_value + (time.delta_secs() * health.heal_rate as f32));
+
+    new_value = 0.0f32.max(new_value - total_amount);
+
+    if health.value != new_value {
+        info!("health: {}", new_value);
+        health.value = new_value;
     }
 }

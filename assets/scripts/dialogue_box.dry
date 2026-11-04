@@ -21,7 +21,7 @@ mod entries {
                     'shape', ['Cube', 'x', size, 'y', size, 'z', size],
                     'rigid_body', 'Dynamic',
                     'color', color,
-                    'mass', 25.0 * (60 - y) / 5.0,
+                    'mass', 25.0, ## * (60 - y) / 5.0,
                     'SurfaceMaterial', 'Glass',
                     'LinearDamping', 0.25,
                     'AngularDamping', 0.25,
