@@ -1,6 +1,53 @@
 use $sys.calls.*;
 
 def on_init(ctx: Struct, ent: Uns64, data: Struct) {
+    bevy_call_func('spawn_entity',
+        'Name', "dog",
+        'offset', [:, x: 2.0],
+        'shape', ['Model', "models/pug.glb#Scene0"],
+        'scale', 5.0,
+        'rigid_body', 'Static',
+        'collision_layers', 'Gameplay',
+        'mass', 100.0, ## * (60 - y) / 5.0,
+        'LinearDamping', 0.25,
+        'AngularDamping', 0.25,
+        'restitution', 0.0,
+        'friction', 0.9,
+        'swept_ccd', 'linear',
+        'CollisionMargin', 0.0,
+        'CrosshairTargetable', nil,
+    );
+    bevy_call_func('spawn_entity',
+        'Name', "dog-0",
+        'offset', [:, x: 2.0],
+        'shape', ['Model', "models/pug-0.glb#Scene0"],
+        'scale', 5.0,
+        'CrosshairTargetable', nil,
+    );
+    bevy_call_func('spawn_entity',
+        'Name', "cat",
+        'offset', [:, x: -2.0],
+        'shape', ['Model', "models/cat.glb#Scene0"],
+        'scale', 5.0,
+        'rigid_body', 'Static',
+        'collision_layers', 'Gameplay',
+        'mass', 100.0, ## * (60 - y) / 5.0,
+        'LinearDamping', 0.25,
+        'AngularDamping', 0.25,
+        'restitution', 0.0,
+        'friction', 0.9,
+        'swept_ccd', 'linear',
+        'CollisionMargin', 0.0,
+        'CrosshairTargetable', nil,
+        ## 'Voxelize', nil,
+    );
+    bevy_call_func('spawn_entity',
+        'Name', "cat-0",
+        'offset', [:, x: -2.0],
+        'shape', ['Model', "models/cat-0.glb#Scene0"],
+        'scale', 5.0,
+        'CrosshairTargetable', nil,
+    );
 }
 
 mod entries {
@@ -10,18 +57,18 @@ mod entries {
         let size = 0.475 * 2.0
         let dist = 0.5 * 2
         var y: IntF = 0
-        while y < 50 do
+        while y < 2 do
             var x: IntF = -5
             while x < 5 do
                 let hue = ((x * y * 20) % 360) as RealF
-                let color = ['Hsva', 'hue', hue, 'saturation', 0.875, 'value', 0.5, 'alpha', 0.5]
+                let color = ['Hsva', 'hue', hue, 'saturation', 0.875, 'value', 0.5]
                 bevy_call_func('spawn_entity',
                     'Name', "spawn",
                     'offset', [:, x: x * dist, y: y * dist + 0.5, z: -2.0],
                     'shape', ['Cube', 'x', size, 'y', size, 'z', size],
                     'rigid_body', 'Dynamic',
                     'color', color,
-                    'mass', 25.0, ## * (60 - y) / 5.0,
+                    'mass', 100.0, ## * (60 - y) / 5.0,
                     'SurfaceMaterial', 'Glass',
                     'LinearDamping', 0.25,
                     'AngularDamping', 0.25,

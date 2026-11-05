@@ -1,4 +1,5 @@
 #![recursion_limit = "256"]
+#![feature(iter_array_chunks)]
 
 mod actions;
 mod assets;
