@@ -58,97 +58,10 @@ pub(crate) fn create_input_map(mut commands: Commands) {
     assign_stock_dialog_actions(commands.reborrow(), include.clone());
 }
 
-fn check_actions(
-    mut gravity_opt: Option<ResMut<avian3d::prelude::Gravity>>,
-    #[cfg(feature = "input_bei")] grav_off: Query<
-        &ActionEvents,
-        (
-            With<Action<game_actions::SetGravityOff>>,
-            With<ActionOf<PlayerContext>>,
-        ),
-    >,
-
-    #[cfg(feature = "input_bei")] grav_tiny: Query<
-        &ActionEvents,
-        (
-            With<Action<game_actions::SetGravityTiny>>,
-            With<ActionOf<PlayerContext>>,
-        ),
-    >,
-
-    #[cfg(feature = "input_bei")] grav_half: Query<
-        &ActionEvents,
-        (
-            With<Action<game_actions::SetGravityHalf>>,
-            With<ActionOf<PlayerContext>>,
-        ),
-    >,
-
-    #[cfg(feature = "input_bei")] grav_normal: Query<
-        &ActionEvents,
-        (
-            With<Action<game_actions::SetGravityNormal>>,
-            With<ActionOf<PlayerContext>>,
-        ),
-    >,
-
-    mut player_mode: ResMut<PlayerMode>,
-) {
-    #[cfg(feature = "input_bei")]
-    let Some(gravity) = gravity_opt.as_mut() else {
-        return;
-    };
-
-    let Some(events) = grav_off.iter().next() else {
-        return;
-    };
-    if events.contains(ActionEvents::START) {
-        gravity.0 = Vector::ZERO;
-        *player_mode = PlayerMode::Space;
-    }
-    let Some(events) = grav_tiny.iter().next() else {
-        return;
-    };
-    if events.contains(ActionEvents::START) {
-        gravity.0 = Vector::new(0.0, -1.0, 0.0);
-        *player_mode = PlayerMode::Space;
-    }
-    let Some(events) = grav_half.iter().next() else {
-        return;
-    };
-    if events.contains(ActionEvents::START) {
-        gravity.0 = Vector::new(0.0, -5.0, 0.0);
-        *player_mode = PlayerMode::Fps;
-    }
-    let Some(events) = grav_normal.iter().next() else {
-        return;
-    };
-    if events.contains(ActionEvents::START) {
-        gravity.0 = Vector::new(0.0, -9.8, 0.0);
-        *player_mode = PlayerMode::Fps;
-    }
-}
+fn check_actions(_player_mode: ResMut<PlayerMode>) {}
 
 #[cfg(feature = "input_bei")]
-pub mod game_actions {
-    use super::*;
-
-    #[derive(InputAction)]
-    #[action_output(bool)]
-    pub struct SetGravityNormal;
-
-    #[derive(InputAction)]
-    #[action_output(bool)]
-    pub struct SetGravityOff;
-
-    #[derive(InputAction)]
-    #[action_output(bool)]
-    pub struct SetGravityHalf;
-
-    #[derive(InputAction)]
-    #[action_output(bool)]
-    pub struct SetGravityTiny;
-}
+pub mod game_actions {}
 
 #[cfg(feature = "input_bei")]
 pub fn assign_extra_actions(mut commands: Commands, include: impl Bundle + Clone) {
@@ -157,42 +70,6 @@ pub fn assign_extra_actions(mut commands: Commands, include: impl Bundle + Clone
         consume_input: true,
         ..default()
     };
-    commands.spawn((
-        include.clone(),
-        Action::<game_actions::SetGravityNormal>::new(),
-        consume.clone(),
-        bindings![
-            KeyCode::Digit9.with_mod_keys(MOD_CTRL_COMMAND),
-            KeyCode::Numpad9.with_mod_keys(MOD_CTRL_COMMAND),
-        ],
-    ));
-    commands.spawn((
-        include.clone(),
-        Action::<game_actions::SetGravityOff>::new(),
-        consume.clone(),
-        bindings![
-            KeyCode::Digit0.with_mod_keys(MOD_CTRL_COMMAND),
-            KeyCode::Numpad0.with_mod_keys(MOD_CTRL_COMMAND),
-        ],
-    ));
-    commands.spawn((
-        include.clone(),
-        Action::<game_actions::SetGravityHalf>::new(),
-        consume.clone(),
-        bindings![
-            KeyCode::Digit5.with_mod_keys(MOD_CTRL_COMMAND),
-            KeyCode::Numpad5.with_mod_keys(MOD_CTRL_COMMAND),
-        ],
-    ));
-    commands.spawn((
-        include.clone(),
-        Action::<game_actions::SetGravityTiny>::new(),
-        consume.clone(),
-        bindings![
-            KeyCode::Digit1.with_mod_keys(MOD_CTRL_COMMAND),
-            KeyCode::Numpad1.with_mod_keys(MOD_CTRL_COMMAND),
-        ],
-    ));
 
     ////////
 
@@ -221,7 +98,6 @@ pub fn assign_extra_actions(mut commands: Commands, include: impl Bundle + Clone
     commands.spawn((
         include.clone(),
         Action::<actions::Zoom>::new(),
-        // Scale::splat(2.5),
         ExponentialCurve::splat(1.25),
         Negate::y(),
         Bindings::spawn((

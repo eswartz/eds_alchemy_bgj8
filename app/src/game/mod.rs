@@ -156,6 +156,15 @@ impl Plugin for GamePlugin {
                     .run_if(in_state(LevelState::Playing))
                     .run_if(in_state(ProgramState::InGame)),
             )
+            // .add_systems(
+            //     Update,
+            //     (check_collisions,)
+            //         .run_if(not(is_paused))
+            //         .run_if(not(is_in_menu))
+            //         .run_if(is_level_active)
+            //         .run_if(in_state(LevelState::Playing))
+            //         .run_if(in_state(ProgramState::InGame)),
+            // )
             // .add_systems(OnEnter(LevelState::Playing), show_power_bar)
             // .add_systems(OnExit(LevelState::Playing), remove_power_bar)
             // .add_systems(
