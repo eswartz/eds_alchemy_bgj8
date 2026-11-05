@@ -1,5 +1,7 @@
 #![recursion_limit = "256"]
 #![feature(iter_array_chunks)]
+#![feature(iter_map_windows)]
+#![feature(gen_blocks)]
 
 mod actions;
 mod assets;

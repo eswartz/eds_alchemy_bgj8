@@ -1,12 +1,10 @@
-use bevy::asset::RenderAssetUsages;
 use bevy::camera::primitives::Aabb;
 use bevy::mesh::VertexAttributeValues;
 use eds_bevy_common::physics::{
     AngularDamping, ColliderConstructor, CollisionLayers, Friction, LinearDamping, Restitution,
-    RigidBody, Vector,
+    RigidBody,
 };
-
-use std::ops::Mul;
+use rustc_hash::FxHashSet;
 
 use bevy::prelude::*;
 use eds_bevy_common::prelude::*;
@@ -17,31 +15,32 @@ impl Plugin for VoxelizePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             PreUpdate,
-            handle_voxelize, //.run_if(in_state(LevelState::Configuring)),
+            handle_effect, //.run_if(in_state(LevelState::Configuring)),
         );
     }
 }
 
-/// Mark a mesh that needs to be split into cubes.
+/// Request to take a mesh and emit a new component with
+/// a submesh for each connected part.
 ///
 /// If set to 0.0, this is ignored.
 #[derive(Debug, Component, Clone, Reflect)]
 // #[require(ConfigureBeforePlaying)]
 #[reflect(Component, Clone, Default)]
 #[type_path = "game"]
-pub struct Voxelize {
+pub struct SeparateDisconnected {
     /// Size in meters of each cube
     pub size: f32,
 }
 
-impl Default for Voxelize {
+impl Default for SeparateDisconnected {
     fn default() -> Self {
         Self { size: 0.25 }
     }
 }
 
-fn handle_voxelize(
-    vox_q: Query<(Entity, &Voxelize)>,
+fn handle_effect(
+    effect_q: Query<(Entity, &SeparateDisconnected)>,
     child_q: Query<&Children>,
     info_q: Query<
         (
@@ -64,8 +63,9 @@ fn handle_voxelize(
     mut meshes: ResMut<Assets<Mesh>>,
     mut commands: Commands,
 ) {
-    for (pent, vox) in vox_q.iter() {
-        for ent in child_q.iter_descendants(pent) {
+    let mut count = 0;
+    for (root, eff) in effect_q.iter() {
+        for ent in child_q.iter_descendants(root) {
             let Ok((
                 ent,
                 mesh,
@@ -88,107 +88,66 @@ fn handle_voxelize(
             let Some(mesh) = meshes.get(&mesh.0) else {
                 continue;
             };
-            let mesh = mesh.clone();
+            let mut mesh = mesh.clone();
 
-            // Ensure we capture the whole range of points.
-            // let full_extents = aabb.half_extents.mul(2.0).to_vec3() * xfrm.scale;
+            // Ensure we capture the whole range of points, in local space.
             let (mesh_min, mesh_max) = compute_extents(&mesh);
             let full_extents = mesh_max - mesh_min;
 
-            // Determine a splitting strategy.
-            let (xn, yn, zn) = if vox.size == 0. {
-                (1, 1, 1)
-            } else {
-                let split = dbg!(vox.size.max(0.001));
-                let zn = (full_extents.z / split).ceil() as i32;
-                let yn = (full_extents.y / split).ceil() as i32;
-                let xn = (full_extents.x / split).ceil() as i32;
-                (xn, yn, zn)
+            let Some(partial_meshes) = extract_meshes(&mut mesh) else {
+                continue
             };
+            for (partial_mesh, cube_center) in partial_meshes
+            {
+                let mut ent_commands = commands.spawn((
+                    ChildOf(root),
+                    Mesh3d(meshes.add(partial_mesh)),
+                    Transform::from_translation(cube_center),
+                    Name::new(if let Some(name) = name_opt {
+                        format!("{name}.{count}")
+                    } else {
+                        format!("<piece>.{count}")
+                    }),
+                    ColliderConstructor::ConvexHullFromMesh,
+                ));
+                count += 1;
 
-            // Size per-axis.
-            let xs = full_extents.x / xn as f32;
-            let ys = full_extents.y / yn as f32;
-            let zs = full_extents.z / zn as f32;
+                ent_commands.try_insert(mat.clone());
 
-            // Each bit becomes a cube.
-            let cube_size = Vec3::new(xs, ys, zs);
-            dbg!(cube_size);
-
-            let root = ent;
-            let mut count = 0;
-
-            let aabb_min = aabb.min().to_vec3().ceil();
-            for zi in 0..zn {
-                let z0 = aabb_min.z + zs * zi as f32;
-                for yi in 0..yn {
-                    let y0 = aabb_min.y + ys * yi as f32;
-                    for xi in 0..xn {
-                        let x0 = aabb_min.x + xs * xi as f32;
-
-                        // let cube_center = (Vec3::new(x0, y0, z0) + cube_size / 2.0).ceil();
-                        let cube_center = Vec3::new(x0, y0, z0);
-
-                        if let Some((partial_mesh, indices, vertices)) =
-                            extract_mesh_cube(&mesh, cube_center, cube_size)
-                        {
-                            let mut ent_commands = commands.spawn((
-                                ChildOf(root),
-                                Mesh3d(meshes.add(partial_mesh)),
-                                Transform::from_translation(cube_center),
-                                Name::new(if let Some(name) = name_opt {
-                                    format!("{name} split {xi}.{yi}.{zi}")
-                                } else {
-                                    "split".to_string()
-                                }),
-                                // ColliderConstructor::TrimeshWithConfig {
-                                //     indices,
-                                //     vertices,
-                                //     flags: TrimeshFlags::FIX_INTERNAL_EDGES,
-                                // },
-                                ColliderConstructor::ConvexHullFromMesh,
-                            ));
-
-                            ent_commands.try_insert(mat.clone());
-
-                            // GROAN copy all the other components.
-                            // TODO: figure out how to use EntityCloner...
-                            if let Some(c) = friction_opt {
-                                ent_commands.try_insert(*c);
-                            }
-                            if let Some(c) = rigid_opt {
-                                ent_commands.try_insert(*c);
-                            }
-                            if let Some(c) = friction_opt {
-                                ent_commands.try_insert(*c);
-                            }
-                            if let Some(c) = rest_opt {
-                                ent_commands.try_insert(*c);
-                            }
-                            if let Some(c) = ldamp_opt {
-                                ent_commands.try_insert(*c);
-                            }
-                            if let Some(c) = adamp_opt {
-                                ent_commands.try_insert(*c);
-                            }
-                            if let Some(c) = layers_opt {
-                                ent_commands.try_insert(*c);
-                            }
-                            if let Some(c) = adn_opt {
-                                ent_commands.try_insert(c.clone());
-                            }
-
-                            count += 1;
-                        }
-                    }
+                // GROAN copy all the other components.
+                // TODO: figure out how to use EntityCloner...
+                if let Some(c) = friction_opt {
+                    ent_commands.try_insert(*c);
                 }
+                if let Some(c) = rigid_opt {
+                    ent_commands.try_insert(*c);
+                }
+                if let Some(c) = friction_opt {
+                    ent_commands.try_insert(*c);
+                }
+                if let Some(c) = rest_opt {
+                    ent_commands.try_insert(*c);
+                }
+                if let Some(c) = ldamp_opt {
+                    ent_commands.try_insert(*c);
+                }
+                if let Some(c) = adamp_opt {
+                    ent_commands.try_insert(*c);
+                }
+                if let Some(c) = layers_opt {
+                    ent_commands.try_insert(*c);
+                }
+                if let Some(c) = adn_opt {
+                    ent_commands.try_insert(c.clone());
+                }
+
+                info!("Split {ent} into {count} parts");
+
+                // Remove the original large object.
+                let mut ent_commands = commands.entity(ent);
+                ent_commands.despawn();
             }
 
-            info!("Split {ent} into {count} cubes");
-
-            // Remove the original large object.
-            let mut ent_commands = commands.entity(ent);
-            ent_commands.despawn();
         }
     }
 }
@@ -210,13 +169,34 @@ fn compute_extents(mesh: &Mesh) -> (Vec3, Vec3) {
     dbg!((min, max))
 }
 
-fn extract_mesh_cube(
-    mesh: &Mesh,
-    center: Vec3,
-    half_size: Vec3,
-) -> Option<(Mesh, Vec<[u32; 3]>, Vec<Vector>)> {
-    let inds = mesh.indices()?;
+/// Provide one Mesh per each connected bit in `mesh`.
+/// Must be indexed mesh,
+fn extract_meshes(
+    mesh: &mut Mesh,
+) -> Option<Vec<(Mesh, Vec3)>> {
 
+    // {
+    //     mesh.duplicate_vertices();
+    //     let mut orig_pos = mesh
+    //         .attribute(Mesh::ATTRIBUTE_POSITION)?.as_float3().unwrap().to_owned();
+    //     const QUANT: f32 = 0.001;
+    //     let quant = |v| (v / QUANT) * QUANT;
+    //     for pos in orig_pos.iter_mut() {
+    //         pos[0] = quant(pos[0]);
+    //         pos[1] = quant(pos[1]);
+    //         pos[2] = quant(pos[2]);
+    //     }
+    //     mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, orig_pos);
+    //     mesh.merge_duplicate_vertices().unwrap();
+    // }
+
+    let Some(inds) = mesh.indices() else {
+        return None
+    };
+
+    let topo = dbg!(mesh.primitive_topology());
+
+    // Extract the attributes we care to replicate.
     let full_pos = mesh
         .attribute(Mesh::ATTRIBUTE_POSITION)?
         .as_float3()
@@ -227,36 +207,84 @@ fn extract_mesh_cube(
         _ => return None,
     };
 
-    let transform_pt = |ptarr: [f32; 3]| -> [f32; 3] {
-        [
-            ptarr[0] - center.x,
-            ptarr[1] - center.y,
-            ptarr[2] - center.z,
-        ]
+    // let center = center.clone();
+    // let transform_pt = |ptarr: [f32; 3], center: Vec3| -> [f32; 3] {
+    //     [
+    //         ptarr[0] - center.x,
+    //         ptarr[1] - center.y,
+    //         ptarr[2] - center.z,
+    //     ]
+    // };
+
+    let mut pos = Vec::<Vec3>::with_capacity(full_pos.len());
+    let mut normals = Vec::<Vec3>::with_capacity(full_pos.len());
+    let mut uvs: Vec::<Vec2> = Vec::with_capacity(full_pos.len());
+    let mut indices: Vec::<u32> = Vec::with_capacity(full_pos.len());
+
+    let tris = match dbg!(topo) {
+        wgpu::PrimitiveTopology::PointList |
+        wgpu::PrimitiveTopology::LineList |
+        wgpu::PrimitiveTopology::LineStrip => vec![],
+        wgpu::PrimitiveTopology::TriangleList => inds.iter().array_chunks().map(|[a,b,c]|  [a as u32, b as u32, c as u32]).collect::<Vec<_>>(),
+        wgpu::PrimitiveTopology::TriangleStrip => {
+            panic!("wrong ordering");
+            inds.iter().map_windows(|&[a,b,c]|  [a as u32, b as u32, c as u32]).collect::<Vec<_>>()
+        }
     };
 
-    let mut pos = Vec::with_capacity(full_pos.len());
-    let mut normals = Vec::with_capacity(full_pos.len());
-    let mut uvs = Vec::with_capacity(full_pos.len());
-    let mut indices = Vec::with_capacity(full_pos.len());
-    #[expect(
-        clippy::indexing_slicing,
-        reason = "shouldn't fail unless other stuff is falling over, want to see panic"
-    )]
-    for [ind0, ind1, ind2] in inds.iter().array_chunks::<3>() {
-        let pos0 = full_pos[ind0];
-        let pos1 = full_pos[ind1];
-        let pos2 = full_pos[ind2];
-        if contains_pt(&pos0, center, half_size)
-            || contains_pt(&pos1, center, half_size)
-            || contains_pt(&pos2, center, half_size)
+    // We generate a mesh potentially for every triangle,
+    // unless we find that other triangles use the same indices,
+    // i.e. are connected.
+    let mut to_visit_tris = FxHashSet::<u32>::from_iter(0..tris.len() as u32);
+
+    let mut meshes = vec![];
+
+    // As long as we have at least one triangle left, make a new mesh.
+    while !to_visit_tris.is_empty() {
+
+        let mut visited_indices = FxHashSet::<u32>::default();
+        // Add each triangle touching the first.
+        let to_visit_list = to_visit_tris.clone();
+        for tri_idx in to_visit_list {
+            let [ind0, ind1, ind2] = tris[tri_idx as usize].clone();
+
+            let any_shared_verts = visited_indices.contains(&ind0)
+                || visited_indices.contains(&ind1)
+                || visited_indices.contains(&ind2);
+
+            // Add an entry if we're starting this mesh,
+            // and add any that share verts.
+            if !visited_indices.is_empty() && !any_shared_verts {
+                // Leave this triangle for later.
+                continue;
+            }
+
+                // dbg!(tri_idx);
+            to_visit_tris.remove(&tri_idx);
+
+            // Add this triangle to a mesh.
+            visited_indices.insert(ind0);
+            visited_indices.insert(ind1);
+            visited_indices.insert(ind2);
+        }
+
+        dbg!(visited_indices.len());
+
+        /*
+        for index in visited_indices.iter()
         {
+            let index = *index;
+            let (ind0, ind1, ind2) = (ind0 as usize, ind1 as usize, ind2 as usize);
+            let pos0 = full_pos[ind0];
+            let pos1 = full_pos[ind1];
+            let pos2 = full_pos[ind2];
+
             let l = pos.len() as u32;
             indices.push([l, l + 1, l + 2]);
 
-            pos.push(transform_pt(pos0));
-            pos.push(transform_pt(pos1));
-            pos.push(transform_pt(pos2));
+            pos.push(transform_pt(pos0, center));
+            pos.push(transform_pt(pos1, center));
+            pos.push(transform_pt(pos2, center));
 
             normals.push(full_normals[ind0]);
             normals.push(full_normals[ind1]);
@@ -266,32 +294,32 @@ fn extract_mesh_cube(
             uvs.push(full_uvs[ind1]);
             uvs.push(full_uvs[ind2]);
         }
+
+        // Export it.
+        let mut mesh = Mesh::new(
+            wgpu::PrimitiveTopology::TriangleList,
+            RenderAssetUsages::all(),
+        )
+        .with_inserted_attribute(
+            Mesh::ATTRIBUTE_POSITION,
+            VertexAttributeValues::Float32x3(pos.clone()),
+        )
+        .with_inserted_attribute(
+            Mesh::ATTRIBUTE_NORMAL,
+            VertexAttributeValues::Float32x3(normals),
+        )
+        .with_inserted_attribute(Mesh::ATTRIBUTE_UV_0, VertexAttributeValues::Float32x2(uvs));
+
+        if let Err(err) = mesh.generate_tangents() {
+            warn!("failed to generate tangents: {err}");
+        }
+
+        meshes.push(mesh);
+ */
+        visited_indices.clear();
     }
 
-    if pos.is_empty() {
-        return None;
-    }
-
-    let mut mesh = Mesh::new(
-        wgpu::PrimitiveTopology::TriangleList,
-        RenderAssetUsages::all(),
-    )
-    .with_inserted_attribute(
-        Mesh::ATTRIBUTE_POSITION,
-        VertexAttributeValues::Float32x3(pos.clone()),
-    )
-    .with_inserted_attribute(
-        Mesh::ATTRIBUTE_NORMAL,
-        VertexAttributeValues::Float32x3(normals),
-    )
-    .with_inserted_attribute(Mesh::ATTRIBUTE_UV_0, VertexAttributeValues::Float32x2(uvs));
-
-    if let Err(err) = mesh.generate_tangents() {
-        warn!("failed to generate tangents: {err}");
-    }
-
-    let positions = pos.into_iter().map(Vec3::from_array).collect::<Vec<_>>();
-    Some((mesh, indices, positions))
+    Some(meshes)
 }
 
 fn contains_pt(pt: &[f32; 3], center: Vec3, half_size: Vec3) -> bool {
