@@ -82,7 +82,9 @@ fn command_dialogue_over(
     commands.entity(ent).remove::<ActiveDialogueRunner>();
 }
 
-/// Attach a [Script] with the given name (entry in [ScriptModule]) and a single argument.
+/// Attach a [Script] with the given name (entry in [ScriptModule]/entries.dry) and a single argument.
+///
+/// This populates the data.task and data.param fields for the dialogue runner to detect.
 fn command_attach_script(
     In((name, arg)): In<(String, YarnValue)>,
     mut commands: Commands,
@@ -90,8 +92,6 @@ fn command_attach_script(
     scripting: Scripting<GameScript>,
     script_assets: Res<ScriptAssets>,
 ) {
-    dbg!(&name, &arg);
-
     let script = scripting
         .new_script_from_module_id(script_assets.driver.id(), ExecutionMode::Async)
         .unwrap();

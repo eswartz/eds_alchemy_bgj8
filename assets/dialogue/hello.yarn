@@ -4,7 +4,7 @@ position: -36,-75
 ---
 <<if not $once_hello>>
 <<set $once_hello to true>>
-<<attach_script "hello" "x">>
+<<attach_script "hello" "nil">>
 <<jump End>>
 Welcome.
 This place is pretty empty.

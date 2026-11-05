@@ -11,25 +11,10 @@ def on_init(ctx: Struct, ent: Uns64, data: Struct) {
         'CrosshairTargetable', nil,
     );
 
-## dog: 4/23(16+4+2+1)
-## 8/10 ?
-
-## player: 2/(32+16+2+4+1)
     let dog_parts_ent = bevy_call_func('spawn_entity',
         'ChildOf', dog_ent,
-        ## 'offset', [:, x: 2.0],
-        ## 'scale', 5.0,
         'Name', "dog",
         'shape', ['Model', "models/pug.glb#Scene0"],
-        ## 'rigid_body', 'Static',
-        ## 'collision_layers', 'Gameplay',
-        ## 'mass', 1.0,
-        ## 'LinearDamping', 0.25,
-        ## 'AngularDamping', 0.25,
-        ## 'restitution', 0.0,
-        ## 'friction', 0.9,
-        ## 'swept_ccd', 'linear',
-        ## 'CollisionMargin', 0.0,
         'CrosshairTargetable', nil,
     );
 
@@ -43,26 +28,18 @@ def on_init(ctx: Struct, ent: Uns64, data: Struct) {
 
     let cat_parts_ent = bevy_call_func('spawn_entity',
         'ChildOf', cat_ent,
-        ## 'scale', 5.0,
-        ##'offset', [:, x: -2.0, z: 1.0],
         'Name', "cat",
         'shape', ['Model', "models/cat.glb#Scene0"],
-        ## 'rigid_body', 'Static',
-        ## 'collision_layers', 'Gameplay',
-        ## 'mass', 100.0, ## * (60 - y) / 5.0,
-        ## 'LinearDamping', 0.25,
-        ## 'AngularDamping', 0.25,
-        ## 'restitution', 0.0,
-        ## 'friction', 0.9,
-        ## 'swept_ccd', 'linear',
-        ## 'CollisionMargin', 0.0,
         'CrosshairTargetable', nil,
     );
 
     while not bevy_call_func(cat_ent, 'make_children_physical_after_collision', cat_parts_ent) do
-    delay(0.1) end
+        delay(0.1)
+    end
 
-    while not bevy_call_func(dog_ent, 'make_children_physical_after_collision', dog_parts_ent) do delay (0.1) end
+    while not bevy_call_func(dog_ent, 'make_children_physical_after_collision', dog_parts_ent) do
+        delay(0.1)
+    end
 
 }
 

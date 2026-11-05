@@ -4,7 +4,6 @@ mod damage_effect;
 mod dialogue;
 mod firing;
 mod sound;
-mod voxelize;
 
 mod level_0;
 // mod level_1;
@@ -16,7 +15,6 @@ mod level_0;
 
 use fedry_bevy_plugin::script_debug::ScriptDebugPlugin;
 
-use std::path::PathBuf;
 use std::time::Duration;
 use strum::{EnumIter, VariantArray};
 
@@ -43,7 +41,6 @@ use crate::game::damage_effect::DamageEffectPlugin;
 use crate::game::dialogue::decorate_dialog_cues;
 use crate::game::dialogue::spawn_dialogue_runner;
 use crate::game::sound::SoundPlugin;
-use crate::game::voxelize::VoxelizePlugin;
 pub use action_handlers::*;
 
 /// Start dialogue at the given node name.
@@ -80,7 +77,6 @@ impl Plugin for GamePlugin {
             //
             .add_message::<AddPlayerDamage>()
             .add_plugins(ActionHandlersPlugin)
-            .add_plugins(VoxelizePlugin)
             // .add_plugins(FiringPlugin)
             .add_plugins(SoundPlugin)
             .add_plugins(FedryScriptingPlugin)
@@ -156,15 +152,6 @@ impl Plugin for GamePlugin {
                     .run_if(in_state(LevelState::Playing))
                     .run_if(in_state(ProgramState::InGame)),
             )
-            // .add_systems(
-            //     Update,
-            //     (check_collisions,)
-            //         .run_if(not(is_paused))
-            //         .run_if(not(is_in_menu))
-            //         .run_if(is_level_active)
-            //         .run_if(in_state(LevelState::Playing))
-            //         .run_if(in_state(ProgramState::InGame)),
-            // )
             // .add_systems(OnEnter(LevelState::Playing), show_power_bar)
             // .add_systems(OnExit(LevelState::Playing), remove_power_bar)
             // .add_systems(
@@ -207,17 +194,9 @@ impl Plugin for GamePlugin {
                     .run_if(not(is_in_menu))
                     .run_if(in_state(ProgramState::InGame)),
             )
-            // .insert_resource(PaletteMaterialHandles(default()))
-            // .add_plugins(MaterialPlugin::<
-            //     ExtendedMaterial<StandardMaterial, PaletteMaterialExtension>,
-            // >::default())
-            // .add_systems(PreUpdate, handle_palette)
             .insert_resource(DepthMapStorage {
                 orig_to_edited: default(),
             })
-
-            // .add_systems(PreUpdate, (handle_depth_map, tick_depth_map).chain())
-            // .add_systems(OnEnter(LevelState::Advance), cleanup_palette_materials)
             ;
 
         register_script_key::<GameScript>(app);
