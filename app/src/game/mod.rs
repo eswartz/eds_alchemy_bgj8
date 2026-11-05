@@ -16,6 +16,7 @@ mod level_0;
 
 use fedry_bevy_plugin::script_debug::ScriptDebugPlugin;
 
+use std::path::PathBuf;
 use std::time::Duration;
 use strum::{EnumIter, VariantArray};
 
@@ -41,7 +42,6 @@ use crate::game::bevy_funcs::register_script_funcs;
 use crate::game::damage_effect::DamageEffectPlugin;
 use crate::game::dialogue::decorate_dialog_cues;
 use crate::game::dialogue::spawn_dialogue_runner;
-use crate::game::firing::{FirePowerLimits, FiringPlugin, FiringState};
 use crate::game::sound::SoundPlugin;
 use crate::game::voxelize::VoxelizePlugin;
 pub use action_handlers::*;

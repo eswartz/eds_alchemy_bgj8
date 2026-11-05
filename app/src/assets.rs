@@ -39,6 +39,6 @@ pub struct ModelAssets {
 
 #[derive(Resource, AssetCollection)]
 pub struct ScriptAssets {
-    #[asset(path = "scripts/dialogue_box.dry")]
-    pub dialogue_box: Handle<ScriptModule>,
+    #[asset(path = "scripts/driver.dry")]
+    pub driver: Handle<ScriptModule>,
 }

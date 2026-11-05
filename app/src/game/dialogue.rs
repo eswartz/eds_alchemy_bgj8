@@ -5,12 +5,7 @@ use eds_bevy_common::{
     player_client::OurPlayer,
     states_sets::LevelState,
 };
-use fedry_bevy_plugin::{
-    Scripting,
-    asset::ScriptModule,
-    script::{ExecutionMode, Script},
-    script_runtime::ScriptRuntime,
-};
+use fedry_bevy_plugin::{Scripting, script::ExecutionMode};
 use fedry_runtime::{object_ptr::ObjectPtr, types::NativeReal};
 
 use crate::{
@@ -98,7 +93,7 @@ fn command_attach_script(
     dbg!(&name, &arg);
 
     let script = scripting
-        .new_script_from_module_id(script_assets.dialogue_box.id(), ExecutionMode::Async)
+        .new_script_from_module_id(script_assets.driver.id(), ExecutionMode::Async)
         .unwrap();
 
     let Ok(ent) = runner_q.single() else {

@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use eds_bevy_common::{
+    base_dir::find_runtime_base_directory_by_folder,
     layers::GameLayer,
     physics::{
         Collider, ColliderConstructor, ColliderConstructorHierarchy,
@@ -16,6 +17,12 @@ use fedry_runtime::prelude::*;
 ///
 pub(crate) fn register_script_funcs(mut commands: Commands, runtime: If<Res<ScriptRuntime>>) {
     let rt = &runtime.rt;
+
+    let source_service = rt.get_service::<SourceService>().unwrap();
+    let base_dir = find_runtime_base_directory_by_folder("assets").unwrap(); // found outside
+    source_service.prepend_search_directory(base_dir.join("assets/scripts").to_path_buf());
+    dbg!(1);
+
     let bevy_system_service = rt
         .get_service::<BevySystemService>()
         .expect("expected BevySystemService");

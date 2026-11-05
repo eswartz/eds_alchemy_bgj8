@@ -1,5 +1,7 @@
 use $sys.calls.*;
 
+mod entries;
+
 def on_init(ctx: Struct, ent: Uns64, data: Struct) {
     let dog_ent = bevy_call_func('spawn_entity',
         'Name', "dog-0",
@@ -64,51 +66,6 @@ def on_init(ctx: Struct, ent: Uns64, data: Struct) {
 
 }
 
-mod entries {
-    use $sys.calls.*;
-
-    def hello(param: String) {
-        let size = 0.475 * 2.0
-        let dist = 0.5 * 2
-        var y: IntF = 0
-        while y < 2 do
-            var x: IntF = -5
-            while x < 5 do
-                let hue = ((x * y * 20) % 360) as RealF
-                let color = ['Hsva', 'hue', hue, 'saturation', 0.875, 'value', 0.5]
-                bevy_call_func('spawn_entity',
-                    'Name', "spawn",
-                    'offset', [:, x: x * dist, y: y * dist + 0.5, z: -2.0],
-                    'shape', ['Cube', 'x', size, 'y', size, 'z', size],
-                    'rigid_body', 'Dynamic',
-                    'color', color,
-                    'mass', 100.0, ## * (60 - y) / 5.0,
-                    'SurfaceMaterial', 'Glass',
-                    'LinearDamping', 0.25,
-                    'AngularDamping', 0.25,
-                    'restitution', 0.0,
-                    'friction', 0.9,
-                    'swept_ccd', 'linear',
-                    'CollisionMargin', 0.0,
-                    'CrosshairTargetable', nil,
-                    'double_sided', false,
-                );
-                x += 1
-            end
-            y += 1
-        end
-
-    }
-
-    def spawn(param: RealF) {
-        print("spawn ", param, "\n")
-    }
-
-    def FUNCS = [:,
-        hello,
-        spawn,
-    ]
-}
 
 def on_update(ctx: Struct, ent: Uns64, data: Struct) {
     if let task = data.task then
