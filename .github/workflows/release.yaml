@@ -82,6 +82,13 @@ jobs:
         with:
           lfs: ${{ env.use_git_lfs }}
           ssh-key: ${{ secrets.FEDRY_KEY }}
+      - name: Setup SSH Keys (as used by cargo)
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.FEDRY_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
       - uses: actions/checkout@v7
         with:
           repository: eswartz/eds_bevy_common
@@ -94,23 +101,6 @@ jobs:
           ref: main
           path: fedry
           ssh-key: ${{ secrets.FEDRY_KEY }}
-      - name: Setup SSH Agent for Private Repo
-        env:
-          # This variable tells the runner where the key is stored
-          SSH_PRIVATE_KEY: ${{ secrets.FEDRY_KEY }}
-        run: |
-          # Create the .ssh directory if it doesn't exist
-          mkdir -p ~/.ssh
-
-          # Write the private key from the secret to a local file
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-
-          # Set the correct permissions (crucial for SSH to work)
-          chmod 600 ~/.ssh/id_rsa
-
-          # # Start the SSH agent and add the key
-          # ssh-agent -s
-          # ssh-add ~/.ssh/id_rsa
       - uses: dtolnay/rust-toolchain@nightly
         with:
           targets: x86_64-unknown-linux-gnu
@@ -164,24 +154,26 @@ jobs:
         with:
           lfs: ${{ env.use_git_lfs }}
           ssh-key: ${{ secrets.FEDRY_KEY }}
-      - name: Setup SSH Agent for Private Repo
+      - name: Setup SSH Keys (as used by cargo)
         shell: bash
         env:
-          # This variable tells the runner where the key is stored
           SSH_PRIVATE_KEY: ${{ secrets.FEDRY_KEY }}
         run: |
-          # Create the .ssh directory if it doesn't exist
           mkdir -p ~/.ssh
-
-          # Write the private key from the secret to a local file
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-
-          # Set the correct permissions (crucial for SSH to work)
           chmod 600 ~/.ssh/id_rsa
-
-          # # Start the SSH agent and add the key
-          # ssh-agent -s
-          # ssh-add ~/.ssh/id_rsa
+      - uses: actions/checkout@v7
+        with:
+          repository: eswartz/eds_bevy_common
+          ref: bevy-20
+          path: ebc
+          lfs: true
+      - uses: actions/checkout@v7
+        with:
+          repository: eswartz/fedry
+          ref: main
+          path: fedry
+          ssh-key: ${{ secrets.FEDRY_KEY }}
       - uses: dtolnay/rust-toolchain@nightly
         with:
           targets: x86_64-pc-windows-msvc
@@ -234,19 +226,26 @@ jobs:
         with:
           lfs: ${{ env.use_git_lfs }}
           ssh-key: ${{ secrets.FEDRY_KEY }}
-      - name: Setup SSH Agent for Private Repo
+      - name: Setup SSH Keys (as used by cargo)
+        shell: bash
         env:
-          # This variable tells the runner where the key is stored
           SSH_PRIVATE_KEY: ${{ secrets.FEDRY_KEY }}
         run: |
-          # Create the .ssh directory if it doesn't exist
           mkdir -p ~/.ssh
-
-          # Write the private key from the secret to a local file
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-
-          # Set the correct permissions (crucial for SSH to work)
           chmod 600 ~/.ssh/id_rsa
+      - uses: actions/checkout@v7
+        with:
+          repository: eswartz/eds_bevy_common
+          ref: bevy-20
+          path: ebc
+          lfs: true
+      - uses: actions/checkout@v7
+        with:
+          repository: eswartz/fedry
+          ref: main
+          path: fedry
+          ssh-key: ${{ secrets.FEDRY_KEY }}
       - uses: dtolnay/rust-toolchain@nightly
         with:
           targets: aarch64-apple-darwin
