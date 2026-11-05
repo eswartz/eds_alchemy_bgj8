@@ -232,10 +232,10 @@ jobs:
     runs-on: ubuntu-22.04
     needs:
       - check-if-upload-to-itch-is-configured
-      - release-wasm
-      # - release-linux
-      # - release-windows
-      # - release-macOS-apple-silicon
+      # - release-wasm
+      - release-linux
+      - release-windows
+      - release-macOS-apple-silicon
     if: ${{ needs.check-if-upload-to-itch-is-configured.outputs.should-upload == 'yes' }}
 
     steps:
