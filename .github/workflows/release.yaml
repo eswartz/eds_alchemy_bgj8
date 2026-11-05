@@ -82,6 +82,17 @@ jobs:
         with:
           lfs: ${{ env.use_git_lfs }}
           ssh-key: ${{ secrets.FEDRY_KEY }}
+      - uses: actions/checkout@v7
+        with:
+          repository: https://github.com/eswartz/eds_bevy_common.git
+          ref: bevy-20
+          path: ebc
+          lfs: true
+      - uses: actions/checkout@v7
+        with:
+          repository: git@github.com:eswartz/fedry.git
+          path: fedry
+          ssh-key: ${{ secrets.FEDRY_KEY }}
       - name: Setup SSH Agent for Private Repo
         env:
           # This variable tells the runner where the key is stored
@@ -115,6 +126,8 @@ jobs:
           mkdir -p linux/${{ env.binary }}
           cp target/x86_64-unknown-linux-gnu/${{ env.target_dir }}/${{ env.binary }} linux/${{ env.binary }}/
           cp LICENSE* README* linux/${{ env.binary }}/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
+          cp -r ebc/assets linux/${{ env.binary }}/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
+          cp -r fedry/data linux/${{ env.binary }}/assets/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
           cp -r assets linux/${{ env.binary }}/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
 
       - name: Package as a zip
@@ -185,6 +198,8 @@ jobs:
           cp -r assets windows/${{ env.binary }}/
           cp LICENSE*.* windows/${{ env.binary }}/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
           cp README*.* windows/${{ env.binary }}/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
+          cp -r ebc/assets linux/${{ env.binary }}/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
+          cp -r fedry/data linux/${{ env.binary }}/assets/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
 
       - name: Package as a zip
         run: |
@@ -248,6 +263,8 @@ jobs:
           mkdir -p ${{ env.binary }}.app/Contents/MacOS
           cp target/aarch64-apple-darwin/${{ env.target_dir }}/${{ env.binary }} ${{ env.binary }}.app/Contents/MacOS/
           cp -r assets ${{ env.binary }}.app/Contents/MacOS/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
+          cp -r ebc/assets ${{ env.binary }}.app/Contents/MacOS/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
+          cp -r fedry/data ${{ env.binary }}.app/Contents/MacOS/assets/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
           cp LICENSE* README* ${{ env.binary }}.app/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
           hdiutil create -fs HFS+ -volname "${{ env.binary }}-macOS-apple-silicon" -srcfolder ${{ env.binary }}.app ${{ env.binary }}-macOS-apple-silicon.dmg
 
