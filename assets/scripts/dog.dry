@@ -1,0 +1,73 @@
+use $sys.calls.{bevy_call_func,delay,print};
+
+def min(x: RealF, y: RealF) -> RealF {
+    if x < y then x else y end
+}
+def max(x: RealF, y: RealF) -> RealF {
+    if x > y then x else y end
+}
+def clamp(v: RealF, min: RealF, max: RealF) -> RealF {
+    if v < min then min elif v > max then max else v end
+}
+def abs(x: RealF) -> RealF {
+    if x < 0 then -x else x end
+}
+def on_init(ctx: Struct, ent: Uns64, data: Struct, ...) {
+    var cat: Any = nil  ## or Uns64
+    while not cat do
+        print("waiting for cat ", cat, "\n")
+        delay(0.0)
+        cat = bevy_call_func(ent, 'find_entity_named',
+            "^cat-0$", true)
+    end
+    print("got cat ", cat[0], "\n")
+    data.cat = cat[0]
+    data.speed = 4.0
+    data.hadjust = 2.0
+    data.vadjust = 1.0
+
+    ## Store original pos.
+    let cat_pos = bevy_call_func(data.cat, 'get_position', 'World')
+    print("cat_pos: ", cat_pos,  "\n")
+    data.cat_pos = cat_pos
+
+    delay(5.0)
+}
+
+def on_update(ctx: Struct, ent: Uns64, data: Struct, ...) {
+    let pos = bevy_call_func(ent, 'get_position', 'World')
+    let goal = data.cat_pos
+
+    ## Directional distance from our goal.
+    let dx = goal.x - pos.x
+    let dy = goal.y - pos.y
+    let dz = goal.z - pos.z
+
+    let dx_adj = dx * data.hadjust
+    let dy_adj = dy * data.vadjust
+    let dz_adj = dz * data.hadjust
+
+    let speed: RealF = data.speed
+
+    var vx = dx_adj / 4.0
+    var vy = dy_adj / 2.0   ## fight gravity and dip!
+    var vz = dz_adj / 4.0
+
+    vx = clamp(vx, -speed, speed)
+    vy = clamp(vy, -speed, speed)
+    vz = clamp(vz, -speed, speed)
+
+    let vel = [x: vx, y: vy, z: vz]
+
+    ## print(bevy_call_func(ent, 'ent_to_string'), " new vel: ", vel, "\n")
+    bevy_call_func(ent, 'insert_components', 'LinearVelocity', vel)
+
+    delay(0.1)
+}
+
+[
+init_data: [:],
+    on_init,
+    on_update,
+]
+

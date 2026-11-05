@@ -37,18 +37,24 @@ def spawn(param: RealF) {
     print("spawn ", param, "\n")
 }
 
-
-def spawn_pets(x_z: Tuple) {
-    let x = x_z[0]
-    let z = x_z[1]
+[@doc: "Spawn the cat and dog at the given offset vector"]
+def spawn_pets(offs: Tuple) {
+    let x = offs[0]
+    let y = offs[1]
+    let z = offs[1]
 
     let dog_ent = bevy_call_func('spawn_entity',
         'Name', "dog-0",
-        'offset', [:, x, z],
+        'offset', [:, x, y, z],
+        'rotation', ['Deg', [y: 90.0, x: 0, z: 0]]
         'shape', ['Model', "models/pug-0.glb#Scene0"],
         'scale', 5.0,
         'CrosshairTargetable', nil,
+        'RigidBody', 'Kinematic',
     );
+    bevy_call_func(dog_ent, 'add_script', [
+        path: 'scripts/dog.dry', mode: 'Async',
+    ], [:])
 
     let dog_parts_ent = bevy_call_func('spawn_entity',
         'ChildOf', dog_ent,
@@ -59,7 +65,8 @@ def spawn_pets(x_z: Tuple) {
 
     let cat_ent = bevy_call_func('spawn_entity',
         'Name', "cat-0",
-        'offset', [:, x: -x, z],
+        'offset', [:, x: -x, y, z],
+        'rotation', ['Deg', [y: -90.0, x: 0, z: 0]]
         'shape', ['Model', "models/cat-0.glb#Scene0"],
         'scale', 5.0,
         'CrosshairTargetable', nil,
@@ -72,6 +79,9 @@ def spawn_pets(x_z: Tuple) {
         'CrosshairTargetable', nil,
     );
 
+    ## Wait for the models above to be fully loaded,
+    ## trigger WorldInstanceReady, then for the callback
+    ## below to ...
     while not bevy_call_func(cat_ent, 'make_children_physical_after_collision', cat_parts_ent) do
         delay(0.1)
     end

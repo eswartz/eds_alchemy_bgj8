@@ -40,6 +40,7 @@ You suck!
 title: End
 ---
 OK.
---> Pets?
-<<attach_script_2 "spawn_pets" -2.0 1.0>>
+-> Pets?
+  Sure.
+  <<attach_script_2 "spawn_pets" -2.0 0.0 -2.0>>
 ===

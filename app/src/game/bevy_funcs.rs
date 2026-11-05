@@ -1,13 +1,7 @@
 use bevy::prelude::*;
 use eds_bevy_common::{
-    base_dir::find_runtime_base_directory_by_folder,
-    effects::ShrinkAndDisappear,
-    layers::GameLayer,
-    markers::DespawnAfter,
-    physics::{
-        Collider, ColliderConstructor, ColliderConstructorHierarchy,
-        ColliderConstructorHierarchyReady, CollisionEnd, CollisionEventsEnabled, CollisionLayers,
-        Restitution, RigidBody, Sensor,
+    base_dir::find_runtime_base_directory_by_folder, effects::ShrinkAndDisappear, layers::GameLayer, markers::DespawnAfter, physics::{
+        Collider, ColliderConstructor, ColliderConstructorHierarchy, ColliderConstructorHierarchyReady, CollisionEnd, CollisionEventsEnabled, CollisionLayers, CollisionStart, Restitution, RigidBody, Sensor,
     },
 };
 use fedry_bevy_plugin::prelude::*;
@@ -104,13 +98,13 @@ pub(crate) fn make_children_physical_after_collision(
                     ),
                 ))
                 .observe(
-                    move |event: On<CollisionEnd>,
+                    move |event: On<CollisionStart>,
                           mut commands: Commands,
                           child_q: Query<&Children>,
                           rigid_q: Query<&RigidBody>| {
                         commands
                             .entity(event.event_target())
-                            .insert(ShrinkAndDisappear::default());
+                            .insert(ShrinkAndDisappear::default().with_time_secs(1.0));
 
                         // Iterate the original `target`, not the collision.
                         for kid in child_q.iter_descendants(target) {
@@ -119,7 +113,7 @@ pub(crate) fn make_children_physical_after_collision(
                             }
                             commands.entity(kid).insert((
                                 RigidBody::Dynamic,
-                                DespawnAfter(Duration::from_secs(15)),
+                                DespawnAfter(Duration::from_secs(60)),
                             ));
                         }
                     },
@@ -165,4 +159,5 @@ fn on_colliders_ready_decorate_children(
             ));
         }
     }
+    bevy::log::info!("{count} children");
 }
