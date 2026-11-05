@@ -149,6 +149,7 @@ jobs:
           lfs: ${{ env.use_git_lfs }}
           ssh-key: ${{ secrets.FEDRY_KEY }}
       - name: Setup SSH Agent for Private Repo
+        shell: bash
         env:
           # This variable tells the runner where the key is stored
           SSH_PRIVATE_KEY: ${{ secrets.FEDRY_KEY }}
