@@ -12,7 +12,9 @@ env:
   # itch_target: eswartz75/eds_alchemy
 
   target_flags: -Fdev_native
+  target_dir: debug
   # target_flags: --release
+  # target_dir: release
   # Before enabling LFS, please take a look at GitHub's documentation for costs and quota limits:
   # https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-storage-and-bandwidth-usage
   use_git_lfs: true
@@ -43,7 +45,7 @@ jobs:
 
   #     - name: Prepare package
   #       run: |
-  #         wasm-bindgen --no-typescript --out-name bevy_game --out-dir wasm --target web target/wasm32-unknown-unknown/release/${{ env.binary }}.wasm
+  #         wasm-bindgen --no-typescript --out-name bevy_game --out-dir wasm --target web target/wasm32-unknown-unknown/${{ env.target_dir }}/${{ env.binary }}.wasm
   #         cp -r assets wasm/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
   #         cp LICENSE* README* wasm/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
 
@@ -111,7 +113,7 @@ jobs:
       - name: Prepare package
         run: |
           mkdir -p linux/${{ env.binary }}
-          cp target/x86_64-unknown-linux-gnu/release/${{ env.binary }} linux/${{ env.binary }}/
+          cp target/x86_64-unknown-linux-gnu/${{ env.target_dir }}/${{ env.binary }} linux/${{ env.binary }}/
           cp LICENSE* README* linux/${{ env.binary }}/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
           cp -r assets linux/${{ env.binary }}/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
 
@@ -178,7 +180,7 @@ jobs:
         run: |
           mkdir windows
           mkdir windows\${{ env.binary }}
-          cp target/x86_64-pc-windows-msvc/release/${{ env.binary }}.exe windows/${{ env.binary }}/
+          cp target/x86_64-pc-windows-msvc/${{ env.target_dir }}/${{ env.binary }}.exe windows/${{ env.binary }}/
           mkdir assets -ea 0 # create the assets directory if it does not exist, it will get ignored in the zip if empty
           cp -r assets windows/${{ env.binary }}/
           cp LICENSE*.* windows/${{ env.binary }}/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
@@ -244,7 +246,7 @@ jobs:
       - name: Prepare Package
         run: |
           mkdir -p ${{ env.binary }}.app/Contents/MacOS
-          cp target/aarch64-apple-darwin/release/${{ env.binary }} ${{ env.binary }}.app/Contents/MacOS/
+          cp target/aarch64-apple-darwin/${{ env.target_dir }}/${{ env.binary }} ${{ env.binary }}.app/Contents/MacOS/
           cp -r assets ${{ env.binary }}.app/Contents/MacOS/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
           cp LICENSE* README* ${{ env.binary }}.app/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
           hdiutil create -fs HFS+ -volname "${{ env.binary }}-macOS-apple-silicon" -srcfolder ${{ env.binary }}.app ${{ env.binary }}-macOS-apple-silicon.dmg
