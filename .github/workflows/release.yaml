@@ -24,7 +24,7 @@ jobs:
   #   steps:
   #     - uses: olegtarasov/get-tag@v2.1.2
   #       id: get_version
-  #     - uses: actions/checkout@v4
+  #     - uses: actions/checkout@v7
   #       with:
   #         lfs: ${{ env.use_git_lfs }}
   #     - uses: dtolnay/rust-toolchain@nightly
@@ -74,9 +74,10 @@ jobs:
     steps:
       - uses: olegtarasov/get-tag@v2.1.2
         id: get_version
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           lfs: ${{ env.use_git_lfs }}
+          ssh-key: '${{ secrets.FEDRY_KEY }}'
       - uses: dtolnay/rust-toolchain@nightly
         with:
           targets: x86_64-unknown-linux-gnu
@@ -124,7 +125,7 @@ jobs:
     steps:
       - uses: olegtarasov/get-tag@v2.1.2
         id: get_version
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           lfs: ${{ env.use_git_lfs }}
       - uses: dtolnay/rust-toolchain@nightly
@@ -173,7 +174,7 @@ jobs:
     steps:
       - uses: olegtarasov/get-tag@v2.1.2
         id: get_version
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           lfs: ${{ env.use_git_lfs }}
       - uses: dtolnay/rust-toolchain@nightly
@@ -234,8 +235,8 @@ jobs:
       - check-if-upload-to-itch-is-configured
       # - release-wasm
       - release-linux
-      - release-windows
-      - release-macOS-apple-silicon
+      # - release-windows
+      # - release-macOS-apple-silicon
     if: ${{ needs.check-if-upload-to-itch-is-configured.outputs.should-upload == 'yes' }}
 
     steps:
