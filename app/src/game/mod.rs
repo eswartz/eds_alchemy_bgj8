@@ -4,6 +4,7 @@ mod damage_effect;
 mod dialogue;
 mod firing;
 mod sound;
+mod voxelize;
 
 mod level_0;
 // mod level_1;
@@ -42,6 +43,7 @@ use crate::game::dialogue::decorate_dialog_cues;
 use crate::game::dialogue::spawn_dialogue_runner;
 use crate::game::firing::{FirePowerLimits, FiringPlugin, FiringState};
 use crate::game::sound::SoundPlugin;
+use crate::game::voxelize::VoxelizePlugin;
 pub use action_handlers::*;
 
 /// Start dialogue at the given node name.
@@ -78,6 +80,7 @@ impl Plugin for GamePlugin {
             //
             .add_message::<AddPlayerDamage>()
             .add_plugins(ActionHandlersPlugin)
+            .add_plugins(VoxelizePlugin)
             // .add_plugins(FiringPlugin)
             .add_plugins(SoundPlugin)
             .add_plugins(FedryScriptingPlugin)
@@ -783,6 +786,7 @@ fn wake_up_spawned(
 fn bonk_on_the_head(
     event: On<CollisionStart>,
     vel_q: Query<&LinearVelocity>,
+    mass_q: Query<&Mass>,
     mut commands: Commands,
 ) {
     let Some(player) = &event.body1 else {
@@ -794,12 +798,22 @@ fn bonk_on_the_head(
     let Ok(other_vel) = vel_q.get(event.collider2) else {
         return;
     };
+    let player_mass = if let Ok(mass) = mass_q.get(event.collider2) {
+        mass.0
+    } else {
+        10.0
+    };
+    let other_mass = if let Ok(mass) = mass_q.get(event.collider2) {
+        mass.0
+    } else {
+        1.0
+    };
     let offs = other_vel.0 - player_vel.0;
     if offs.y < -1.0 {
         commands.write_message(AddPlayerDamage {
             player: *player,
             giver: event.body2.unwrap_or(event.collider2),
-            amount: offs.y.abs(),
+            amount: offs.y.abs() * other_mass / player_mass,
         });
     }
 }
@@ -813,17 +827,14 @@ fn check_player_health(
         return;
     };
 
-    let mut total_amount = 0.0f32;
+    let mut damage_amount = 0.0f32;
     for msg in reader.read() {
-        total_amount += msg.amount;
+        damage_amount += msg.amount;
     }
 
-    let mut new_value = health.value;
-
-    new_value =
-        (health.max_health as f32).min(new_value + (time.delta_secs() * health.heal_rate as f32));
-
-    new_value = 0.0f32.max(new_value - total_amount);
+    let heal_amount = time.delta_secs() * health.heal_rate as f32;
+    let new_value =
+        (health.value + heal_amount - damage_amount).clamp(0.0, health.max_health as f32);
 
     if health.value != new_value {
         info!("health: {}", new_value);
