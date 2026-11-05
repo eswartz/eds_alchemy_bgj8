@@ -84,13 +84,14 @@ jobs:
           ssh-key: ${{ secrets.FEDRY_KEY }}
       - uses: actions/checkout@v7
         with:
-          repository: https://github.com/eswartz/eds_bevy_common.git
+          repository: eswartz/eds_bevy_common
           ref: bevy-20
           path: ebc
           lfs: true
       - uses: actions/checkout@v7
         with:
-          repository: git@github.com:eswartz/fedry.git
+          repository: eswartz/fedry
+          ref: main
           path: fedry
           ssh-key: ${{ secrets.FEDRY_KEY }}
       - name: Setup SSH Agent for Private Repo
