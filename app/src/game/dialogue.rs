@@ -6,7 +6,9 @@ use eds_bevy_common::{
     states_sets::LevelState,
 };
 use fedry_bevy_plugin::{Scripting, script::ExecutionMode};
-use fedry_runtime::{object_ptr::ObjectPtr, types::NativeReal};
+use fedry_runtime::{
+    common::RuntimeResult, object_ptr::ObjectPtr, runtime::RuntimeArc, types::NativeReal,
+};
 
 use crate::{
     assets::ScriptAssets,
@@ -21,8 +23,16 @@ pub(crate) struct ActiveDialogueRunner;
 pub(crate) fn spawn_dialogue_runner(mut commands: Commands, project: Res<YarnProject>) -> Result {
     let mut dialogue_runner = project.create_dialogue_runner(&mut commands);
     dialogue_runner.commands_mut().add_command(
-        "attach_script",
-        commands.register_system(command_attach_script),
+        "attach_script_1",
+        commands.register_system(command_attach_script_1),
+    );
+    dialogue_runner.commands_mut().add_command(
+        "attach_script_2",
+        commands.register_system(command_attach_script_2),
+    );
+    dialogue_runner.commands_mut().add_command(
+        "attach_script_3",
+        commands.register_system(command_attach_script_3),
     );
     dialogue_runner.commands_mut().add_command(
         "dialogue_over",
@@ -82,10 +92,31 @@ fn command_dialogue_over(
     commands.entity(ent).remove::<ActiveDialogueRunner>();
 }
 
+fn fetch_object_from_yarn(rt: &RuntimeArc, arg: YarnValue) -> RuntimeResult<ObjectPtr> {
+    Ok(match arg {
+        YarnValue::String(s) => {
+            if let Ok(v) = s.parse::<f64>() {
+                rt.for_typed_real(&rt.types().rfast_type, v as NativeReal)
+                    .unwrap()
+            } else if s == "false" {
+                ObjectPtr::for_false()
+            } else if s == "true" {
+                ObjectPtr::for_true()
+            } else {
+                rt.for_string(s).unwrap()
+            }
+        }
+        YarnValue::Number(n) => rt
+            .for_typed_real(&rt.types().rfast_type, n as NativeReal)
+            .unwrap(),
+        YarnValue::Boolean(b) => ObjectPtr::for_bool(b),
+    })
+}
+
 /// Attach a [Script] with the given name (entry in [ScriptModule]/entries.dry) and a single argument.
 ///
 /// This populates the data.task and data.param fields for the dialogue runner to detect.
-fn command_attach_script(
+fn command_attach_script_1(
     In((name, arg)): In<(String, YarnValue)>,
     mut commands: Commands,
     runner_q: Query<Entity, With<ActiveDialogueRunner>>,
@@ -107,29 +138,79 @@ fn command_attach_script(
         .map_mut()
         .insert(rt.to_atom("task"), rt.for_string(name).unwrap());
 
-    let param_obj = match arg {
-        YarnValue::String(s) => {
-            if let Ok(v) = s.parse::<f64>() {
-                rt.for_typed_real(&rt.types().rfast_type, v as NativeReal)
-                    .unwrap()
-            } else if s == "false" {
-                ObjectPtr::for_false()
-            } else if s == "true" {
-                ObjectPtr::for_true()
-            } else {
-                rt.for_string(s).unwrap()
-            }
-        }
-        YarnValue::Number(n) => rt
-            .for_typed_real(&rt.types().rfast_type, n as NativeReal)
-            .unwrap(),
-        YarnValue::Boolean(b) => ObjectPtr::for_bool(b),
-    };
+    let param_obj = fetch_object_from_yarn(&rt, arg).unwrap();
 
     script
         .data()
         .map_mut()
         .insert(rt.to_atom("param"), param_obj);
+
+    commands.entity(ent).insert(script);
+}
+
+fn command_attach_script_2(
+    In((name, arg1, arg2)): In<(String, YarnValue, YarnValue)>,
+    mut commands: Commands,
+    runner_q: Query<Entity, With<ActiveDialogueRunner>>,
+    scripting: Scripting<GameScript>,
+    script_assets: Res<ScriptAssets>,
+) {
+    let script = scripting
+        .new_script_from_module_id(script_assets.driver.id(), ExecutionMode::Async)
+        .unwrap();
+
+    let Ok(ent) = runner_q.single() else {
+        warn!("no single ActiveDialogueRunner for '{name}'");
+        return;
+    };
+    let rt = &scripting.runtime.rt;
+
+    script
+        .data()
+        .map_mut()
+        .insert(rt.to_atom("task"), rt.for_string(name).unwrap());
+
+    let param1_obj = fetch_object_from_yarn(&rt, arg1).unwrap();
+    let param2_obj = fetch_object_from_yarn(&rt, arg2).unwrap();
+
+    let tup_obj = rt.for_tuple(vec![param1_obj, param2_obj]).unwrap();
+
+    script.data().map_mut().insert(rt.to_atom("param"), tup_obj);
+
+    commands.entity(ent).insert(script);
+}
+
+fn command_attach_script_3(
+    In((name, arg1, arg2, arg3)): In<(String, YarnValue, YarnValue, YarnValue)>,
+    mut commands: Commands,
+    runner_q: Query<Entity, With<ActiveDialogueRunner>>,
+    scripting: Scripting<GameScript>,
+    script_assets: Res<ScriptAssets>,
+) {
+    let script = scripting
+        .new_script_from_module_id(script_assets.driver.id(), ExecutionMode::Async)
+        .unwrap();
+
+    let Ok(ent) = runner_q.single() else {
+        warn!("no single ActiveDialogueRunner for '{name}'");
+        return;
+    };
+    let rt = &scripting.runtime.rt;
+
+    script
+        .data()
+        .map_mut()
+        .insert(rt.to_atom("task"), rt.for_string(name).unwrap());
+
+    let param1_obj = fetch_object_from_yarn(&rt, arg1).unwrap();
+    let param2_obj = fetch_object_from_yarn(&rt, arg2).unwrap();
+    let param3_obj = fetch_object_from_yarn(&rt, arg3).unwrap();
+
+    let tup_obj = rt
+        .for_tuple(vec![param1_obj, param2_obj, param3_obj])
+        .unwrap();
+
+    script.data().map_mut().insert(rt.to_atom("param"), tup_obj);
 
     commands.entity(ent).insert(script);
 }

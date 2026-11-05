@@ -4,7 +4,7 @@ position: -36,-75
 ---
 <<if not $once_hello>>
 <<set $once_hello to true>>
-<<attach_script "hello" "nil">>
+<<attach_script_1 "hello" "nil">>
 <<jump End>>
 Welcome.
 This place is pretty empty.
@@ -15,10 +15,10 @@ Time limits and all. Lots of time. Lots of limits.
 		But really. Eight days. Two of those porting all my stuff and some 3rd-party stuff to 0.20.
 		-> Boo hoo.
 			You get it, though, right?
-			<<attach_script "spawn" 5>>
+			<<attach_script_1 "spawn" 5>>
 		-> Sounds like fun!
 			Yeah, I guess it is!
-			<<attach_script "spawn" 15>>
+			<<attach_script_1 "spawn" 15>>
 -> That's fine.
 -> Did you have help?
     <<jump Wow>>
@@ -40,4 +40,6 @@ You suck!
 title: End
 ---
 OK.
+--> Pets?
+<<attach_script_2 "spawn_pets" -2.0 1.0>>
 ===

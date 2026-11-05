@@ -3,50 +3,13 @@ use $sys.calls.*;
 mod entries;
 
 def on_init(ctx: Struct, ent: Uns64, data: Struct) {
-    let dog_ent = bevy_call_func('spawn_entity',
-        'Name', "dog-0",
-        'offset', [:, x: 2.0],
-        'shape', ['Model', "models/pug-0.glb#Scene0"],
-        'scale', 5.0,
-        'CrosshairTargetable', nil,
-    );
-
-    let dog_parts_ent = bevy_call_func('spawn_entity',
-        'ChildOf', dog_ent,
-        'Name', "dog",
-        'shape', ['Model', "models/pug.glb#Scene0"],
-        'CrosshairTargetable', nil,
-    );
-
-    let cat_ent = bevy_call_func('spawn_entity',
-        'Name', "cat-0",
-        'offset', [:, x: -2.0, z: 1.0],
-        'shape', ['Model', "models/cat-0.glb#Scene0"],
-        'scale', 5.0,
-        'CrosshairTargetable', nil,
-    );
-
-    let cat_parts_ent = bevy_call_func('spawn_entity',
-        'ChildOf', cat_ent,
-        'Name', "cat",
-        'shape', ['Model', "models/cat.glb#Scene0"],
-        'CrosshairTargetable', nil,
-    );
-
-    while not bevy_call_func(cat_ent, 'make_children_physical_after_collision', cat_parts_ent) do
-        delay(0.1)
-    end
-
-    while not bevy_call_func(dog_ent, 'make_children_physical_after_collision', dog_parts_ent) do
-        delay(0.1)
-    end
-
 }
 
 
 def on_update(ctx: Struct, ent: Uns64, data: Struct) {
     if let task = data.task then
         data.task = nil
+        print("running ", task, " with ", data.param, "\n")
         struct_get(entries.FUNCS, task)(data.param)
     end
 }

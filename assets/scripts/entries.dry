@@ -1,7 +1,7 @@
 use $sys.calls.*;
 
-    let size = 0.475 * 2.0
 def hello(param: String) {
+    let size = 0.475 * 2.0
     let dist = 0.5 * 2
     var y: IntF = 0
     while y < 2 do
@@ -37,7 +37,54 @@ def spawn(param: RealF) {
     print("spawn ", param, "\n")
 }
 
+
+def spawn_pets(x_z: Tuple) {
+    let x = x_z[0]
+    let z = x_z[1]
+
+    let dog_ent = bevy_call_func('spawn_entity',
+        'Name', "dog-0",
+        'offset', [:, x, z],
+        'shape', ['Model', "models/pug-0.glb#Scene0"],
+        'scale', 5.0,
+        'CrosshairTargetable', nil,
+    );
+
+    let dog_parts_ent = bevy_call_func('spawn_entity',
+        'ChildOf', dog_ent,
+        'Name', "dog",
+        'shape', ['Model', "models/pug.glb#Scene0"],
+        'CrosshairTargetable', nil,
+    );
+
+    let cat_ent = bevy_call_func('spawn_entity',
+        'Name', "cat-0",
+        'offset', [:, x: -x, z],
+        'shape', ['Model', "models/cat-0.glb#Scene0"],
+        'scale', 5.0,
+        'CrosshairTargetable', nil,
+    );
+
+    let cat_parts_ent = bevy_call_func('spawn_entity',
+        'ChildOf', cat_ent,
+        'Name', "cat",
+        'shape', ['Model', "models/cat.glb#Scene0"],
+        'CrosshairTargetable', nil,
+    );
+
+    while not bevy_call_func(cat_ent, 'make_children_physical_after_collision', cat_parts_ent) do
+        delay(0.1)
+    end
+
+    while not bevy_call_func(dog_ent, 'make_children_physical_after_collision', dog_parts_ent) do
+        delay(0.1)
+    end
+
+
+}
+
 def FUNCS = [:,
     hello,
     spawn,
+    spawn_pets,
 ]
