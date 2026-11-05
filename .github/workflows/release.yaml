@@ -148,23 +148,23 @@ jobs:
         with:
           lfs: ${{ env.use_git_lfs }}
           ssh-key: ${{ secrets.FEDRY_KEY }}
-      # - name: Setup SSH Agent for Private Repo
-      #   env:
-      #     # This variable tells the runner where the key is stored
-      #     SSH_PRIVATE_KEY: ${{ secrets.FEDRY_KEY }}
-      #   run: |
-      #     # Create the .ssh directory if it doesn't exist
-      #     mkdir -p ~/.ssh
+      - name: Setup SSH Agent for Private Repo
+        env:
+          # This variable tells the runner where the key is stored
+          SSH_PRIVATE_KEY: ${{ secrets.FEDRY_KEY }}
+        run: |
+          # Create the .ssh directory if it doesn't exist
+          mkdir -p ~/.ssh
 
-      #     # Write the private key from the secret to a local file
-      #     echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          # Write the private key from the secret to a local file
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
 
-      #     # Set the correct permissions (crucial for SSH to work)
-      #     chmod 600 ~/.ssh/id_rsa
+          # Set the correct permissions (crucial for SSH to work)
+          chmod 600 ~/.ssh/id_rsa
 
-      #     # # Start the SSH agent and add the key
-      #     # ssh-agent -s
-      #     # ssh-add ~/.ssh/id_rsa
+          # # Start the SSH agent and add the key
+          # ssh-agent -s
+          # ssh-add ~/.ssh/id_rsa
       - uses: dtolnay/rust-toolchain@nightly
         with:
           targets: x86_64-pc-windows-msvc
