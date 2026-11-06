@@ -3,11 +3,12 @@ use eds_bevy_common::{
     base_dir::find_runtime_base_directory_by_folder,
     effects::ShrinkAndDisappear,
     layers::GameLayer,
-    markers::DespawnAfter,
+    markers::{DespawnAfter, Spawned},
     physics::{
-        Collider, ColliderConstructor, ColliderConstructorHierarchy,
+        AngularVelocity, Collider, ColliderConstructor, ColliderConstructorHierarchy,
         ColliderConstructorHierarchyReady, CollisionEnd, CollisionEventsEnabled, CollisionLayers,
         CollisionStart, Friction, LinearDamping, LinearVelocity, Restitution, RigidBody, Sensor,
+        Vector,
     },
 };
 use fedry_bevy_plugin::prelude::*;
@@ -109,26 +110,45 @@ pub(crate) fn make_children_physical_after_collision(
                     move |event: On<CollisionStart>,
                           mut commands: Commands,
                           child_q: Query<&Children>,
+                          parent_q: Query<&ChildOf>,
+                          vel_q: Query<&LinearVelocity>,
                           rigid_q: Query<&RigidBody>| {
                         commands
                             // .entity(event.body1.unwrap_or(event.collider1))      // shrinks insides
                             .entity(event.event_target())
                             .insert((
-                                LinearVelocity::ZERO,
+                                // LinearVelocity::ZERO,
                                 ShrinkAndDisappear::default().with_time_secs(1.0),
                             ));
+                        // commands
+                        //     .entity(event.event_target())
+                        //     .try_remove::<RigidBody>();
                         commands.entity(event.observer()).insert((
-                            LinearVelocity::ZERO,
+                            // LinearVelocity::ZERO,
                             ShrinkAndDisappear::default().with_time_secs(1.0),
                         ));
+                        // commands.entity(event.observer()).try_remove::<RigidBody>();
                         commands
                             .entity(event.body1.unwrap_or(event.collider1))
+                            // .insert(LinearVelocity(Vector::splat(-0.5)))
+                            // .insert(AngularVelocity(Vector::splat(0.5)))
                             .try_remove::<Script<UserScript>>()
                             .try_remove::<Script<GameScript>>();
                         commands
                             .entity(event.body2.unwrap_or(event.collider2))
+                            // .insert(LinearVelocity(Vector::splat(0.25)))
+                            // .insert(AngularVelocity(Vector::splat(-0.5)))
                             .try_remove::<Script<UserScript>>()
                             .try_remove::<Script<GameScript>>();
+
+                        // Transfer parent velocity
+                        let vel = if let Ok(vel) = vel_q.get(event.collider1) {
+                            vel.0
+                        } else if let Ok(vel) = vel_q.get(event.body1.unwrap_or(event.collider1)) {
+                            vel.0
+                        } else {
+                            Vector::ZERO
+                        };
 
                         // Iterate the original `target`, not the collision.
                         let mut rng = rand::rng();
@@ -136,8 +156,20 @@ pub(crate) fn make_children_physical_after_collision(
                             if !rigid_q.contains(kid) {
                                 continue;
                             }
+
+                            // Remove parent rigid body so the pieces move independently
+                            let mut step = kid;
+                            while let Ok(parent) = parent_q.get(step) {
+                                if rigid_q.contains(parent.0) {
+                                    commands.entity(parent.0).try_remove::<RigidBody>();
+                                    break;
+                                }
+                                step = parent.0;
+                            }
+
                             commands.entity(kid).insert((
                                 RigidBody::Dynamic,
+                                LinearVelocity(vel),
                                 DespawnAfter(Duration::from_secs(rng.random_range(25..35))),
                             ));
                         }
@@ -156,7 +188,6 @@ pub(crate) fn make_children_physical_after_collision(
         .entity(target)
         .insert((ColliderConstructorHierarchy::new(
             ColliderConstructor::ConvexHullFromMesh,
-            // ColliderConstructor::Sphere { radius: 0.005 },
         ),))
         .observe(on_colliders_ready_decorate_children);
 
@@ -176,8 +207,9 @@ fn on_colliders_ready_decorate_children(
             count += 1;
             commands.entity(kid).insert((
                 RigidBody::Static,
+                Spawned,
                 Restitution::new(0.25),
-                LinearDamping(0.99),
+                LinearDamping(0.999),
                 Friction::new(0.9),
                 CollisionLayers::new(
                     [GameLayer::World],

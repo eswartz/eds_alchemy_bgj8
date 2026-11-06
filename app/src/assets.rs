@@ -23,7 +23,20 @@ impl MusicAssets {}
 
 #[derive(Resource, AssetCollection)]
 #[allow(unused)]
-pub struct FxAssets {}
+pub struct FxAssets {
+    #[asset(path = "sounds/412017__skymary__cat-meow-short.ogg")]
+    pub cat_meow_0: Handle<AudioSample>,
+    #[asset(path = "sounds/66518__freemaster2__meow9.ogg")]
+    pub cat_meow_1: Handle<AudioSample>,
+    #[asset(path = "sounds/157283__samueljustice00__pug-1.ogg")]
+    pub dog_1: Handle<AudioSample>,
+    #[asset(path = "sounds/157283__samueljustice00__pug-2.ogg")]
+    pub dog_2: Handle<AudioSample>,
+    #[asset(path = "sounds/157283__samueljustice00__pug-3.ogg")]
+    pub dog_3: Handle<AudioSample>,
+    #[asset(path = "sounds/273688__richerlandtv__pug-woof-2.ogg")]
+    pub dog_4: Handle<AudioSample>,
+}
 
 #[derive(Resource, AssetCollection)]
 pub struct MapAssets {

@@ -42,5 +42,5 @@ title: End
 OK.
 -> Pets?
   Sure.
-  <<attach_script_3 "spawn_pets" -5.0 0.0 -2.0>>
+  <<attach_script_3 "spawn_pets" -7.5 0.0 -2.0>>
 ===

@@ -53,19 +53,21 @@ def spawn_pets(ent: Uns64, offs: Tuple) {
     let y = offs[1]
     let z = offs[2]
 
-    if let dogs = bevy_call_func(ent, 'find_entity_named', "(?i).*\\b(dog|pug)\\b.*", true) then
+    if let dogs = bevy_call_func(ent, 'find_entity_named', "(?i)^(dog|dog-0|.*\\bPug\\b.*)$", true) then
         print("removing dogs ", ents_of(dogs), "\n")
         var i = 0
         while i < sequence_length(dogs) do
-            bevy_call_func('despawn_entity', dogs[i])
+            let cand = bevy_call_func(dogs[i], 'get_scene_parent')
+            bevy_call_func('despawn_entity', cand or dogs[i])
             i += 1
         end
     end
-    if let cats = bevy_call_func(ent, 'find_entity_named', "(?i).*\\bcat\\b.*", true) then
+    if let cats = bevy_call_func(ent, 'find_entity_named', "(?i)^(cat|cat-0|Cubic.*)$", true) then
         print("removing cats ", ents_of(cats), "\n")
         var i = 0
         while i < sequence_length(cats) do
-            bevy_call_func('despawn_entity', cats[i])
+            let cand = bevy_call_func(cats[i], 'get_scene_parent')
+            bevy_call_func('despawn_entity', cand or cats[i])
             i += 1
         end
     end

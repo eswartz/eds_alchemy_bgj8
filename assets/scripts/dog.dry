@@ -1,4 +1,4 @@
-use $sys.calls.{bevy_call_func,delay,print};
+use $sys.calls.{bevy_call_func,delay,print,random_number};
 
 def min(x: RealF, y: RealF) -> RealF {
     if x < y then x else y end
@@ -23,9 +23,9 @@ def on_init(ctx: Struct, ent: Uns64, data: Struct, ...) {
 
     print("got cat ", bevy_call_func(others[0], 'ent_to_string'), "\n")
     data.other = others[0]
-    data.max_speed = 2.0
-    data.speed = 0.125
-    data.accel = 1.2
+    data.max_speed = 3.0
+    data.speed = 0.25
+    data.accel = random_number(1.1, 1.2)
 
     ## Store original positions.
     let start_pos = bevy_call_func(ent, 'get_position', 'World')
@@ -35,7 +35,21 @@ def on_init(ctx: Struct, ent: Uns64, data: Struct, ...) {
     print("other_pos: ", other_pos,  "\n")
     data.other_pos = other_pos
 
-    delay(2.0)
+    bevy_call_func(ent, 'play_sound', [
+        'source': ['Asset', "sounds/157283__samueljustice00__pug-1.ogg"],
+        volume: ['Linear', 0.25],
+    ])
+    delay(random_number(0.45, 0.55))
+    bevy_call_func(ent, 'play_sound', [
+        'source': ['Asset', "sounds/157283__samueljustice00__pug-2.ogg"],
+        volume: ['Linear', 0.5],
+    ])
+    delay(random_number(0.20, 0.30))
+    bevy_call_func(ent, 'play_sound', [
+        'source': ['Asset', "sounds/273688__richerlandtv__pug-woof-2.ogg"],
+        volume: ['Linear', 0.5],
+    ])
+    delay(random_number(0.65, 0.85))
 }
 
 def on_update(ctx: Struct, ent: Uns64, data: Struct, ...) {
@@ -49,7 +63,7 @@ def on_update(ctx: Struct, ent: Uns64, data: Struct, ...) {
 
     let dist = ((dx * dx) + (dy * dy) + (dz * dz)) ** 0.5
     print([:, dist, dx, dy, dz], "\n")
-    if dist > 0.2 then
+    if dist > 0.1 then
         let speed = clamp(data.speed * dist, 0.0, data.max_speed)
 
         let vx = dx * speed / dist
