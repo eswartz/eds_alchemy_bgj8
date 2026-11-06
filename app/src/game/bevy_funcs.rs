@@ -7,9 +7,10 @@ use eds_bevy_common::{
     physics::{
         AngularVelocity, Collider, ColliderConstructor, ColliderConstructorHierarchy,
         ColliderConstructorHierarchyReady, CollisionEnd, CollisionEventsEnabled, CollisionLayers,
-        CollisionStart, Friction, LinearDamping, LinearVelocity, Restitution, RigidBody, Sensor,
-        Vector,
+        CollisionStart, Friction, LinearDamping, LinearVelocity, Mass, Restitution, RigidBody,
+        Sensor, Vector,
     },
+    surface_material::SurfaceMaterial,
 };
 use fedry_bevy_plugin::prelude::*;
 use fedry_runtime::prelude::*;
@@ -40,9 +41,27 @@ pub(crate) fn register_script_funcs(mut commands: Commands, runtime: If<Res<Scri
     //     commands.register_system(make_dynamic_after_collision),
     // );
     bevy_system_service.add_runtime_system(
+        rt.to_atom("remove_spawned"),
+        commands.register_system(remove_spawned),
+    );
+    bevy_system_service.add_runtime_system(
         rt.to_atom("make_children_physical_after_collision"),
         commands.register_system(make_children_physical_after_collision),
     );
+}
+
+/// Remove items with the [Spawned] marker.
+pub(crate) fn remove_spawned(
+    In((_entity, rt, _args)): In<(Entity, RuntimeArc, Vec<ObjectPtr>)>,
+    mut commands: Commands,
+    spawned_q: Query<Entity, With<Spawned>>,
+) -> ExecResult {
+    for ent in spawned_q.iter() {
+        commands.entity(ent).try_despawn();
+    }
+    Ok(rt
+        .for_typed_int(&rt.types().ufast_type, spawned_q.count() as _)?
+        .into())
 }
 
 // pub(crate) fn check_collisions(mut reader: MessageReader<CollisionStart>) {
@@ -99,7 +118,7 @@ pub(crate) fn make_children_physical_after_collision(
                 .entity(parent_ent)
                 .insert((
                     CollisionEventsEnabled,
-                    Sensor,
+                    // Sensor,
                     ColliderConstructor::ConvexHullFromMesh,
                     CollisionLayers::new(
                         [GameLayer::Gameplay, GameLayer::World],
@@ -113,31 +132,39 @@ pub(crate) fn make_children_physical_after_collision(
                           parent_q: Query<&ChildOf>,
                           vel_q: Query<&LinearVelocity>,
                           rigid_q: Query<&RigidBody>| {
-                        commands
-                            // .entity(event.body1.unwrap_or(event.collider1))      // shrinks insides
-                            .entity(event.event_target())
-                            .insert((
-                                // LinearVelocity::ZERO,
-                                ShrinkAndDisappear::default().with_time_secs(1.0),
-                            ));
-                        // commands
-                        //     .entity(event.event_target())
-                        //     .try_remove::<RigidBody>();
-                        commands.entity(event.observer()).insert((
+                        let my_vel = if let Ok(vel) = vel_q.get(event.collider1) {
+                            vel.0
+                        } else if let Ok(vel) = vel_q.get(event.body1.unwrap_or(event.collider1)) {
+                            vel.0
+                        } else {
+                            Vector::ZERO
+                        };
+                        let their_vel = if let Ok(vel) = vel_q.get(event.collider2) {
+                            vel.0
+                        } else if let Ok(vel) = vel_q.get(event.body2.unwrap_or(event.collider2)) {
+                            vel.0
+                        } else {
+                            Vector::ZERO
+                        };
+
+                        if dbg!(my_vel.dot(their_vel)) > -100.0 {
+                            // not head-on or powerful enough
+                            return;
+                        }
+
+                        commands.entity(event.event_target()).insert((
                             // LinearVelocity::ZERO,
-                            ShrinkAndDisappear::default().with_time_secs(1.0),
+                            ShrinkAndDisappear::default().with_time_secs(0.25),
                         ));
-                        // commands.entity(event.observer()).try_remove::<RigidBody>();
+                        commands
+                            .entity(event.observer())
+                            .insert((ShrinkAndDisappear::default().with_time_secs(0.25),));
                         commands
                             .entity(event.body1.unwrap_or(event.collider1))
-                            // .insert(LinearVelocity(Vector::splat(-0.5)))
-                            // .insert(AngularVelocity(Vector::splat(0.5)))
                             .try_remove::<Script<UserScript>>()
                             .try_remove::<Script<GameScript>>();
                         commands
                             .entity(event.body2.unwrap_or(event.collider2))
-                            // .insert(LinearVelocity(Vector::splat(0.25)))
-                            // .insert(AngularVelocity(Vector::splat(-0.5)))
                             .try_remove::<Script<UserScript>>()
                             .try_remove::<Script<GameScript>>();
 
@@ -199,8 +226,13 @@ fn on_colliders_ready_decorate_children(
     mut commands: Commands,
     child_q: Query<&Children>,
     collider_q: Query<&Collider>,
+    surface_q: Query<&SurfaceMaterial>,
+    mass_q: Query<&Mass>,
 ) {
     let entity = dbg!(event.entity);
+
+    let surface = surface_q.get(entity).unwrap_or(&SurfaceMaterial::Unknown);
+    let mass = mass_q.get(entity).map_or(1.0, |v| v.0);
     let mut count = 0;
     for kid in child_q.iter_descendants(entity) {
         if collider_q.contains(kid) {
@@ -215,6 +247,8 @@ fn on_colliders_ready_decorate_children(
                     [GameLayer::World],
                     [GameLayer::Player, GameLayer::World, GameLayer::Default],
                 ),
+                Mass(mass),
+                surface.clone(),
             ));
         }
     }

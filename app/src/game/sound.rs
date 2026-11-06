@@ -423,166 +423,168 @@ fn spawn_noise_on_collision(
             continue;
         };
 
-        if let Ok((xfrm, vel, ang_vel, mass)) = phys_info_q.get(target) {
-            let (src_vel, src_ang_vel) = phys_info_q.get(src).map_or_else(
-                |_| (&Vec3::ZERO, &Vec3::ZERO),
-                |(_, src_vel, src_ang, _)| (&*src_vel, &*src_ang),
-            );
+        let Ok((xfrm, vel, ang_vel, mass)) = phys_info_q.get(target) else {
+            continue;
+        };
 
-            let rel_vel = *src_vel - vel.0;
-            let vel_length = rel_vel.length();
-            let rel_ang_abs = src_ang_vel.abs() - ang_vel.0.abs();
-            let ang_length = rel_ang_abs.length() /* rad */ * std::f32::consts::PI * 0.125 /* m */;
-            if vel_length + ang_length < 1.0 {
-                // They're moving slowly relative to each other, ignore
+        let (src_vel, src_ang_vel) = phys_info_q.get(src).map_or_else(
+            |_| (&Vec3::ZERO, &Vec3::ZERO),
+            |(_, src_vel, src_ang, _)| (&*src_vel, &*src_ang),
+        );
+
+        let rel_vel = *src_vel - vel.0;
+        let vel_length = rel_vel.length();
+        let rel_ang_abs = src_ang_vel.abs() - ang_vel.0.abs();
+        let ang_length = rel_ang_abs.length() /* rad */ * std::f32::consts::PI * 0.125 /* m */;
+        if vel_length + ang_length < 1.0 {
+            // They're moving slowly relative to each other, ignore
+            continue;
+        }
+
+        // Distinguish between "small" impulses and "large" impulses using the log scale.
+        let impulse_log = (event.total_normal_impulse_magnitude() + 0.01).log10();
+        let silent = impulse_log < 0.5;
+        if silent {
+            // Too weak to make a noise.
+            continue;
+        }
+
+        // dbg!(event);
+        // Distinguish impact from sliding.
+        let sliding = event.is_touching() && !event.manifolds.is_empty() && {
+            let normal = event.manifolds[0].normal;
+
+            let norm_rel_vel = rel_vel.normalize_or_zero();
+            let vel_rel_n = norm_rel_vel.dot(normal);
+            let vel_rel_t = rel_vel - norm_rel_vel.dot(normal) * normal;
+            let sliding_speed = vel_rel_t.length();
+            let max_slide_speed = if one_is_player { 6.0 } else { 4.0 };
+            let sliding = vel_rel_n.abs() < 0.25 && sliding_speed > max_slide_speed;
+
+            sliding
+        };
+
+        let target_entity: Entity;
+        let vol_range: core::ops::Range<f32>;
+        let speed_range: core::ops::Range<f32>;
+        let sample_ty: SampleSelectorType;
+        let phys_mat: SurfaceMaterial;
+
+        if one_is_player {
+            // Player footsteps
+
+            const FOOTFALL_TIMES_SAMPLE_DIST: f32 = 3.0;
+            let dist = vel_length * time.delta_secs();
+            *footstep_dist += dist;
+            if *footstep_dist < 0.0 {
                 continue;
             }
 
-            // Distinguish between "small" impulses and "large" impulses using the log scale.
-            let impulse_log = (event.total_normal_impulse_magnitude() + 0.01).log10();
-            let silent = impulse_log < 0.5;
-            if silent {
-                // Too weak to make a noise.
-                continue;
-            }
+            *footstep_dist -= FOOTFALL_TIMES_SAMPLE_DIST;
 
-            // Distinguish impact from sliding.
-            let sliding = event.is_touching() && !event.manifolds.is_empty() && {
-                let normal = event.manifolds[0].normal;
-
-                let norm_rel_vel = rel_vel.normalize_or_zero();
-                let vel_rel_n = norm_rel_vel.dot(normal);
-                let vel_rel_t = rel_vel - norm_rel_vel.dot(normal) * normal;
-                let sliding_speed = vel_rel_t.length();
-                let max_slide_speed = if one_is_player { 6.0 } else { 4.0 };
-                let sliding = vel_rel_n.abs() < 0.25 && sliding_speed > max_slide_speed;
-
-                sliding
+            // Footsteps follow the player.
+            (target_entity, phys_mat) = if player_a {
+                (event.collider1, phys_mat_b)
+            } else {
+                (event.collider1, phys_mat_a)
             };
 
-            let target_entity: Entity;
-            let vol_range: core::ops::Range<f32>;
-            let speed_range: core::ops::Range<f32>;
-            let sample_ty: SampleSelectorType;
-            let phys_mat: SurfaceMaterial;
+            if !sliding {
+                sample_ty = SampleSelectorType::FootstepImpact;
+                vol_range = (dist / 1.0).clamp(0.25, 1.5)..1.51;
+                speed_range = 0.75..1.25;
+            } else if vel_length + ang_length > 0.1 {
+                sample_ty = SampleSelectorType::FootstepSlide;
+                vol_range = (dist / 1.0).clamp(0.25, 1.25)..1.26;
+                speed_range = 0.75..1.25;
+            } else {
+                continue;
+            }
+        } else if one_has_mat {
+            // Object-object interaction.
 
-            if one_is_player {
-                // Player footsteps
+            (target_entity, phys_mat) = if rng.random_bool(0.5) {
+                (event.collider1, phys_mat_a)
+            } else {
+                (event.collider2, phys_mat_b)
+            };
 
-                const FOOTFALL_TIMES_SAMPLE_DIST: f32 = 3.0;
-                let dist = vel_length * time.delta_secs();
-                *footstep_dist += dist;
-                if *footstep_dist < 0.0 {
-                    continue;
-                }
+            let vol_mid = ((vel_length + ang_length) / 2.0).min(0.95);
+            if vol_mid < 0.01 {
+                continue;
+            }
 
-                *footstep_dist -= FOOTFALL_TIMES_SAMPLE_DIST;
+            let speed_mid = ang_length / mass.0 * 200.0 / 3.0;
+            speed_range = (speed_mid * 0.75).max(0.5)..(speed_mid * 2.0).min(2.0);
 
-                // Footsteps follow the player.
-                (target_entity, phys_mat) = if player_a {
-                    (event.collider1, phys_mat_b)
-                } else {
-                    (event.collider1, phys_mat_a)
-                };
-
-                if !sliding {
-                    sample_ty = SampleSelectorType::FootstepImpact;
-                    vol_range = (dist / 1.0).clamp(0.25, 1.5)..1.51;
-                    speed_range = 0.75..1.25;
-                } else if vel_length + ang_length > 0.1 {
-                    sample_ty = SampleSelectorType::FootstepSlide;
-                    vol_range = (dist / 1.0).clamp(0.25, 1.25)..1.26;
-                    speed_range = 0.75..1.25;
-                } else {
-                    continue;
-                }
-            } else if one_has_mat {
-                // Object-object interaction.
-
-                (target_entity, phys_mat) = if rng.random_bool(0.5) {
-                    (event.collider1, phys_mat_a)
-                } else {
-                    (event.collider2, phys_mat_b)
-                };
-
-                let vol_mid = ((vel_length + ang_length) / 2.0).min(0.95);
-                if vol_mid < 0.01 {
-                    continue;
-                }
-
-                let speed_mid = ang_length / mass.0 * 200.0 / 3.0;
-                speed_range = (speed_mid * 0.75).max(0.5)..(speed_mid * 2.0).min(2.0);
-
-                if sliding && ang_length < vel_length
-                /*m */
-                {
-                    sample_ty = SampleSelectorType::SurfaceImpact;
-                } else if vel_length > 0.1 {
-                    sample_ty = SampleSelectorType::SurfaceSlide;
-                } else {
-                    continue;
-                };
-
-                vol_range = vol_mid * 0.5..vol_mid * 1.25;
+            if sliding && ang_length < vel_length
+            /*m */
+            {
+                sample_ty = SampleSelectorType::SurfaceImpact;
+            } else if vel_length > 0.1 {
+                sample_ty = SampleSelectorType::SurfaceSlide;
             } else {
                 continue;
             };
 
-            let Some(sample) = (*selector).pick_sample(sample_ty, phys_mat) else {
-                continue;
-            };
+            vol_range = vol_mid * 0.5..vol_mid * 1.25;
+        } else {
+            continue;
+        };
 
-            // It's cheap to change volume.
-            let vol_sel = if vol_range.is_empty() {
-                vol_range.start
-            } else {
-                rng.random_range(vol_range)
-            };
-            let vol = (impulse_log * vol_sel).clamp(0.1, 1.25);
+        let Some(sample) = (*selector).pick_sample(sample_ty, phys_mat) else {
+            continue;
+        };
 
-            let speed_range =
-                speed_range.start.clamp(0.25, 0.75)..speed_range.end.clamp(0.751, 1.25);
+        // It's cheap to change volume.
+        let vol_sel = if vol_range.is_empty() {
+            vol_range.start
+        } else {
+            rng.random_range(vol_range)
+        };
+        let vol = (impulse_log * vol_sel).clamp(0.1, 1.25);
 
-            // But changing speed means work (at least the first time for a given sample).
-            let rate = rng.random_range(speed_range);
-            // Reduce the actual retimed sample to a quantized amount since we have all the f32 range possible.
-            // The rate is reduced to a low fraction (a slow operation)
-            // and the rest as a pitch shift.
-            let Some(rate_quant) = QuantizedFloat::rounded_to_multiple(rate, 1.0 / 4.0) else {
-                continue;
-            };
-            let rate_fract = rate - rate_quant.as_f32();
+        let speed_range = speed_range.start.clamp(0.25, 0.75)..speed_range.end.clamp(0.751, 1.25);
 
-            // Stretch the sample in time.
-            let retimed_sample = retimed_samples
-                .fetch_retimed(samples.reborrow(), sample.clone(), rate_quant.as_f32())
-                .unwrap_or_else(|| sample);
+        // But changing speed means work (at least the first time for a given sample).
+        let rate = rng.random_range(speed_range);
+        // Reduce the actual retimed sample to a quantized amount since we have all the f32 range possible.
+        // The rate is reduced to a low fraction (a slow operation)
+        // and the rest as a pitch shift.
+        let Some(rate_quant) = QuantizedFloat::rounded_to_multiple(rate, 1.0 / 4.0) else {
+            continue;
+        };
+        let rate_fract = rate - rate_quant.as_f32();
 
-            commands.spawn((
-                ChildOf(target_entity),
-                Sfx,
-                SamplePlayer::new(retimed_sample).with_volume(Volume::Linear(vol)),
-                bevy_seedling::prelude::PlaybackSettings::default()
-                    .despawn()
-                    .with_playback(true)
-                    .with_play_from(PlayFrom::Seconds(rng.random_range(0.0..0.1))) // try to avoid stacking the same sound over and over
-                    // Apply the rest of the "time" stretch here.
-                    .with_speed(1.0 + rate_fract as f64),
-                sample_effects![
-                    // Prepopulate offset to avoid any timing problems
-                    // with very short samples being spatialized as if at origin.
-                    SpatialBasicNode {
-                        offset: (xfrm.translation() - listener_xfrm.translation()).into(),
-                        ..default()
-                    },
-                ],
-                xfrm.clone(),
-            ));
+        // Stretch the sample in time.
+        let retimed_sample = retimed_samples
+            .fetch_retimed(samples.reborrow(), sample.clone(), rate_quant.as_f32())
+            .unwrap_or_else(|| sample);
 
-            added += 1;
-            if added >= 4 {
-                break;
-            }
+        commands.spawn((
+            ChildOf(target_entity),
+            Sfx,
+            SamplePlayer::new(retimed_sample).with_volume(Volume::Linear(vol)),
+            bevy_seedling::prelude::PlaybackSettings::default()
+                .despawn()
+                .with_playback(true)
+                .with_play_from(PlayFrom::Seconds(rng.random_range(0.0..0.1))) // try to avoid stacking the same sound over and over
+                // Apply the rest of the "time" stretch here.
+                .with_speed(1.0 + rate_fract as f64),
+            sample_effects![
+                // Prepopulate offset to avoid any timing problems
+                // with very short samples being spatialized as if at origin.
+                SpatialBasicNode {
+                    offset: (xfrm.translation() - listener_xfrm.translation()).into(),
+                    ..default()
+                },
+            ],
+            xfrm.clone(),
+        ));
+
+        added += 1;
+        if added >= 4 {
+            break;
         }
     }
 }

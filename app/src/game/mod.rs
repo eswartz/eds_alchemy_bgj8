@@ -173,7 +173,6 @@ impl Plugin for GamePlugin {
             .add_systems(
                 FixedUpdate,
                 (
-                    check_player_health,
                     check_next_level,
                     check_won_level
                         .run_if(in_state(LevelState::Won))
@@ -182,6 +181,13 @@ impl Plugin for GamePlugin {
                         .run_if(in_state(LevelState::Lost))
                         .run_if(not(is_paused)),
                 )
+                    .run_if(not(is_in_menu))
+                    .run_if(in_state(ProgramState::InGame)),
+            )
+            .add_systems(
+                FixedUpdate,
+                (check_player_health,)
+                    .run_if(not(is_paused))
                     .run_if(not(is_in_menu))
                     .run_if(in_state(ProgramState::InGame)),
             )

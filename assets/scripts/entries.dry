@@ -53,6 +53,8 @@ def spawn_pets(ent: Uns64, offs: Tuple) {
     let y = offs[1]
     let z = offs[2]
 
+    bevy_call_func('remove_spawned')
+##{
     if let dogs = bevy_call_func(ent, 'find_entity_named', "(?i)^(dog|dog-0|.*\\bPug\\b.*)$", true) then
         print("removing dogs ", ents_of(dogs), "\n")
         var i = 0
@@ -71,9 +73,10 @@ def spawn_pets(ent: Uns64, offs: Tuple) {
             i += 1
         end
     end
+##}
 
     let pet_scale = 5.0
-    let dog_offs = [:, x, y, z]
+    let dog_offs = [:, x, y, z: z + 3.0]
     let dog_rot = ['Deg', [y: 90.0, x: 0, z: 0]]
     let cat_offs = [:, x: -x, y, z]
     let cat_rot = ['Deg', [y: -90.0, x: 0, z: 0]]
@@ -128,6 +131,8 @@ def spawn_pets(ent: Uns64, offs: Tuple) {
         'Name', "cat",
         'shape', ['Model', "models/cat.glb#Scene0"],
         'CrosshairTargetable', nil,
+        'SurfaceMaterial', 'Glass',
+        'Mass', 0.125,
     );
 
     ## Wait for the models above to be fully loaded,
@@ -141,7 +146,24 @@ def spawn_pets(ent: Uns64, offs: Tuple) {
         delay(0.1)
     end
 
-
+##{
+    let rigid = bevy_call_func('get_rigid_entity', cat_ent)
+    bevy_call_func(rigid, 'insert_components',
+        'CrosshairTargetable', nil,
+        'RigidBody', 'Dynamic',
+        'collision_layers', 'default|gameplay|world',
+        'Mass', 10.0,
+        'SurfaceMaterial', 'Glass',
+    )
+    let rigid = bevy_call_func('get_rigid_entity', dog_ent)
+    bevy_call_func(rigid, 'insert_components',
+        'CrosshairTargetable', nil,
+        'RigidBody', 'Dynamic',
+        'collision_layers', 'default|gameplay|world',
+        'Mass', 25.0,
+        'SurfaceMaterial', 'Stone',
+    )
+##}
 }
 
 def FUNCS = [:,
