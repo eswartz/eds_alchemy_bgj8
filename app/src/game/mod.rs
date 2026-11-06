@@ -72,8 +72,7 @@ struct PlayerHealth {
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app
-            .insert_resource(Gravity((9.8 * Vec3::NEG_Y).into()))
+        app.insert_resource(Gravity((9.8 * Vec3::NEG_Y).into()))
             //
             .add_message::<AddPlayerDamage>()
             .add_plugins(ActionHandlersPlugin)
@@ -91,10 +90,9 @@ impl Plugin for GamePlugin {
                     wake_up_spawned_if_floating.run_if(resource_changed::<Gravity>),
                     wake_up_spawned
                         .run_if(resource_changed::<Gravity>)
-                        .run_if(not(is_in_menu))
-                    )
-                    .run_if(in_state(ProgramState::InGame)
-                ),
+                        .run_if(not(is_in_menu)),
+                )
+                    .run_if(in_state(ProgramState::InGame)),
             )
             .insert_resource(GrabbingBehavior {
                 ignore_mass: false,
@@ -196,8 +194,7 @@ impl Plugin for GamePlugin {
             )
             .insert_resource(DepthMapStorage {
                 orig_to_edited: default(),
-            })
-            ;
+            });
 
         register_script_key::<GameScript>(app);
     }
@@ -343,12 +340,10 @@ pub(crate) fn level_spawn_started(mut commands: Commands, mut pause: ResMut<Paus
 pub(crate) fn level_spawn_finished(
     mut commands: Commands,
     mut pause: ResMut<PauseState>,
-    sensable_q: Query<Entity, Or<(With<DeathboxCollider>,)>>,
-    // coll_floor_q: Query<Entity, (With<Mesh3d>, With<Floor>),
-    // floor_q: Query<Entity, (With<Floor>, With<RigidBody>),
-    // floor_q: Query<Entity, (With<Floor>, Without<ColliderConstructor>)>,
+    sensable_q: Query<Entity, With<DeathboxCollider>>,
 ) {
     for ent in sensable_q.iter() {
+        dbg!(ent);
         commands
             .entity(ent)
             .insert((Sensor, CollisionEventsEnabled, CollidingEntities::default()));

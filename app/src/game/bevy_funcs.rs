@@ -1,11 +1,20 @@
 use bevy::prelude::*;
 use eds_bevy_common::{
-    base_dir::find_runtime_base_directory_by_folder, effects::ShrinkAndDisappear, layers::GameLayer, markers::DespawnAfter, physics::{
-        Collider, ColliderConstructor, ColliderConstructorHierarchy, ColliderConstructorHierarchyReady, CollisionEnd, CollisionEventsEnabled, CollisionLayers, CollisionStart, Restitution, RigidBody, Sensor,
+    base_dir::find_runtime_base_directory_by_folder,
+    effects::ShrinkAndDisappear,
+    layers::GameLayer,
+    markers::DespawnAfter,
+    physics::{
+        Collider, ColliderConstructor, ColliderConstructorHierarchy,
+        ColliderConstructorHierarchyReady, CollisionEnd, CollisionEventsEnabled, CollisionLayers,
+        CollisionStart, Friction, LinearDamping, LinearVelocity, Restitution, RigidBody, Sensor,
     },
 };
 use fedry_bevy_plugin::prelude::*;
 use fedry_runtime::prelude::*;
+use rand::RngExt as _;
+
+use crate::game::GameScript;
 
 /// Register game-specific functions.
 ///
@@ -17,7 +26,6 @@ pub(crate) fn register_script_funcs(mut commands: Commands, runtime: If<Res<Scri
     let source_service = rt.get_service::<SourceService>().unwrap();
     let base_dir = find_runtime_base_directory_by_folder("assets").unwrap(); // found outside
     source_service.prepend_search_directory(base_dir.join("assets/scripts").to_path_buf());
-    dbg!(1);
 
     let bevy_system_service = rt
         .get_service::<BevySystemService>()
@@ -103,17 +111,34 @@ pub(crate) fn make_children_physical_after_collision(
                           child_q: Query<&Children>,
                           rigid_q: Query<&RigidBody>| {
                         commands
+                            // .entity(event.body1.unwrap_or(event.collider1))      // shrinks insides
                             .entity(event.event_target())
-                            .insert(ShrinkAndDisappear::default().with_time_secs(1.0));
+                            .insert((
+                                LinearVelocity::ZERO,
+                                ShrinkAndDisappear::default().with_time_secs(1.0),
+                            ));
+                        commands.entity(event.observer()).insert((
+                            LinearVelocity::ZERO,
+                            ShrinkAndDisappear::default().with_time_secs(1.0),
+                        ));
+                        commands
+                            .entity(event.body1.unwrap_or(event.collider1))
+                            .try_remove::<Script<UserScript>>()
+                            .try_remove::<Script<GameScript>>();
+                        commands
+                            .entity(event.body2.unwrap_or(event.collider2))
+                            .try_remove::<Script<UserScript>>()
+                            .try_remove::<Script<GameScript>>();
 
                         // Iterate the original `target`, not the collision.
+                        let mut rng = rand::rng();
                         for kid in child_q.iter_descendants(target) {
                             if !rigid_q.contains(kid) {
                                 continue;
                             }
                             commands.entity(kid).insert((
                                 RigidBody::Dynamic,
-                                DespawnAfter(Duration::from_secs(60)),
+                                DespawnAfter(Duration::from_secs(rng.random_range(25..35))),
                             ));
                         }
                     },
@@ -152,6 +177,8 @@ fn on_colliders_ready_decorate_children(
             commands.entity(kid).insert((
                 RigidBody::Static,
                 Restitution::new(0.25),
+                LinearDamping(0.99),
+                Friction::new(0.9),
                 CollisionLayers::new(
                     [GameLayer::World],
                     [GameLayer::Player, GameLayer::World, GameLayer::Default],

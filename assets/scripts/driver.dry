@@ -10,7 +10,7 @@ def on_update(ctx: Struct, ent: Uns64, data: Struct) {
     if let task = data.task then
         data.task = nil
         print("running ", task, " with ", data.param, "\n")
-        struct_get(entries.FUNCS, task)(data.param)
+        struct_get(entries.FUNCS, task)(ent, data.param)
     end
 }
 

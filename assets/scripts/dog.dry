@@ -13,54 +13,56 @@ def abs(x: RealF) -> RealF {
     if x < 0 then -x else x end
 }
 def on_init(ctx: Struct, ent: Uns64, data: Struct, ...) {
-    var cat: Any = nil  ## or Uns64
-    while not cat do
-        print("waiting for cat ", cat, "\n")
+    var others: Any = nil  ## or Uns64
+    while not others do
+        print("waiting for cat ", others, "\n")
         delay(0.0)
-        cat = bevy_call_func(ent, 'find_entity_named',
-            "^cat-0$", true)
+        others = bevy_call_func(ent, 'find_entity_named',
+            "(?i)^cat-0$", true)
     end
-    print("got cat ", cat[0], "\n")
-    data.cat = cat[0]
-    data.speed = 4.0
-    data.hadjust = 2.0
-    data.vadjust = 1.0
 
-    ## Store original pos.
-    let cat_pos = bevy_call_func(data.cat, 'get_position', 'World')
-    print("cat_pos: ", cat_pos,  "\n")
-    data.cat_pos = cat_pos
+    print("got cat ", bevy_call_func(others[0], 'ent_to_string'), "\n")
+    data.other = others[0]
+    data.max_speed = 2.0
+    data.speed = 0.125
+    data.accel = 1.2
 
-    delay(5.0)
+    ## Store original positions.
+    let start_pos = bevy_call_func(ent, 'get_position', 'World')
+    data.start_pos = start_pos
+
+    let other_pos = bevy_call_func(data.other, 'get_position', 'World')
+    print("other_pos: ", other_pos,  "\n")
+    data.other_pos = other_pos
+
+    delay(2.0)
 }
 
 def on_update(ctx: Struct, ent: Uns64, data: Struct, ...) {
     let pos = bevy_call_func(ent, 'get_position', 'World')
-    let goal = data.cat_pos
+    let goal = data.other_pos
 
     ## Directional distance from our goal.
     let dx = goal.x - pos.x
     let dy = goal.y - pos.y
     let dz = goal.z - pos.z
 
-    let dx_adj = dx * data.hadjust
-    let dy_adj = dy * data.vadjust
-    let dz_adj = dz * data.hadjust
+    let dist = ((dx * dx) + (dy * dy) + (dz * dz)) ** 0.5
+    print([:, dist, dx, dy, dz], "\n")
+    if dist > 0.2 then
+        let speed = clamp(data.speed * dist, 0.0, data.max_speed)
 
-    let speed: RealF = data.speed
+        let vx = dx * speed / dist
+        let vy = dy * speed / dist
+        let vz = dz * speed / dist
 
-    var vx = dx_adj / 4.0
-    var vy = dy_adj / 2.0   ## fight gravity and dip!
-    var vz = dz_adj / 4.0
+        let vel = [x: vx, y: vy, z: vz]
 
-    vx = clamp(vx, -speed, speed)
-    vy = clamp(vy, -speed, speed)
-    vz = clamp(vz, -speed, speed)
+        print(bevy_call_func(ent, 'ent_to_string'), " new vel: ", vel, "\n")
+        bevy_call_func(ent, 'insert_components', 'LinearVelocity', vel)
 
-    let vel = [x: vx, y: vy, z: vz]
-
-    ## print(bevy_call_func(ent, 'ent_to_string'), " new vel: ", vel, "\n")
-    bevy_call_func(ent, 'insert_components', 'LinearVelocity', vel)
+        data.speed *= data.accel
+    end
 
     delay(0.1)
 }

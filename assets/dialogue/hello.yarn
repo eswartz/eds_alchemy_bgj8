@@ -2,10 +2,10 @@ title: Hello
 color: blue
 position: -36,-75
 ---
-<<if not $once_hello>>
-<<set $once_hello to true>>
-<<attach_script_1 "hello" "nil">>
 <<jump End>>
+<<if not $once_hello>>
+<<attach_script_1 "hello" "nil">>
+<<set $once_hello to true>>
 Welcome.
 This place is pretty empty.
 Time limits and all. Lots of time. Lots of limits.
@@ -42,5 +42,5 @@ title: End
 OK.
 -> Pets?
   Sure.
-  <<attach_script_2 "spawn_pets" -2.0 0.0 -2.0>>
+  <<attach_script_3 "spawn_pets" -5.0 0.0 -2.0>>
 ===

@@ -1,10 +1,10 @@
 use $sys.calls.*;
 
-def hello(param: String) {
+def hello(ent: Uns64, param: String) {
     let size = 0.475 * 2.0
     let dist = 0.5 * 2
     var y: IntF = 0
-    while y < 2 do
+    while y < 0 do
         var x: IntF = -5
         while x < 5 do
             let hue = ((x * y * 20) % 360) as RealF
@@ -33,47 +33,96 @@ def hello(param: String) {
 
 }
 
-def spawn(param: RealF) {
+def spawn(ent: Uns64, param: RealF) {
     print("spawn ", param, "\n")
 }
 
+def ents_of(lst) -> Tuple {
+    var out = []
+    var i = 0
+    while i < sequence_length(lst) do
+        sequence_append(out, bevy_call_func(lst[i], 'ent_to_string'))
+        i += 1
+    end
+    out
+}
+
 [@doc: "Spawn the cat and dog at the given offset vector"]
-def spawn_pets(offs: Tuple) {
+def spawn_pets(ent: Uns64, offs: Tuple) {
     let x = offs[0]
     let y = offs[1]
-    let z = offs[1]
+    let z = offs[2]
+
+    if let dogs = bevy_call_func(ent, 'find_entity_named', "(?i).*\\b(dog|pug)\\b.*", true) then
+        print("removing dogs ", ents_of(dogs), "\n")
+        var i = 0
+        while i < sequence_length(dogs) do
+            bevy_call_func('despawn_entity', dogs[i])
+            i += 1
+        end
+    end
+    if let cats = bevy_call_func(ent, 'find_entity_named', "(?i).*\\bcat\\b.*", true) then
+        print("removing cats ", ents_of(cats), "\n")
+        var i = 0
+        while i < sequence_length(cats) do
+            bevy_call_func('despawn_entity', cats[i])
+            i += 1
+        end
+    end
+
+    let pet_scale = 5.0
+    let dog_offs = [:, x, y, z]
+    let dog_rot = ['Deg', [y: 90.0, x: 0, z: 0]]
+    let cat_offs = [:, x: -x, y, z]
+    let cat_rot = ['Deg', [y: -90.0, x: 0, z: 0]]
 
     let dog_ent = bevy_call_func('spawn_entity',
+        ##'parent', ent,
         'Name', "dog-0",
-        'offset', [:, x, y, z],
-        'rotation', ['Deg', [y: 90.0, x: 0, z: 0]]
+        'offset', dog_offs,
+        'rotation', dog_rot,
+        'scale', pet_scale,
         'shape', ['Model', "models/pug-0.glb#Scene0"],
-        'scale', 5.0,
         'CrosshairTargetable', nil,
         'RigidBody', 'Kinematic',
     );
     bevy_call_func(dog_ent, 'add_script', [
         path: 'scripts/dog.dry', mode: 'Async',
-    ], [:])
+    ], [parent: ent])
 
     let dog_parts_ent = bevy_call_func('spawn_entity',
         'ChildOf', dog_ent,
+        ##'offset', dog_offs,
+        ##'rotation', dog_rot,
+        ##'scale', pet_scale,
+
         'Name', "dog",
         'shape', ['Model', "models/pug.glb#Scene0"],
         'CrosshairTargetable', nil,
     );
 
+
     let cat_ent = bevy_call_func('spawn_entity',
-        'Name', "cat-0",
+        ##'parent', ent,
         'offset', [:, x: -x, y, z],
-        'rotation', ['Deg', [y: -90.0, x: 0, z: 0]]
+        'rotation', cat_rot,
+        'scale', pet_scale,
+
+        'Name', "cat-0",
         'shape', ['Model', "models/cat-0.glb#Scene0"],
-        'scale', 5.0,
         'CrosshairTargetable', nil,
+        'RigidBody', 'Kinematic',
     );
+    bevy_call_func(cat_ent, 'add_script', [
+        path: 'scripts/cat.dry', mode: 'Async',
+    ], [parent: ent])
 
     let cat_parts_ent = bevy_call_func('spawn_entity',
         'ChildOf', cat_ent,
+        ##'offset', cat_offs,
+        ##'rotation', cat_rot,
+        ##'scale', pet_scale,
+
         'Name', "cat",
         'shape', ['Model', "models/cat.glb#Scene0"],
         'CrosshairTargetable', nil,

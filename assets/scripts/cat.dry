@@ -1,0 +1,75 @@
+use $sys.calls.{bevy_call_func,delay,print};
+
+def min(x: RealF, y: RealF) -> RealF {
+    if x < y then x else y end
+}
+def max(x: RealF, y: RealF) -> RealF {
+    if x > y then x else y end
+}
+def clamp(v: RealF, min: RealF, max: RealF) -> RealF {
+    if v < min then min elif v > max then max else v end
+}
+def abs(x: RealF) -> RealF {
+    if x < 0 then -x else x end
+}
+def on_init(ctx: Struct, ent: Uns64, data: Struct, ...) {
+    var others: Any = nil  ## or Uns64
+    while not others do
+        print("waiting for dog ", others, "\n")
+        delay(0.0)
+        others = bevy_call_func(ent, 'find_entity_named',
+            "(?i)^dog-0$", true)
+    end
+
+    print("got dog ", bevy_call_func(others[0], 'ent_to_string'), "\n")
+    data.other = others[0]
+    data.max_speed = 3.0
+    data.speed = 0.5
+    data.accel = 1.01
+
+    ## Store original positions.
+    let start_pos = bevy_call_func(ent, 'get_position', 'World')
+    data.start_pos = start_pos
+
+    let other_pos = bevy_call_func(data.other, 'get_position', 'World')
+    print("other_pos: ", other_pos,  "\n")
+    data.other_pos = other_pos
+
+    delay(1.5)
+}
+
+def on_update(ctx: Struct, ent: Uns64, data: Struct, ...) {
+    let pos = bevy_call_func(ent, 'get_position', 'World')
+    let goal = data.other_pos
+
+    ## Directional distance from our goal.
+    let dx = goal.x - pos.x
+    let dy = goal.y - pos.y
+    let dz = goal.z - pos.z
+
+    let dist = ((dx * dx) + (dy * dy) + (dz * dz)) ** 0.5
+    print([:, dist, dx, dy, dz], "\n")
+    if dist > 0.2 then
+        let speed = clamp(data.speed * dist, 0.0, data.max_speed)
+
+        let vx = dx * speed / dist
+        let vy = dy * speed / dist
+        let vz = dz * speed / dist
+
+        let vel = [x: vx, y: vy, z: vz]
+
+        print(bevy_call_func(ent, 'ent_to_string'), " new vel: ", vel, "\n")
+        bevy_call_func(ent, 'insert_components', 'LinearVelocity', vel)
+
+        data.speed *= data.accel
+    end
+
+    delay(0.1)
+}
+
+[
+init_data: [:],
+    on_init,
+    on_update,
+]
+
