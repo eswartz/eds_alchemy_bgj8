@@ -8,6 +8,7 @@ on:
 env:
   # update with the name of the main binary
   binary: eds-alchemy
+  repo: eswartz/eds_alchemy_bgj8
   add_binaries_to_github_release: true
   # itch_target: eswartz75/eds_alchemy
 
@@ -19,6 +20,7 @@ env:
   # https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-storage-and-bandwidth-usage
   use_git_lfs: true
 
+  release_base_name: ${{ env.binary }}-${{ github.ref_name }}
 
 jobs:
   # # Build for wasm
@@ -124,24 +126,25 @@ jobs:
       - name: Package as a zip
         working-directory: ./linux
         run: |
-          zip --recurse-paths ../${{ env.binary }}.zip ${{ env.binary }}
+          zip --recurse-paths ../${{ env.release_base_name }}-linux.zip ${{ env.binary }}
 
       - name: Upload binaries to artifacts
         uses: actions/upload-artifact@v4
         with:
-          path: ${{ env.binary }}.zip
+          path: ${{ env.release_base_name }}-linux.zip
           name: linux
           retention-days: 1
 
       - name: Upload binaries to release
         if: ${{ env.add_binaries_to_github_release == 'true' }}
-        uses: svenstaro/upload-release-action@v2
+        uses: softprops/action-gh-release@v3
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ env.binary }}.zip
-          asset_name: ${{ env.binary }}-linux-${{ steps.get_version.outputs.tag }}.zip
-          tag: ${{ github.ref }}
+          files: ${{ env.release_base_name }}-linux.zip
           overwrite: true
+          generate_release_notes: true
+          prerelease: true
+          draft: true
+          fail_on_unmatched_files: true
 
   # Build for Windows
   release-windows:
@@ -196,24 +199,26 @@ jobs:
 
       - name: Package as a zip
         run: |
-          Compress-Archive -Path windows/${{ env.binary }} -DestinationPath ${{ env.binary }}.zip
+          Compress-Archive -Path windows/${{ env.binary }} -DestinationPath ${{ env.release_base_name }}-win64.zip
 
       - name: Upload binaries to artifacts
         uses: actions/upload-artifact@v4
         with:
-          path: ${{ env.binary }}.zip
+          path: ${{ env.release_base_name }}-win64.zip
           name: windows
           retention-days: 1
 
       - name: Upload binaries to release
         if: ${{ env.add_binaries_to_github_release == 'true' }}
-        uses: svenstaro/upload-release-action@v2
+        uses: softprops/action-gh-release@v3
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ env.binary }}.zip
-          asset_name: ${{ env.binary }}-windows-${{ steps.get_version.outputs.tag }}.zip
-          tag: ${{ github.ref }}
+          files: ${{ env.release_base_name }}-win64.zip
           overwrite: true
+          generate_release_notes: true
+          prerelease: true
+          draft: true
+          fail_on_unmatched_files: true
+
 
   # Build for MacOS Apple Silicon
   release-macOS-apple-silicon:
@@ -271,19 +276,20 @@ jobs:
       - name: Upload binaries to artifacts
         uses: actions/upload-artifact@v4
         with:
-          path: ${{ env.binary }}-macOS-apple-silicon.dmg
+          path: ${{ env.release_base_name }}-macOS-apple-silicon.dmg
           name: macOS-apple-silicon
           retention-days: 1
 
       - name: Upload binaries to release
         if: ${{ env.add_binaries_to_github_release == 'true' }}
-        uses: svenstaro/upload-release-action@v2
+        uses: softprops/action-gh-release@v3
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ env.binary }}-macOS-apple-silicon.dmg
-          asset_name: ${{ env.binary }}-macOS-apple-silicon-${{ steps.get_version.outputs.tag }}.dmg
-          tag: ${{ github.ref }}
+          files: ${{ env.release_base_name }}-macOS-apple-silicon.dmg
           overwrite: true
+          generate_release_notes: true
+          prerelease: true
+          draft: true
+          fail_on_unmatched_files: true
 
 ################
 
