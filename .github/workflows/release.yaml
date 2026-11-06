@@ -20,7 +20,7 @@ env:
   # https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-storage-and-bandwidth-usage
   use_git_lfs: true
 
-  release_base_name: ${{ env.binary }}-${{ github.ref_name }}
+  release_base_name: alchemy-${{ github.ref_name }}
 
 jobs:
   # # Build for wasm
