@@ -7,6 +7,8 @@ use rand::RngExt as _;
 use rand::seq::IndexedRandom as _;
 
 use crate::assets::FxAssets;
+use crate::game::sound::spawn_water_enter_sounds;
+use crate::game::sound::spawn_water_exit_sounds;
 
 pub(crate) struct EnvPlugin;
 
@@ -38,37 +40,9 @@ fn check_water_entry_exit(
 
     for msg in reader.read() {
         if msg.from_area == AreaContent::Water && msg.to_area == AreaContent::Air {
-            commands.spawn((
-                ChildOf(msg.entity),
-                Sfx,
-                SamplePlayer::new(
-                    (*[&assets.water_exit_1, &assets.water_exit_2]
-                        .choose(&mut rand::rng())
-                        .unwrap())
-                    .clone(),
-                )
-                .with_volume(Volume::Linear(rng.random_range(0.25..0.5))),
-                bevy_seedling::prelude::PlaybackSettings::default()
-                    .despawn()
-                    .with_playback(true)
-                    .with_speed(rng.random_range(0.8..1.2)),
-            ));
+            commands.run_system_cached_with(spawn_water_exit_sounds, msg.entity);
         } else if msg.from_area == AreaContent::Air && msg.to_area == AreaContent::Water {
-            commands.spawn((
-                ChildOf(msg.entity),
-                Sfx,
-                SamplePlayer::new(
-                    (*[&assets.water_enter_1, &assets.water_enter_2]
-                        .choose(&mut rand::rng())
-                        .unwrap())
-                    .clone(),
-                )
-                .with_volume(Volume::Linear(rng.random_range(0.25..0.5))),
-                bevy_seedling::prelude::PlaybackSettings::default()
-                    .despawn()
-                    .with_playback(true)
-                    .with_speed(rng.random_range(0.8..1.2)),
-            ));
+            commands.run_system_cached_with(spawn_water_enter_sounds, msg.entity);
         }
     }
 }

@@ -24,12 +24,23 @@ Bools, numbers, strings, functions?
   <<set $water_level = 0.25>>
   <<set $water_count = 10>>
   <<set $water_size = 0.25>>
-  Water is wet.
   <<else>>
-  Splash.
   <<set $water_level = $water_level + 0.25>>
   <<set $water_count = $water_count + 10>>
   <<set $water_size = $water_size * 1.25>>
+  <<endif>>
+  <<if $water == 0>>
+  Water is wet.
+  <<elseif $water == 1>>
+  Splash.
+  <<elseif $water == 2>>
+  It's water.
+  <<elseif $water == 3>>
+  "Aqua vitae" is not water! It's grain alcohol!
+  <<elseif $water == 4>>
+  We'll keep doing this.
+  <<elseif $water >= 5>>
+  ...
   <<endif>>
   <<set $water = $water + 1>>
   <<attach_script_3 "water" {$water_level} {$water_count} {$water_size}>>
@@ -47,7 +58,7 @@ Bools, numbers, strings, functions?
   <<attach_script_5 "spawn" 5 10 0 {$cube_size} Wood>>
   <<else>>
   <<if $earth < 3>>
-  How about just too many cubes?
+  How about just *too many* cubes?
   <<set $earth = $earth + 1>>
   <<set $cube_size = 1.0>>
   <<set $mat = "Stone">>
@@ -56,18 +67,29 @@ Bools, numbers, strings, functions?
   <<set $mat = "Sand">>
   <<set $cube_size = $cube_size + 0.25>>
   <<endif>>
-  <<attach_script_5 "spawn" 7 13 5 {$cube_size} {$mat}>>
+  <<attach_script_5 "spawn" {random_range(5,7)} {random_range(10,13)} {random_range(3,5)} {$cube_size} {$mat}>>
   <<endif>>
 -> Air
 -> Fire
     <<if $fire == 0>>
     Fire, fire... no time for integrating Hanabi...
     You heard about cats and dogs?
+    Look at these two. They can't get along.
+    <<elseif $fire == 1>>
+    Did you see that?
+    <<elseif $fire == 2>>
+    These animals are like oil and water.
+    (What element is oil? Water plus earth?)
+    <<elseif $fire == 3>>
+    Are you seeing this?
+    <<elseif $fire == 4>>
+    They just go to pieces.
+    <<else>>
+    ...
     <<endif>>
     <<set $fire = $fire + 1>>
-    Look at these two. They can't get along.
     <<set $x = -7.5 + ($fire * 3) % 7>>
     <<set $z = -9.0 + ($fire * 5) % 11>>
     <<attach_script_3 "spawn_pets" {$x} 0.1 {$z}>>
-
+-> (leave)
 ===

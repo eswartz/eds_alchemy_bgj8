@@ -15,7 +15,10 @@ use fedry_bevy_plugin::prelude::*;
 use fedry_runtime::prelude::*;
 use rand::RngExt as _;
 
-use crate::game::{GameScript, env::remove_water};
+use crate::{
+    assets::FxAssets,
+    game::{GameScript, env::remove_water, sound::spawn_explosion_sounds},
+};
 
 /// Register game-specific functions.
 ///
@@ -147,10 +150,12 @@ pub(crate) fn make_children_physical_after_collision(
                             Vector::ZERO
                         };
 
-                        if my_vel.dot(their_vel) > -100.0 {
+                        if my_vel.dot(their_vel) > -10.0 {
                             // not head-on or powerful enough
                             return;
                         }
+
+                        commands.run_system_cached_with(spawn_explosion_sounds, target);
 
                         commands.entity(event.event_target()).insert((
                             // LinearVelocity::ZERO,

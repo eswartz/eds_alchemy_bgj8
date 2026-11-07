@@ -1,7 +1,4 @@
 #![recursion_limit = "256"]
-#![feature(iter_array_chunks)]
-#![feature(iter_map_windows)]
-#![feature(gen_blocks)]
 
 mod actions;
 mod assets;
@@ -186,8 +183,8 @@ fn main() -> AppExit {
     .add_plugins(FlashlightPlugin)
     .add_plugins(CrosshairPlugin)
     .insert_resource(CrosshairMode::AimFromCenter)
-    .add_plugins(HighlightingPlugin)
-    .add_plugins(GrabbingPlugin)
+    // .add_plugins(HighlightingPlugin)
+    // .add_plugins(GrabbingPlugin)
     .insert_resource(HighlightingMode::Disabled)
     .add_plugins(ActionPlugin)
     .add_plugins(CollidersPlugin)

@@ -296,6 +296,8 @@ pub(crate) enum SampleSelectorType {
 
 use eds_bevy_common::prelude::surfaces;
 
+use crate::assets::FxAssets;
+
 #[allow(unused)]
 impl SampleSelector {
     pub(crate) fn new(fx: &CommonFxAssets) -> Self {
@@ -598,4 +600,74 @@ fn spawn_noise_on_collision(
             break;
         }
     }
+}
+
+pub(crate) fn spawn_water_enter_sounds(
+    In(ent): In<(Entity)>,
+    mut commands: Commands,
+    assets: Res<FxAssets>,
+) {
+    let mut rng = rand::rng();
+    commands.spawn((
+        ChildOf(ent),
+        Sfx,
+        SamplePlayer::new(
+            (*[&assets.water_enter_1, &assets.water_enter_2]
+                .choose(&mut rand::rng())
+                .unwrap())
+            .clone(),
+        )
+        .with_volume(Volume::Linear(rng.random_range(0.25..0.5))),
+        bevy_seedling::prelude::PlaybackSettings::default()
+            .despawn()
+            .with_playback(true)
+            .with_speed(rng.random_range(0.8..1.2)),
+    ));
+}
+
+pub(crate) fn spawn_water_exit_sounds(
+    In(ent): In<(Entity)>,
+    mut commands: Commands,
+    assets: Res<FxAssets>,
+) {
+    let mut rng = rand::rng();
+    commands.spawn((
+        ChildOf(ent),
+        Sfx,
+        SamplePlayer::new(
+            (*[&assets.water_exit_1, &assets.water_exit_2]
+                .choose(&mut rand::rng())
+                .unwrap())
+            .clone(),
+        )
+        .with_volume(Volume::Linear(rng.random_range(0.25..0.5))),
+        bevy_seedling::prelude::PlaybackSettings::default()
+            .despawn()
+            .with_playback(true)
+            .with_speed(rng.random_range(0.8..1.2)),
+    ));
+}
+
+pub(crate) fn spawn_explosion_sounds(
+    In(ent): In<(Entity)>,
+    mut commands: Commands,
+    assets: Res<FxAssets>,
+) {
+    let mut rng = rand::rng();
+    dbg!(ent);
+    commands.spawn((
+        ChildOf(ent),
+        Sfx,
+        SamplePlayer::new(
+            (*[&assets.firecracker_1, &assets.firecracker_2]
+                .choose(&mut rand::rng())
+                .unwrap())
+            .clone(),
+        )
+        .with_volume(Volume::Linear(1.0)),
+        bevy_seedling::prelude::PlaybackSettings::default()
+            .despawn()
+            .with_playback(true)
+            .with_speed(rng.random_range(0.75..1.25)),
+    ));
 }

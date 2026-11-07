@@ -29,7 +29,8 @@ impl Plugin for ActionHandlersPlugin {
         // .add_observer(on_firing_release)
         // .add_observer(on_firing_cancel)
         .add_observer(on_flashlight_toggle)
-        .add_observer(on_grab_toggle);
+        // .add_observer(on_grab_toggle)
+        ;
     }
 }
 
@@ -163,6 +164,7 @@ fn on_grab_toggle(
     _fire: On<Start<actions::ToggleSelect>>,
     mut commands: Commands,
     mut highlighting_mode: If<ResMut<HighlightingMode>>,
+    _can_grab: If<Res<GrabbingBehavior>>,
 ) {
     **highlighting_mode = highlighting_mode.original_or_enabled().toggle_enabled();
     if highlighting_mode.is_disabled() {

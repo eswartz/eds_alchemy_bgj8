@@ -1,7 +1,7 @@
 use $sys.calls.*;
 
-def X_HSIZE: RealF = 16.0
-def Z_HSIZE: RealF = 16.0
+def X_HSIZE: RealF = 8.0
+def Z_HSIZE: RealF = 8.0
 
 def min(x: RealF, y: RealF) -> RealF {
     if x < y then x else y end

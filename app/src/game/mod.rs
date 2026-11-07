@@ -823,7 +823,7 @@ fn check_player_health(
         (health.value + heal_amount - damage_amount).clamp(0.0, health.max_health as f32);
 
     if health.value != new_value {
-        info!("health: {}", new_value);
+        debug!("health: {}", new_value);
         health.value = new_value;
 
         if new_value <= 0. {
