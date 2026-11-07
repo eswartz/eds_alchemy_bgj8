@@ -5,10 +5,9 @@ use eds_bevy_common::{
     layers::GameLayer,
     markers::{DespawnAfter, Spawned},
     physics::{
-        AngularVelocity, Collider, ColliderConstructor, ColliderConstructorHierarchy,
-        ColliderConstructorHierarchyReady, CollisionEnd, CollisionEventsEnabled, CollisionLayers,
-        CollisionStart, Friction, LinearDamping, LinearVelocity, Mass, Restitution, RigidBody,
-        Sensor, Vector,
+        Collider, ColliderConstructor, ColliderConstructorHierarchy,
+        ColliderConstructorHierarchyReady, CollisionEventsEnabled, CollisionLayers, CollisionStart,
+        Friction, LinearDamping, LinearVelocity, Mass, Restitution, RigidBody, Vector,
     },
     surface_material::SurfaceMaterial,
 };
@@ -147,7 +146,7 @@ pub(crate) fn make_children_physical_after_collision(
                             Vector::ZERO
                         };
 
-                        if dbg!(my_vel.dot(their_vel)) > -100.0 {
+                        if my_vel.dot(their_vel) > -100.0 {
                             // not head-on or powerful enough
                             return;
                         }

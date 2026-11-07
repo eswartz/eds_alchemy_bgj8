@@ -2,7 +2,6 @@
 use bevy::prelude::*;
 #[cfg(feature = "input_bei")]
 use bevy_enhanced_input::prelude::*;
-use eds_bevy_common::physics::*;
 use eds_bevy_common::prelude::*;
 
 pub(crate) struct GameActionsPlugin;

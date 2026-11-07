@@ -1,40 +1,42 @@
 use $sys.calls.*;
 
-def hello(ent: Uns64, param: String) {
+def spawn(ctx: Struct, ent: Uns64, data: Struct, param: Tuple) {
+    bevy_call_func('remove_spawned')
+
     let size = 0.475 * 2.0
     let dist = 0.5 * 2
+    let height: IntF = param[1] as IntF
+    let width: IntF = param[0] as IntF // 2
     var y: IntF = 0
-    while y < 0 do
-        var x: IntF = -5
-        while x < 5 do
+    while y < height do
+        var x: IntF = -width
+        while x < width do
             let hue = ((x * y * 20) % 360) as RealF
             let color = ['Hsva', 'hue', hue, 'saturation', 0.875, 'value', 0.5]
             bevy_call_func('spawn_entity',
                 'Name', "spawn",
                 'offset', [:, x: x * dist, y: y * dist + 0.5, z: -2.0],
                 'shape', ['Cube', 'x', size, 'y', size, 'z', size],
+                ## 'shape', ['Sphere', size],
                 'rigid_body', 'Dynamic',
                 'color', color,
                 'mass', 100.0, ## * (60 - y) / 5.0,
-                'SurfaceMaterial', 'Glass',
+                'SurfaceMaterial', 'Sand',
                 'LinearDamping', 0.25,
                 'AngularDamping', 0.25,
-                'restitution', 0.0,
+                'restitution', 0.1,
                 'friction', 0.9,
                 'swept_ccd', 'linear',
                 'CollisionMargin', 0.0,
                 'CrosshairTargetable', nil,
                 'double_sided', false,
+                'Spawned', nil,
             );
             x += 1
         end
         y += 1
     end
 
-}
-
-def spawn(ent: Uns64, param: RealF) {
-    print("spawn ", param, "\n")
 }
 
 def ents_of(lst) -> Tuple {
@@ -48,13 +50,13 @@ def ents_of(lst) -> Tuple {
 }
 
 [@doc: "Spawn the cat and dog at the given offset vector"]
-def spawn_pets(ent: Uns64, offs: Tuple) {
+def spawn_pets(ctx: Struct, ent: Uns64, data: Struct, offs: Tuple) {
     let x = offs[0]
     let y = offs[1]
     let z = offs[2]
 
     bevy_call_func('remove_spawned')
-##{
+##{  ## wasn't working to really remove the elements, using the call above instead
     if let dogs = bevy_call_func(ent, 'find_entity_named', "(?i)^(dog|dog-0|.*\\bPug\\b.*)$", true) then
         print("removing dogs ", ents_of(dogs), "\n")
         var i = 0
@@ -76,10 +78,11 @@ def spawn_pets(ent: Uns64, offs: Tuple) {
 ##}
 
     let pet_scale = 5.0
+
     let dog_offs = [:, x, y, z: z + 3.0]
-    let dog_rot = ['Deg', [y: 90.0, x: 0, z: 0]]
+    let dog_rot = ['Deg', [y: 45.0, x: 0, z: 0]]
     let cat_offs = [:, x: -x, y, z]
-    let cat_rot = ['Deg', [y: -90.0, x: 0, z: 0]]
+    let cat_rot = ['Deg', [y: 90.0, x: 0, z: 0]]
 
     let dog_ent = bevy_call_func('spawn_entity',
         ##'parent', ent,
@@ -167,7 +170,6 @@ def spawn_pets(ent: Uns64, offs: Tuple) {
 }
 
 def FUNCS = [:,
-    hello,
     spawn,
     spawn_pets,
 ]

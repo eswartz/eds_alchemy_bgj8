@@ -2,6 +2,7 @@ use crate::yarn_ui::option_selection::OptionSelection;
 use crate::yarn_ui::setup::{DialogueContinueNode, DialogueNameNode};
 use crate::yarn_ui::typewriter::Typewriter;
 use crate::yarn_ui::{AlchemyDialogViewSystemSet, DialogueRootNode};
+use bevy::input_focus::InputFocus;
 use bevy::prelude::*;
 use bevy_yarnspinner::{events::*, prelude::*};
 use eds_bevy_common::conditions::{is_dialog_active, is_paused};
@@ -41,10 +42,12 @@ pub struct SpeakerChangeEvent {
 }
 
 fn show_dialog(
-    _: On<DialogueStarted>,
+    event: On<DialogueStarted>,
+    mut focus: ResMut<InputFocus>,
     mut visibility: Single<&mut Visibility, With<DialogueRootNode>>,
 ) {
     **visibility = Visibility::Inherited;
+    focus.set(event.event_target(), bevy::input_focus::FocusCause::Auto);
 }
 
 fn hide_dialog(

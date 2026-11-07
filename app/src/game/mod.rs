@@ -349,7 +349,6 @@ pub(crate) fn level_spawn_finished(
     sensable_q: Query<Entity, With<DeathboxCollider>>,
 ) {
     for ent in sensable_q.iter() {
-        dbg!(ent);
         commands
             .entity(ent)
             .insert((Sensor, CollisionEventsEnabled, CollidingEntities::default()));
@@ -808,6 +807,7 @@ fn bonk_on_the_head(
 }
 
 fn check_player_health(
+    mut commands: Commands,
     mut health: If<ResMut<PlayerHealth>>,
     mut reader: MessageReader<AddPlayerDamage>,
     time: Res<Time>,
@@ -828,5 +828,9 @@ fn check_player_health(
     if health.value != new_value {
         info!("health: {}", new_value);
         health.value = new_value;
+
+        if new_value <= 0. {
+            commands.set_state(LevelState::Lost);
+        }
     }
 }

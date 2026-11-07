@@ -60,7 +60,7 @@ pub(crate) fn update_damage_effect(
     let pstate = *player_q;
     let (cur_health, max_health) = (pstate.value, pstate.max_health as f32);
     let diff = cur_health - *last_health;
-    if diff < 0. {
+    if diff != 0. {
         let pain_ranking = (max_health - cur_health) / max_health;
         let strength = (-diff / (cur_health + 0.01)).clamp(0.0, 1.0);
         let time = pain_ranking / 1.0;

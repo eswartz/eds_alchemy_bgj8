@@ -54,4 +54,6 @@ pub struct ModelAssets {
 pub struct ScriptAssets {
     #[asset(path = "scripts/driver.dry")]
     pub driver: Handle<ScriptModule>,
+    #[asset(path = "scripts/entries.dry")]
+    pub entries: Handle<ScriptModule>,
 }

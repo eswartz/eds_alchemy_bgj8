@@ -3,24 +3,24 @@ use $sys.calls.*;
 mod entries;
 
 def on_init(ctx: Struct, ent: Uns64, data: Struct) {
+    let pent: Uns64 = bevy_call_func(ent, 'get_player_entity')
+    data.player = pent
 }
 
 
 def on_update(ctx: Struct, ent: Uns64, data: Struct) {
     if let task = data.task then
         data.task = nil
+        let func = struct_get(entries.FUNCS, task)
         print("running ", task, " with ", data.param, "\n")
-        struct_get(entries.FUNCS, task)(ent, data.param)
+        func(ctx, ent, data, data.param)
     end
 }
 
 let module = [:,
     on_init,
     on_update,
-    init_data: [
-        task: nil,
-        param: nil,
-    ],
+    init_data: [:],
 ]
 
 module

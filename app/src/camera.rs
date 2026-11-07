@@ -58,6 +58,7 @@ pub(crate) fn ensure_3d_camera(
     // } else {
     //     log::warn!("missing CameraEffects on scene");
     // }
+    //
 }
 
 fn configure_world_camera(mut ent_commands: EntityCommands, use_clustered: bool) {

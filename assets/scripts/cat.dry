@@ -1,5 +1,8 @@
 use $sys.calls.*;
 
+def X_HSIZE: RealF = 16.0
+def Z_HSIZE: RealF = 16.0
+
 def min(x: RealF, y: RealF) -> RealF {
     if x < y then x else y end
 }
@@ -52,16 +55,257 @@ def on_init(ctx: Struct, ent: Uns64, data: Struct, ...) {
     delay(random_number(0.15, 0.25))
 
     ##delay(1.5)
+
+    data.target = data.other_pos
+    data.rot = bevy_call_func(ent, 'get_rotation', 'World')
+    data.safe_distance = random_number(3.0, 10.0)
+
+    start_attack(ent, data)
 }
+
+def start_attack(ent: Uns64, data: Struct) {
+    data.phase = 'attack'
+    data.attack_time = random_number(2.0, 10.0)
+
+    if random_number(0.0, 1.0) < 0.25 then
+    bevy_call_func(ent, 'play_sound', [
+        'source': ['Asset',
+            choose([
+                "sounds/819958__rickismyname__cat-hissing.ogg",
+                "sounds/205650__myswat__funny-cat-always-grumpy-kitty-1.ogg",
+                "sounds/205650__myswat__funny-cat-always-grumpy-kitty-2.ogg",
+                "sounds/205650__myswat__funny-cat-always-grumpy-kitty-3.ogg",
+                "sounds/205650__myswat__funny-cat-always-grumpy-kitty-4.ogg",
+            ]),
+        ],
+        volume: ['Linear', random_number(0.25, 0.5)],
+        pitch_scale: random_number(0.5, 2.0),
+    ])
+    end
+
+}
+
+def start_wander(ent: Uns64, data: Struct) {
+    data.phase = 'wander'
+
+    data.target.x = clamp(data.other_pos.x + random_number(-10.0, 10.0), -X_HSIZE, X_HSIZE)
+    data.target.y = (data.other_pos.y + 0.0) / 2.0
+    data.target.z = clamp(data.other_pos.z + random_number(-10.0, 10.0), -Z_HSIZE, Z_HSIZE)
+
+}
+
+
+def start_flee(ent: Uns64, data: Struct) {
+
+    data.phase = 'flee'
+    data.flee_time = random_number(2.0, 5.0)
+
+    var vel = [x: 0.0, y: 0.0, z: 0.0]
+    bevy_call_func(ent, 'set_velocity', vel)
+
+
+    data.target.x = clamp(random_number(-X_HSIZE, X_HSIZE), -X_HSIZE, X_HSIZE)
+    data.target.y = (data.other_pos.y + 0.0) / 2.0
+    data.target.z = clamp(random_number(-Z_HSIZE, Z_HSIZE), -Z_HSIZE, Z_HSIZE)
+
+    if random_number(0.0, 1.0) < 0.125 then
+        bevy_call_func(ent, 'play_sound', [
+            'source': ['Asset',
+                choose([
+                    "sounds/819958__rickismyname__cat-hissing.ogg",
+                    "sounds/205650__myswat__funny-cat-always-grumpy-kitty-1.ogg",
+                    "sounds/205650__myswat__funny-cat-always-grumpy-kitty-2.ogg",
+                    "sounds/205650__myswat__funny-cat-always-grumpy-kitty-3.ogg",
+                    "sounds/205650__myswat__funny-cat-always-grumpy-kitty-4.ogg",
+                ]),
+            ],
+            volume: ['Linear', random_number(0.25, 0.5)],
+            pitch_scale: random_number(0.5, 2.0),
+        ])
+    end
+
+}
+
+## Move around, make noise
+def wander(ctx: Struct, ent: Uns64, data: Struct, cbdata: Struct) {
+    ##print("WANDER ", cbdata, "\n")
+
+    if random_number(0.0, 1.0) < 0.125 * ctx.delta_time then
+        bevy_call_func(ent, 'play_sound', [
+            'source': ['Asset',
+                choose([
+                    "sounds/66518__freemaster2__meow9.ogg",
+                    "sounds/205650__myswat__funny-cat-always-grumpy-kitty-4.ogg",
+                    "sounds/412017__skymary__cat-meow-short.ogg",
+                    "sounds/813118__qubodup__dogs-cats-crows-cat-1.ogg",
+                    "sounds/813118__qubodup__dogs-cats-crows-cat-2.ogg",
+                ]),
+            ],
+            volume: ['Linear', random_number(0.25, 0.5)],
+            pitch_scale: random_number(0.75, 1.5),
+        ])
+    end
+
+    ## No more runnin'
+    data.accel *= 0.9
+    ## Blockily move around
+    let sleep = 0.125
+
+    ## Wander
+    let vel = [
+        x: random_number(-1.0, 2.0),
+        y: cbdata.my_vel.y,
+        z: random_number(-2.0, 1.0),
+    ]
+    bevy_call_func(ent, 'set_velocity', vel)
+
+    let pos = cbdata.pos
+    let new_pos = [x: pos.x + vel.x, y: pos.y + vel.y, z: pos.z + vel.z]
+    data.target = new_pos
+
+    ## Turn to face movement
+    bevy_call_func(ent, 'look_at', data.target, 0.25)
+
+    ## But, do we see?!
+    if cbdata.dist < data.safe_distance then
+        start_attack(data, 4.0)
+    else
+        delay(sleep)
+    end
+}
+
+def attack(ctx: Struct, ent: Uns64, data: Struct, cbdata: Struct) {
+    ##print("ATTACK ", cbdata, "\n")
+
+    let dx = cbdata.dx
+    let dy = cbdata.dy
+    let dz = cbdata.dz
+    let dist = cbdata.dist
+    let pos = cbdata.pos
+    let my_vel = cbdata.my_vel
+
+    data.attack_time -= ctx.delta_time
+    if data.attack_time <= 0.0 then
+        start_flee(ent, data)
+        return
+    end
+
+    bevy_call_func(ent, 'look_at', data.other, 0.5)
+
+    var sleep = 0.1
+
+    let speed = clamp(data.speed * dist, 0.0, data.max_speed)
+    data.speed *= data.accel
+
+    let vx = dx * speed / dist + random_number(-2, 2)
+    let vy = dy * speed / dist
+    let vz = dz * speed / dist + random_number(-1, 1)
+
+    var vel = [x: vx, y: clamp(vy + my_vel.y, -100.0, 50.0), z: vz]
+
+    if pos.y < 0 then
+        vel.y = -pos.y * 10.0
+    end
+
+
+    ##print(bevy_call_func(ent, 'ent_to_string'), " new vel: ", vel, "\n")
+    bevy_call_func(ent, 'insert_components', 'LinearVelocity', vel)
+
+    if random_number(0.0, 1.0) < 0.25 * ctx.delta_time then
+        bevy_call_func(ent, 'play_sound', [
+            'source': ['Asset',
+                choose([
+                    "sounds/819958__rickismyname__cat-hissing.ogg",
+                    "sounds/205650__myswat__funny-cat-always-grumpy-kitty-1.ogg",
+                    "sounds/205650__myswat__funny-cat-always-grumpy-kitty-2.ogg",
+                    "sounds/205650__myswat__funny-cat-always-grumpy-kitty-3.ogg",
+                    "sounds/205650__myswat__funny-cat-always-grumpy-kitty-4.ogg",
+                ]),
+            ],
+            volume: ['Linear', random_number(0.5, 1.0)],
+            pitch_scale: random_number(1.0, 2.0),
+        ])
+    end
+
+}
+
+def flee(ctx: Struct, ent: Uns64, data: Struct, cbdata: Struct) {
+    ##print("FLEE ", cbdata, "\n")
+
+    var dx: RealF = cbdata.dx
+    var dy: RealF = cbdata.dy
+    var dz: RealF = cbdata.dz
+    let dist: RealF = cbdata.dist
+    let pos: Struct = cbdata.pos
+    let my_vel: Struct = cbdata.my_vel
+
+    bevy_call_func(ent, 'look_at', data.target, 0.5)
+
+    if dist < 1.0 then
+        ## new target!
+        start_flee(ent, data)
+        return
+    end
+
+    ## Turn to face target
+    bevy_call_func(ent, 'look_at', data.target, 0.25)
+
+    data.flee_time -= ctx.delta_time
+    if data.flee_time <= 0.0 then
+        start_wander(ent, data)
+        return
+    end
+
+
+    var sleep = 0.25
+    let max_speed: RealF = data.max_speed
+    if data.speed < max_speed then
+        data.speed *= data.accel
+    else
+        data.speed *= 0.9
+    end
+    data.speed = clamp(data.speed, 0.0, max_speed)
+    data.attack_time -= ctx.delta_time
+    if data.attack_time <= 0.0 then
+        start_flee(ent, data)
+    end
+
+    let vel = [x: dx, y: dy, z: dz * random_number(-2.0, 2.0)]
+
+    let pos = cbdata.pos
+    let new_pos = [x: pos.x + vel.x, y: pos.y + vel.y, z: pos.z + vel.z]
+    data.target = new_pos
+
+    ## Turn to face movement
+    bevy_call_func(ent, 'look_at', data.target, 0.25)
+
+    ## get out of ground
+    if pos.y < -0 then
+        vel.y = -pos.y * 10.0
+    end
+
+    ##print(bevy_call_func(ent, 'ent_to_string'), " new vel: ", vel, "\n")
+    bevy_call_func(ent, 'insert_components', 'LinearVelocity', vel)
+
+    delay(random_number(0.00, 0.03) + sleep/3)
+
+}
+
+
+def phase_handlers = [:,
+    wander,
+    attack,
+    flee,
+]
 
 def on_update(ctx: Struct, ent: Uns64, data: Struct, ...) {
     let other_pos = bevy_call_func(data.other, 'get_position', 'World')
-    print("other_pos: ", other_pos,  "\n")
-    ##data.other_pos = other_pos
+    ##print("other_pos: ", other_pos,  "\n")
+    data.other_pos = other_pos
 
     let my_vel = bevy_call_func(ent, 'get_velocity')
     let pos = bevy_call_func(ent, 'get_position', 'World')
-    let goal = data.other_pos
+    let goal = data.target
 
     ## Directional distance from our goal.
     var dx = goal.x - pos.x
@@ -71,56 +315,8 @@ def on_update(ctx: Struct, ent: Uns64, data: Struct, ...) {
     let dist = ((dx * dx) + (dy * dy) + (dz * dz)) ** 0.5
     ##print([:, dist, dx, dy, dz], "\n")
 
-    bevy_call_func(ent, 'look_at', data.other, 0.5)
-
-    var sleep = 0.1
-    let vel = if dist > 1 then
-
-        let speed = clamp(data.speed * dist, 0.0, data.max_speed)
-        data.speed *= data.accel
-
-        let vx = dx * speed / dist + random_number(-2, 2)
-        let vy = dy * speed / dist
-        let vz = dz * speed / dist + random_number(-1, 1)
-
-        [x: vx, y: vy + my_vel.y, z: vz]
-    else
-        ## too close
-
-        if random_number(0.0, 1.0) < 0.75 then
-            bevy_call_func(ent, 'play_sound', [
-                'source': ['Asset',
-                    choose([
-                        "sounds/66518__freemaster2__meow9.ogg",
-                        "sounds/819958__rickismyname__cat-hissing.ogg",
-                        "sounds/205650__myswat__funny-cat-always-grumpy-kitty-1.ogg",
-                        "sounds/205650__myswat__funny-cat-always-grumpy-kitty-2.ogg",
-                        "sounds/205650__myswat__funny-cat-always-grumpy-kitty-3.ogg",
-                    ]),
-                ],
-                volume: ['Linear', random_number(0.25, 0.5)],
-                pitch_scale: random_number(0.5, 2.0),
-            ])
-        end
-
-        data.accel += 0.05
-        sleep = 0.2
-        dx = data.start_pos.x - pos.x
-        dy = data.start_pos.y - pos.y
-        dz = data.start_pos.z - pos.z
-
-        [x: dx * random_number(-3.0, 3.0), y: my_vel.y + dy + 2.0, z: dz * random_number(-3.0, 3.0)]
-    end
-
-    if pos.y < 0 then
-        vel.y = -pos.y * 10.0
-    end
-
-    ##print(bevy_call_func(ent, 'ent_to_string'), " new vel: ", vel, "\n")
-    bevy_call_func(ent, 'insert_components', 'LinearVelocity', vel)
-
-
-    delay(sleep)
+    let phase_handler = struct_get(phase_handlers, data.phase)
+    phase_handler(ctx, ent, data, [:, my_vel, pos, goal, dx, dy, dz, dist])
 }
 
 [

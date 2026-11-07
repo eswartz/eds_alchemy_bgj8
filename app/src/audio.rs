@@ -2,10 +2,6 @@ use bevy::prelude::*;
 use bevy_asset_loader::loading_state::LoadingStateAppExt as _;
 use bevy_asset_loader::loading_state::config::ConfigureLoadingState as _;
 use bevy_asset_loader::loading_state::config::LoadingStateConfig;
-use bevy_seedling::prelude::PlaybackSettings;
-use bevy_seedling::prelude::*;
-use rand::RngExt;
-use rand::seq::IndexedRandom as _;
 
 use crate::assets::FxAssets;
 use crate::assets::MusicAssets;
@@ -26,10 +22,9 @@ impl Plugin for AudioPlugin {
     }
 }
 
-pub(crate) fn init_background_audio(
-    mut commands: Commands,
-    world_q: Single<Entity, With<WorldMarker>>,
-    music: Res<MusicAssets>,
+pub(crate) fn init_background_audio(// mut commands: Commands,
+    // world_q: Single<Entity, With<WorldMarker>>,
+    // music: Res<MusicAssets>,
 ) {
     // commands.spawn((
     //     ChildOf(*world_q),

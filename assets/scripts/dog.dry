@@ -53,6 +53,8 @@ def on_init(ctx: Struct, ent: Uns64, data: Struct, ...) {
     delay(random_number(0.20, 0.30))
 
     delay(random_number(0.65, 0.85))
+
+    data.phase = 'idle'
 }
 
 def on_update(ctx: Struct, ent: Uns64, data: Struct, ...) {
@@ -106,23 +108,23 @@ def on_update(ctx: Struct, ent: Uns64, data: Struct, ...) {
             ])
         end
 
-        sleep = 0.25
+        sleep = 0.125
         dx = data.start_pos.x - pos.x
         dy = data.start_pos.y - pos.y
         dz = data.start_pos.z - pos.z
 
-        [x: dx * 1.0, y: 0, z: dz * 2.0]
+        [x: dx * 1.0 + random_number(-10.0, 10.0), y: 0, z: dz * 2.0 + random_number(-10.0, 10.0)]
 
     end
 
-    if pos.y < 0 or pos.y > 1 then
+    if pos.y < 0.25 or pos.y > 1 then
         vel.y = -pos.y * 10.0
     end
 
     ##print(bevy_call_func(ent, 'ent_to_string'), " new vel: ", vel, "\n")
     bevy_call_func(ent, 'insert_components', 'LinearVelocity', vel)
 
-    delay(sleep)
+    delay(random_number(0.00, 0.03) + sleep/3)
 }
 
 [

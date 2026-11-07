@@ -2,9 +2,8 @@ title: Hello
 color: blue
 position: -36,-75
 ---
-<<jump End>>
 <<if not $once_hello>>
-<<attach_script_1 "hello" "nil">>
+// <<attach_script_1 "hello" "nil">>
 <<set $once_hello to true>>
 Welcome.
 This place is pretty empty.
@@ -15,32 +14,43 @@ Time limits and all. Lots of time. Lots of limits.
 		But really. Eight days. Two of those porting all my stuff and some 3rd-party stuff to 0.20.
 		-> Boo hoo.
 			You get it, though, right?
-			<<attach_script_1 "spawn" 5>>
+			<<attach_script_3 "spawn" 5 5 0>>
 		-> Sounds like fun!
 			Yeah, I guess it is!
-			<<attach_script_1 "spawn" 15>>
+			<<attach_script_3 "spawn" 15 20 0>>
 -> That's fine.
+  Look at physics plus sound.
+  <<attach_script_3 "spawn" 10 5 0>>
 -> Did you have help?
-    <<jump Wow>>
+  Nope.
 Neep.
+<<dialogue_stop>>
 <<else>>
 Whatever.
-<<dialogue_over>>
+  -> Sorry.
+    <<jump Pets>>
+  -> (leave)
+    <<set $once_hello to false>>
+    <<dialogue_stop>>
+    <<jump Hello>>
 <<endif>>
 
 
 ===
 
-title: Wow
-position: 117,180
+title: Pets
 ---
-You suck!
-===
+Do you like animals? They were being used in experiments.
+-> Pets are nice.
+  Sometimes they are. You heard about cats and dogs?
+  -> Yes.
+    Look.
+    <<attach_script_3 "spawn_pets" -7.5 0.1 -2.0>>
+    <<jump Hello>>
+    <<dialogue_stop>>
+  -> No.
+    Oh. They're like, little animals, originally wild, but now domesticated.
+    <<jump Hello>>
+    <<dialogue_stop>>
 
-title: End
----
-OK.
--> Pets?
-  Sure.
-  <<attach_script_3 "spawn_pets" -7.5 0.1 -2.0>>
 ===

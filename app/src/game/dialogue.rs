@@ -3,6 +3,7 @@ use bevy_yarnspinner::prelude::{DialogueRunner, YarnProject, YarnValue};
 use eds_bevy_common::{
     physics::{CollisionEventsEnabled, CollisionStart, RigidBody},
     player_client::OurPlayer,
+    player_move_look::PlayerLook,
     states_sets::LevelState,
 };
 use fedry_bevy_plugin::{Scripting, script::ExecutionMode};
@@ -23,6 +24,16 @@ pub(crate) struct ActiveDialogueRunner;
 pub(crate) fn spawn_dialogue_runner(mut commands: Commands, project: Res<YarnProject>) -> Result {
     let mut dialogue_runner = project.create_dialogue_runner(&mut commands);
     dialogue_runner.commands_mut().add_command(
+        "dialogue_over",
+        commands.register_system(command_dialogue_over),
+    );
+
+    dialogue_runner.commands_mut().add_command(
+        "dialogue_stop",
+        commands.register_system(command_dialogue_stop),
+    );
+
+    dialogue_runner.commands_mut().add_command(
         "attach_script_1",
         commands.register_system(command_attach_script_1),
     );
@@ -33,10 +44,6 @@ pub(crate) fn spawn_dialogue_runner(mut commands: Commands, project: Res<YarnPro
     dialogue_runner.commands_mut().add_command(
         "attach_script_3",
         commands.register_system(command_attach_script_3),
-    );
-    dialogue_runner.commands_mut().add_command(
-        "dialogue_over",
-        commands.register_system(command_dialogue_over),
     );
 
     commands.spawn((
@@ -67,15 +74,42 @@ pub(crate) fn on_enter_dialog_cue(
     event: On<CollisionStart>,
     player_q: Query<&OurPlayer>,
     cue_q: Query<&DialogueCue>,
-    mut runner: Single<&mut DialogueRunner, With<ActiveDialogueRunner>>,
+    // look_q: Query<&PlayerLook>,
+    gxfrm_q: Query<&GlobalTransform>,
+    mut runner: Query<&mut DialogueRunner, With<ActiveDialogueRunner>>,
 ) {
-    if player_q.get(event.collider2).is_ok()
+    if let Some(mut runner) = runner.iter_mut().next()
+        && player_q.get(event.collider2).is_ok()
         && let Ok(cue) = cue_q.get(event.collider1)
     {
+        let Ok(gxfrm1) = gxfrm_q.get(event.body1.unwrap_or(event.collider1)) else {
+            return;
+        };
+        let Ok(gxfrm2) = gxfrm_q.get(event.body2.unwrap_or(event.collider2)) else {
+            return;
+        };
+        let offs = gxfrm1.translation() - gxfrm2.translation();
+        let y_ang = gxfrm1.rotation().to_euler(EulerRot::YXZ).0;
+        let dot = gxfrm1.translation().dot(gxfrm2.translation());
+        dbg!(offs, y_ang, dot);
+
         if !runner.is_running() {
             runner.start_node(&cue.0);
         }
     }
+}
+
+/// Stop dialog for now.
+fn command_dialogue_stop(
+    In(()): In<()>,
+    // mut commands: Commands,
+    mut runner_q: Query<&mut DialogueRunner>,
+) {
+    let Ok(mut runner) = runner_q.single_mut() else {
+        warn!("no single ActiveDialogueRunner");
+        return;
+    };
+    runner.stop();
 }
 
 /// Dialogue is over; remove the runner.
@@ -84,7 +118,7 @@ fn command_dialogue_over(
     mut commands: Commands,
     runner_q: Query<Entity, With<ActiveDialogueRunner>>,
 ) {
-    let Ok(ent) = runner_q.single() else {
+    let Some(ent) = runner_q.iter().next() else {
         warn!("no single ActiveDialogueRunner");
         return;
     };
