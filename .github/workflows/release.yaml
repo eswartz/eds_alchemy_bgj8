@@ -12,10 +12,10 @@ env:
   add_binaries_to_github_release: true
   # itch_target: eswartz75/eds_alchemy
 
-  target_flags: -Fdev_native
-  target_dir: debug
-  # target_flags: --release
-  # target_dir: release
+  # target_flags: -Fdev_native
+  # target_dir: debug
+  target_flags: --release
+  target_dir: release
   # Before enabling LFS, please take a look at GitHub's documentation for costs and quota limits:
   # https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-storage-and-bandwidth-usage
   use_git_lfs: true
