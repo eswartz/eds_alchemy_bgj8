@@ -654,14 +654,18 @@ pub(crate) fn spawn_explosion_sounds(
     assets: Res<FxAssets>,
 ) {
     let mut rng = rand::rng();
-    dbg!(ent);
     commands.spawn((
         ChildOf(ent),
         Sfx,
         SamplePlayer::new(
-            (*[&assets.firecracker_1, &assets.firecracker_2]
-                .choose(&mut rand::rng())
-                .unwrap())
+            (*[
+                &assets.firecracker_1,
+                &assets.firecracker_2,
+                &assets.pop_1,
+                &assets.pop_2,
+            ]
+            .choose(&mut rand::rng())
+            .unwrap())
             .clone(),
         )
         .with_volume(Volume::Linear(1.0)),

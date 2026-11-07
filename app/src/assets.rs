@@ -50,6 +50,10 @@ pub struct FxAssets {
     pub firecracker_1: Handle<AudioSample>,
     #[asset(path = "sounds/126565__ikbenraar__firecracker-tablet-bass.ogg")]
     pub firecracker_2: Handle<AudioSample>,
+    #[asset(path = "sounds/328119__dsg__pop-9.ogg")]
+    pub pop_1: Handle<AudioSample>,
+    #[asset(path = "sounds/789793__quatricise__pop-4.ogg")]
+    pub pop_2: Handle<AudioSample>,
 }
 
 #[derive(Resource, AssetCollection)]
