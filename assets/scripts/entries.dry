@@ -195,6 +195,7 @@ def water(ctx: Struct, ent: Uns64, data: Struct, param: Tuple) {
         'rigid', 'Static',      ## ensures collider
         'SurfaceMaterial', 'Water',
         'Water', nil,
+        'double_sided', true,
     );
 
     var i: IntF = 0
@@ -211,14 +212,15 @@ def water(ctx: Struct, ent: Uns64, data: Struct, param: Tuple) {
             'rigid_body', 'Dynamic',
             'color', color,
             'mass', 20.0, ## * (60 - y) / 5.0,
-            'SurfaceMaterial', 'Glass',
-            'LinearDamping', 0.95,
-            'AngularDamping', 0.95,
+            'SurfaceMaterial', 'Synthetic',
+            'LinearDamping', 0.5,
+            'AngularDamping', 0.5,
             'restitution', 0.25,
             'friction', 0.2,
             'swept_ccd', 'linear',
             'CollisionMargin', 0.0,
             'Spawned', nil,
+            'Floating', nil,
         );
     end
 }
