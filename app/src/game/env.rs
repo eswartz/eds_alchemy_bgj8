@@ -12,12 +12,20 @@ pub(crate) struct EnvPlugin;
 
 impl Plugin for EnvPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            FixedPreUpdate,
-            (check_water_entry_exit, float_on_water)
-                .run_if(not(is_paused))
-                .run_if(in_state(LevelState::Playing)),
-        );
+        app.add_plugins(bevy_water::WaterPlugin) //
+            .insert_resource(bevy_water::WaterSettings {
+                spawn_tiles: None,
+                amplitude: 0.0,
+                ..default()
+            }) //
+            .add_systems(OnEnter(LevelState::Playing), (remove_water,))
+            .add_systems(OnExit(LevelState::Playing), (remove_water,))
+            .add_systems(
+                FixedPreUpdate,
+                (check_water_entry_exit, float_on_water)
+                    .run_if(not(is_paused))
+                    .run_if(in_state(LevelState::Playing)),
+            );
     }
 }
 
@@ -72,38 +80,38 @@ fn check_water_entry_exit(
 pub struct Floating;
 
 fn float_on_water(
-    mut commands: Commands,
-    mut forces_q: Query<(&GlobalTransform, &ColliderAabb, &Mass, Forces), With<Floating>>,
+    mut forces_q: Query<
+        (
+            &GlobalTransform,
+            &ColliderAabb,
+            &Mass,
+            Forces,
+            Has<OurPlayer>,
+        ),
+        Or<(With<Floating>, With<OurPlayer>)>,
+    >,
     water_q: Query<&ColliderAabb, With<Water>>,
-    time: Res<Time>,
+    water: bevy_water::WaterParam,
 ) {
-    let mut rng = rand::rng();
-
-    let Ok(water_aabb) = water_q.single() else {
+    if water_q.is_empty() {
         return;
     };
-    let top_y = water_aabb.max.y;
 
-    for (gxfrm, my_aabb, mass, mut forces) in forces_q.iter_mut() {
-        // let my_y = gxfrm.translation().y;
+    for (gxfrm, my_aabb, mass, mut forces, is_player) in forces_q.iter_mut() {
+        let top_y = water.wave_point(gxfrm.translation()).y;
         let half_height = my_aabb.size().y / 2.0;
         let my_y = my_aabb.min.y + half_height / 2.0;
-        // dbg!(top_y, my_y);
 
-        // Fake wave
-        let x = (gxfrm.translation().x % 5.0) / 5.0 * std::f32::consts::TAU;
-        let z = (gxfrm.translation().z % 5.0) / 5.0 * std::f32::consts::TAU;
-        let sx = (x + time.elapsed_secs() / 4.0).cos();
-        let sz = (z + time.elapsed_secs() / 4.0).sin();
-
-        // let top_y = top_y + (sx + sz) * half_height;
-        let pert = (sx * sz).abs() * half_height / 2.0;
-
-        let dist = my_y - top_y + pert;
-        if dist > half_height {
+        let dist = my_y - top_y;
+        if dist > half_height && !is_player {
             forces.apply_linear_impulse(Vec3::NEG_Y * dist * 0.5 * mass.0);
         } else if dist < -half_height {
             forces.apply_linear_impulse(Vec3::Y * -dist * 0.5 * mass.0);
         }
     }
+}
+
+fn remove_water(mut water: If<ResMut<bevy_water::WaterSettings>>) {
+    water.amplitude = 0.;
+    water.spawn_tiles = None;
 }

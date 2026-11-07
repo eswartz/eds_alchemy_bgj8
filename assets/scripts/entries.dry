@@ -185,18 +185,20 @@ def water(ctx: Struct, ent: Uns64, data: Struct, param: Tuple) {
     let items: IntF = param[1] as IntF
     let size: RealF = param[2] as RealF
 
+    bevy_call_func(ent, 'spawn_water', depth, [x: 4, y: 4])
+
     bevy_call_func('spawn_entity',
         'Name', "water",
         'offset', [:, x: 0, z: 0, y: depth/2],
         'shape', ['Cube', 'x', X_HSIZE*2.5, 'z', Z_HSIZE*2.5, 'y', depth],
-        'color', ['Hsva', 'hue', 240, 'saturation', 0.5, 'value', 0.95, 'alpha', 0.25],
+        'color', ['Hsva', 'alpha', 0.0],
         'Spawned', nil,
         'Sensor', nil,
         'rigid', 'Static',      ## ensures collider
         'SurfaceMaterial', 'Water',
         'Water', nil,
         'double_sided', true,
-    );
+    )
 
     var i: IntF = 0
     while i < items do

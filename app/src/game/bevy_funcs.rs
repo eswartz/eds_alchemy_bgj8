@@ -47,6 +47,11 @@ pub(crate) fn register_script_funcs(mut commands: Commands, runtime: If<Res<Scri
         rt.to_atom("make_children_physical_after_collision"),
         commands.register_system(make_children_physical_after_collision),
     );
+
+    bevy_system_service.add_runtime_system(
+        rt.to_atom("spawn_water"),
+        commands.register_system(spawn_water),
+    );
 }
 
 /// Remove items with the [Spawned] marker.
@@ -54,9 +59,14 @@ pub(crate) fn remove_spawned(
     In((_entity, rt, _args)): In<(Entity, RuntimeArc, Vec<ObjectPtr>)>,
     mut commands: Commands,
     spawned_q: Query<Entity, With<Spawned>>,
+    water: Option<ResMut<bevy_water::WaterSettings>>,
 ) -> ExecResult {
     for ent in spawned_q.iter() {
         commands.entity(ent).try_despawn();
+    }
+    if let Some(mut water) = water {
+        water.amplitude = 0.;
+        water.spawn_tiles = None;
     }
     Ok(rt
         .for_typed_int(&rt.types().ufast_type, spawned_q.count() as _)?
@@ -252,4 +262,36 @@ fn on_colliders_ready_decorate_children(
         }
     }
     bevy::log::info!("{count} children");
+}
+
+pub(crate) fn spawn_water(
+    In((entity, rt, args)): In<(Entity, RuntimeArc, Vec<ObjectPtr>)>,
+    mut commands: Commands,
+    ctx_p: ConvertContextParam,
+) -> ExecResult {
+    use bevy_water::*;
+    let height = if let Some(arg) = args.get(0)
+        && let Some(h) = RtNumber::try_from(&arg)
+    {
+        h.as_real() as f32
+    } else {
+        0.0
+    };
+    let ctx = ctx_p.as_ctx();
+    let span = if let Some(arg) = args.get(1)
+        && let Ok(vec) = convert_obj_to_value::<UVec2>(&ctx, arg)
+    {
+        vec
+    } else {
+        UVec2::new(4, 4)
+    };
+
+    commands.insert_resource(WaterSettings {
+        height: height,
+        amplitude: 0.25f32.min(height * 0.5),
+        spawn_tiles: Some(span),
+        ..default()
+    });
+    commands.run_system_cached(bevy_water::setup_water);
+    Ok(default())
 }

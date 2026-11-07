@@ -120,6 +120,7 @@ bevy_tweening.workspace = true
 bevy_mod_outline.workspace = true
 
 bevy_yarnspinner.workspace = true
+bevy_water.workspace = true
 
 # csgrs.workspace = true
 
