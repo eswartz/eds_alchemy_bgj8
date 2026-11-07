@@ -11,7 +11,7 @@ use crate::game::Difficulty;
 use crate::game::LevelDifficulty;
 use eds_bevy_common::prelude::*;
 
-const GAME_TITLE: &str = "Humanity's End";
+const GAME_TITLE: &str = "What a Mess";
 const TITLE_FONT_SCALE: f32 = 2.0;
 
 pub struct MenuPlugin;

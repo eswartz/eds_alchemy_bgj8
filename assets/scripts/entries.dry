@@ -3,40 +3,45 @@ use $sys.calls.*;
 def spawn(ctx: Struct, ent: Uns64, data: Struct, param: Tuple) {
     bevy_call_func('remove_spawned')
 
-    let size = 0.475 * 2.0
-    let dist = 0.5 * 2
     let height: IntF = param[1] as IntF
     let width: IntF = param[0] as IntF // 2
-    var y: IntF = 0
-    while y < height do
-        var x: IntF = -width
-        while x < width do
-            let hue = ((x * y * 20) % 360) as RealF
-            let color = ['Hsva', 'hue', hue, 'saturation', 0.875, 'value', 0.5]
-            bevy_call_func('spawn_entity',
-                'Name', "spawn",
-                'offset', [:, x: x * dist, y: y * dist + 0.5, z: -2.0],
-                'shape', ['Cube', 'x', size, 'y', size, 'z', size],
-                ## 'shape', ['Sphere', size],
-                'rigid_body', 'Dynamic',
-                'color', color,
-                'mass', 100.0, ## * (60 - y) / 5.0,
-                'SurfaceMaterial', 'Sand',
-                'LinearDamping', 0.25,
-                'AngularDamping', 0.25,
-                'restitution', 0.1,
-                'friction', 0.9,
-                'swept_ccd', 'linear',
-                'CollisionMargin', 0.0,
-                'CrosshairTargetable', nil,
-                'double_sided', false,
-                'Spawned', nil,
-            );
-            x += 1
+    let depth: IntF = param[2] as IntF // 2
+    let size: RealF = param[3] as RealF * 0.95
+    let mat: String = param[4]
+    let dist = size * 2
+    var z: IntF = -depth
+    while z <= depth do
+        var y: IntF = 0
+        while y < height do
+            var x: IntF = -width
+            while x < width do
+                let hue = ((x * y * 20) % 360) as RealF
+                let color = ['Hsva', 'hue', hue, 'saturation', 0.875, 'value', 0.5]
+                bevy_call_func('spawn_entity',
+                    'Name', "spawn",
+                    'offset', [:, x: x * dist, y: y * dist + 0.5, z: z * dist -2.0],
+                    'shape', ['Cube', 'x', size, 'y', size, 'z', size],
+                    ## 'shape', ['Sphere', size],
+                    'rigid_body', 'Dynamic',
+                    'color', color,
+                    'mass', 100.0, ## * (60 - y) / 5.0,
+                    'SurfaceMaterial', mat,
+                    'LinearDamping', 0.25,
+                    'AngularDamping', 0.25,
+                    'restitution', 0.1,
+                    'friction', 0.9,
+                    'swept_ccd', 'linear',
+                    'CollisionMargin', 0.0,
+                    'CrosshairTargetable', nil,
+                    'double_sided', false,
+                    'Spawned', nil,
+                );
+                x += 1
+            end
+            y += 1
         end
-        y += 1
+        z += 1
     end
-
 }
 
 def ents_of(lst) -> Tuple {

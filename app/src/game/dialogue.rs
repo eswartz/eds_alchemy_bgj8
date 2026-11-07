@@ -45,6 +45,14 @@ pub(crate) fn spawn_dialogue_runner(mut commands: Commands, project: Res<YarnPro
         "attach_script_3",
         commands.register_system(command_attach_script_3),
     );
+    dialogue_runner.commands_mut().add_command(
+        "attach_script_4",
+        commands.register_system(command_attach_script_4),
+    );
+    dialogue_runner.commands_mut().add_command(
+        "attach_script_5",
+        commands.register_system(command_attach_script_5),
+    );
 
     commands.spawn((
         DespawnOnExit(LevelState::Playing),
@@ -242,6 +250,88 @@ fn command_attach_script_3(
 
     let tup_obj = rt
         .for_tuple(vec![param1_obj, param2_obj, param3_obj])
+        .unwrap();
+
+    script.data().map_mut().insert(rt.to_atom("param"), tup_obj);
+
+    commands.entity(ent).insert(script);
+}
+
+fn command_attach_script_4(
+    In((name, arg1, arg2, arg3, arg4)): In<(String, YarnValue, YarnValue, YarnValue, YarnValue)>,
+    mut commands: Commands,
+    runner_q: Query<Entity, With<ActiveDialogueRunner>>,
+    scripting: Scripting<GameScript>,
+    script_assets: Res<ScriptAssets>,
+) {
+    let script = scripting
+        .new_script_from_module_id(script_assets.driver.id(), ExecutionMode::Async)
+        .unwrap();
+
+    let Ok(ent) = runner_q.single() else {
+        warn!("no single ActiveDialogueRunner for '{name}'");
+        return;
+    };
+    let rt = &scripting.runtime.rt;
+
+    script
+        .data()
+        .map_mut()
+        .insert(rt.to_atom("task"), rt.for_string(name).unwrap());
+
+    let param1_obj = fetch_object_from_yarn(&rt, arg1).unwrap();
+    let param2_obj = fetch_object_from_yarn(&rt, arg2).unwrap();
+    let param3_obj = fetch_object_from_yarn(&rt, arg3).unwrap();
+    let param4_obj = fetch_object_from_yarn(&rt, arg4).unwrap();
+
+    let tup_obj = rt
+        .for_tuple(vec![param1_obj, param2_obj, param3_obj, param4_obj])
+        .unwrap();
+
+    script.data().map_mut().insert(rt.to_atom("param"), tup_obj);
+
+    commands.entity(ent).insert(script);
+}
+
+fn command_attach_script_5(
+    In((name, arg1, arg2, arg3, arg4, arg5)): In<(
+        String,
+        YarnValue,
+        YarnValue,
+        YarnValue,
+        YarnValue,
+        YarnValue,
+    )>,
+    mut commands: Commands,
+    runner_q: Query<Entity, With<ActiveDialogueRunner>>,
+    scripting: Scripting<GameScript>,
+    script_assets: Res<ScriptAssets>,
+) {
+    let script = scripting
+        .new_script_from_module_id(script_assets.driver.id(), ExecutionMode::Async)
+        .unwrap();
+
+    let Ok(ent) = runner_q.single() else {
+        warn!("no single ActiveDialogueRunner for '{name}'");
+        return;
+    };
+    let rt = &scripting.runtime.rt;
+
+    script
+        .data()
+        .map_mut()
+        .insert(rt.to_atom("task"), rt.for_string(name).unwrap());
+
+    let param1_obj = fetch_object_from_yarn(&rt, arg1).unwrap();
+    let param2_obj = fetch_object_from_yarn(&rt, arg2).unwrap();
+    let param3_obj = fetch_object_from_yarn(&rt, arg3).unwrap();
+    let param4_obj = fetch_object_from_yarn(&rt, arg4).unwrap();
+    let param5_obj = fetch_object_from_yarn(&rt, arg5).unwrap();
+
+    let tup_obj = rt
+        .for_tuple(vec![
+            param1_obj, param2_obj, param3_obj, param4_obj, param5_obj,
+        ])
         .unwrap();
 
     script.data().map_mut().insert(rt.to_atom("param"), tup_obj);

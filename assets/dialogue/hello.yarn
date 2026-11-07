@@ -3,11 +3,43 @@ color: blue
 position: -36,-75
 ---
 <<if not $once_hello>>
-// <<attach_script_1 "hello" "nil">>
+Alchemy. What a theme. Am I right? How to represent a protoscientific school of hermetic wisdom? Okay, let's try the four elements.
 <<set $once_hello to true>>
-Welcome.
-This place is pretty empty.
-Time limits and all. Lots of time. Lots of limits.
+<<set $earth to 0>>
+<<set $water to 0>>
+<<set $fire to 0>>
+<<set $air to 0>>
+<<else>>
+Four elements.
+<<endif>>
+-> Water
+-> Earth
+  <<declare $cube_size = 0.5 as number>>
+  <<if $earth == 0>>
+  <<set $cube_size = 0.5>>
+  Do cubes count?
+  <<set $earth = $earth + 1>>
+  <<attach_script_5 "spawn" 5 5 0 {$cube_size} Glass>>
+  <<elseif $earth == 1>>
+  How about a lot of cubes?
+  <<set $earth = $earth + 1>>
+  <<set $cube_size to 0.75>>
+  <<attach_script_5 "spawn" 5 10 0 {$cube_size} Wood>>
+  <<else>>
+  <<if $earth < 3>>
+  How about just too many cubes?
+  <<set $earth = $earth + 1>>
+  <<set $cube_size = 1.0>>
+  <<set $mat = "Stone">>
+  <<else>>
+  I'm out of ideas.
+  <<set $mat = "Sand">>
+  <<set $cube_size = $cube_size + 0.25>>
+  <<endif>>
+  <<attach_script_5 "spawn" 7 13 5 {$cube_size} {$mat}>>
+  <<endif>>
+-> Fire
+-> Air
 -> Don't make excuses.
     You're right, I should take more responsibility.
 	-> Nod
@@ -25,15 +57,6 @@ Time limits and all. Lots of time. Lots of limits.
   Nope.
 Neep.
 <<dialogue_stop>>
-<<else>>
-Whatever.
-  -> Sorry.
-    <<jump Pets>>
-  -> (leave)
-    <<set $once_hello to false>>
-    <<dialogue_stop>>
-    <<jump Hello>>
-<<endif>>
 
 
 ===
@@ -44,7 +67,7 @@ Do you like animals? They were being used in experiments.
 -> Pets are nice.
   Sometimes they are. You heard about cats and dogs?
   -> Yes.
-    Look.
+    Look at these two. Can't get along.
     <<attach_script_3 "spawn_pets" -7.5 0.1 -2.0>>
     <<jump Hello>>
     <<dialogue_stop>>
