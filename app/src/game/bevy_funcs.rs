@@ -15,7 +15,7 @@ use fedry_bevy_plugin::prelude::*;
 use fedry_runtime::prelude::*;
 use rand::RngExt as _;
 
-use crate::game::GameScript;
+use crate::game::{GameScript, env::remove_water};
 
 /// Register game-specific functions.
 ///
@@ -59,25 +59,16 @@ pub(crate) fn remove_spawned(
     In((_entity, rt, _args)): In<(Entity, RuntimeArc, Vec<ObjectPtr>)>,
     mut commands: Commands,
     spawned_q: Query<Entity, With<Spawned>>,
-    water: Option<ResMut<bevy_water::WaterSettings>>,
 ) -> ExecResult {
     for ent in spawned_q.iter() {
         commands.entity(ent).try_despawn();
     }
-    if let Some(mut water) = water {
-        water.amplitude = 0.;
-        water.spawn_tiles = None;
-    }
+    commands.run_system_cached(remove_water);
     Ok(rt
         .for_typed_int(&rt.types().ufast_type, spawned_q.count() as _)?
         .into())
 }
 
-// pub(crate) fn check_collisions(mut reader: MessageReader<CollisionStart>) {
-//     for ev in reader.read() {
-//         dbg!(ev);
-//     }
-// }
 /// For the parent `entity`, which contains a split mesh inside,
 /// ensure that
 /// (1) the parent has a Collider and is RigidBody::Static
@@ -265,7 +256,7 @@ fn on_colliders_ready_decorate_children(
 }
 
 pub(crate) fn spawn_water(
-    In((entity, rt, args)): In<(Entity, RuntimeArc, Vec<ObjectPtr>)>,
+    In((_entity, _rt, args)): In<(Entity, RuntimeArc, Vec<ObjectPtr>)>,
     mut commands: Commands,
     ctx_p: ConvertContextParam,
 ) -> ExecResult {

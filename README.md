@@ -4,10 +4,16 @@ Game jam entry for Bevy Game Jam #8
 
 # Crates
 
-`eds_bevy_common`: see it
-
-`fedry`
-`fedry_bevy`
+*  `avian`
+*  `bevy_seedling` + `Firewheel`
+*  `bevy_yarn_spinner`
+*  `bevy_mod_outline`
+*  `bevy_water`
+*  `bevy_mod_outline`
+  
+*  `eds_bevy_common`: see it
+*  `fedry` -- private for now
+*  `fedry_bevy`
 
 # Assets
 

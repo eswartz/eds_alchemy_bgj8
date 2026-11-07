@@ -111,7 +111,8 @@ fn float_on_water(
     }
 }
 
-fn remove_water(mut water: If<ResMut<bevy_water::WaterSettings>>) {
+pub(crate) fn remove_water(mut water: If<ResMut<bevy_water::WaterSettings>>) {
     water.amplitude = 0.;
     water.spawn_tiles = None;
+    water.height = -100.;
 }
