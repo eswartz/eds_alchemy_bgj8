@@ -16,8 +16,10 @@ def abs(x: RealF) -> RealF {
 def X_HSIZE: RealF = 16.0
 def Z_HSIZE: RealF = 16.0
 
-def spawn(ctx: Struct, ent: Uns64, data: Struct, param: Tuple) {
+def earth(ctx: Struct, ent: Uns64, data: Struct, param: Tuple) {
     bevy_call_func('remove_spawned')
+    bevy_call_func('set_gravity', -9.8)
+    bevy_call_func('set_player_mode', 'Fps')
 
     let height: IntF = param[1] as IntF
     let width: IntF = param[0] as IntF // 2
@@ -71,7 +73,10 @@ def ents_of(lst) -> Tuple {
 }
 
 [@doc: "Spawn the cat and dog at the given offset vector"]
-def spawn_pets(ctx: Struct, ent: Uns64, data: Struct, params: Tuple) {
+def fire(ctx: Struct, ent: Uns64, data: Struct, params: Tuple) {
+    bevy_call_func('set_gravity', -9.8)
+    bevy_call_func('set_player_mode', 'Fps')
+
     let x: RealF = params[0]
     let y: RealF = params[1]
     let z: RealF = params[2]
@@ -193,6 +198,8 @@ def spawn_pets(ctx: Struct, ent: Uns64, data: Struct, params: Tuple) {
 
 def water(ctx: Struct, ent: Uns64, data: Struct, param: Tuple) {
     bevy_call_func('remove_spawned')
+    bevy_call_func('set_gravity', -9.8)
+    bevy_call_func('set_player_mode', 'Fps')
 
     let depth: RealF = param[0] as RealF
     let items: IntF = param[1] as IntF
@@ -240,8 +247,59 @@ def water(ctx: Struct, ent: Uns64, data: Struct, param: Tuple) {
     end
 }
 
+def air(ctx: Struct, ent: Uns64, data: Struct, param: Tuple) {
+    bevy_call_func('remove_spawned')
+    ##bevy_call_func('set_gravity', 0)
+    ##bevy_call_func('set_player_mode', 'Space')
+
+    let count: UnsF = param[0] as UnsF
+    let size: RealF = param[1] as RealF
+    let mass: RealF = param[2] as RealF
+
+    var i: UnsF = 0
+    while i < count do
+        i += 1
+        let hue = ((i * 17) % 360) as RealF
+        let color = ['Hsva', 'hue', hue, 'saturation', 0.875, 'value', 1.0]
+        let emissive_color = ['Hsva', 'hue', hue, 'saturation', 0.875, 'value', 2.0]
+        let x = random_number(-X_HSIZE, X_HSIZE)
+        let y = random_number(0, X_HSIZE)
+        let z = random_number(-Z_HSIZE, Z_HSIZE)
+        let scale = random_number(0.5, 3.0)
+        let size = size * scale
+        let mass = mass * scale
+        bevy_call_func('spawn_entity',
+            'Name', "star",
+            'offset', [:, x, z, y],
+            'shape', ['Sphere', size],
+            'rigid', 'Dynamic',
+            'color', color,
+            'emissive', emissive_color,
+            'mass', mass,
+            'SurfaceMaterial', 'Stone',
+            'Spawned', nil,
+            'alpha_mode', 'Add',
+            'GravityObject', [
+                density: 1.0e5,
+                radius: size,
+            ],
+            'SleepThreshold', [
+                linear: 0.,
+                angular: 0.,
+            ],
+            'GravityScale', 0.0,
+            'CenterOfMass', [:],
+            'collision_layers', 'gameplay|projectile',
+            'collider_shape', ['Sphere', 0.001],
+            'Bloom', [intensity: 0.5],
+            'swept_ccd', 'off',
+        );
+    end
+}
+
 def FUNCS = [:,
-    spawn,
-    spawn_pets,
+    earth,
+    fire,
     water,
+    air,
 ]

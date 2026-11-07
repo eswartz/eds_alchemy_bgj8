@@ -4,6 +4,8 @@ mod damage_effect;
 mod dialogue;
 mod env;
 mod firing;
+mod gravity;
+mod gravity_compute;
 mod sound;
 
 mod level_0;
@@ -42,6 +44,8 @@ use crate::game::damage_effect::DamageEffectPlugin;
 use crate::game::dialogue::decorate_dialog_cues;
 use crate::game::dialogue::spawn_dialogue_runner;
 use crate::game::env::EnvPlugin;
+use crate::game::gravity::GravityPlugin;
+use crate::game::gravity_compute::GravityComputePlugin;
 use crate::game::sound::SoundPlugin;
 pub use action_handlers::*;
 
@@ -79,6 +83,7 @@ impl Plugin for GamePlugin {
             .add_message::<AddPlayerDamage>()
             .add_plugins(ActionHandlersPlugin)
             .add_plugins(EnvPlugin)
+            .add_plugins(GravityPlugin)
             // .add_plugins(FiringPlugin)
             .add_plugins(SoundPlugin)
             .add_plugins(FedryScriptingPlugin)

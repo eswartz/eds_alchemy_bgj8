@@ -50,12 +50,12 @@ Bools, numbers, strings, functions?
   <<set $cube_size = 0.5>>
   Do cubes count?
   <<set $earth = $earth + 1>>
-  <<attach_script_5 "spawn" 5 5 0 {$cube_size} Glass>>
+  <<attach_script_5 "earth" 5 5 0 {$cube_size} Glass>>
   <<elseif $earth == 1>>
   How about a lot of cubes?
   <<set $earth = $earth + 1>>
   <<set $cube_size to 0.75>>
-  <<attach_script_5 "spawn" 5 10 0 {$cube_size} Wood>>
+  <<attach_script_5 "earth" 5 10 0 {$cube_size} Wood>>
   <<else>>
   <<if $earth < 3>>
   How about just *too many* cubes?
@@ -67,9 +67,27 @@ Bools, numbers, strings, functions?
   <<set $mat = "Sand">>
   <<set $cube_size = $cube_size + 0.25>>
   <<endif>>
-  <<attach_script_5 "spawn" {random_range(5,7)} {random_range(10,13)} {random_range(3,5)} {$cube_size} {$mat}>>
+  <<attach_script_5 "earth" {random_range(5,7)} {random_range(10,13)} {random_range(3,5)} {$cube_size} {$mat}>>
   <<endif>>
 -> Air
+  <<if $air == 0>>
+  Air, that source of inspiration.
+  Um.
+  I don't have a gas simulation, but you know, a lot of gas was huffed in alchemists' labs.
+  OK, gravity. That happens in the air.
+  <<set $air_count = 100>>
+  <<elseif $air == 1>>
+  Boring? I guess.
+  <<elseif $air == 2>>
+  Even more?
+  <<elseif $air == 3>>
+  If things slow down, gotta start over.
+  <<else>>
+  ...
+  <<endif>>
+  <<set $air = $air + 1>>
+  <<attach_script_3 "air" {$air_count} 0.2 1.0e4>>
+  <<set $air_count = $air_count + 100>>
 -> Fire
     <<if $fire == 0>>
     Fire, fire... no time for integrating Hanabi...
@@ -90,6 +108,6 @@ Bools, numbers, strings, functions?
     <<set $fire = $fire + 1>>
     <<set $x = -7.5 + ($fire * 3) % 7>>
     <<set $z = -9.0 + ($fire * 5) % 11>>
-    <<attach_script_4 "spawn_pets" {$x} 0.1 {$z} {random_range(50.0, 100.0)}>>
+    <<attach_script_4 "fire" {$x} 0.1 {$z} {random_range(50.0, 100.0)}>>
 -> (leave)
 ===

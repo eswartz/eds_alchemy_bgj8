@@ -19,8 +19,8 @@ impl Plugin for EnvPlugin {
             //     PreUpdate,
             //     adjust_water.run_if(resource_changed::<VideoSettings>),
             // )
-            .add_systems(OnEnter(LevelState::Playing), (remove_water,))
-            .add_systems(OnExit(LevelState::Playing), (remove_water,))
+            .add_systems(OnEnter(LevelState::Playing), (remove_water, reset_gravity))
+            .add_systems(OnExit(LevelState::Playing), (remove_water, reset_gravity))
             .add_systems(
                 FixedPreUpdate,
                 (check_water_entry_exit, float_on_water)
@@ -116,4 +116,8 @@ pub(crate) fn get_water_quality(video: &VideoSettings) -> bevy_water::WaterQuali
         GlassQuality::High => bevy_water::WaterQuality::High,
         GlassQuality::Ultra => bevy_water::WaterQuality::Ultra,
     }
+}
+
+pub(crate) fn reset_gravity(mut gravity: ResMut<Gravity>) {
+    gravity.0 = Vec3::NEG_Y * 9.8;
 }

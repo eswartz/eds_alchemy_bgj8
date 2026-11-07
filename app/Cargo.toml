@@ -122,6 +122,9 @@ bevy_mod_outline.workspace = true
 bevy_yarnspinner.workspace = true
 bevy_water.workspace = true
 
+bevy_app_compute = { git = "https://github.com/eswartz/bevy_app_compute-fork.git" }
+# bevy_app_compute = { path = "/home/ejs/devel/bevy_app_compute-fork" }
+
 # csgrs.workspace = true
 
 # wasm_thread.workspace = true
