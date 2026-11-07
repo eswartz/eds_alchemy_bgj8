@@ -83,23 +83,23 @@ pub(crate) fn on_enter_dialog_cue(
     player_q: Query<&OurPlayer>,
     cue_q: Query<&DialogueCue>,
     // look_q: Query<&PlayerLook>,
-    gxfrm_q: Query<&GlobalTransform>,
+    // gxfrm_q: Query<&GlobalTransform>,
     mut runner: Query<&mut DialogueRunner, With<ActiveDialogueRunner>>,
 ) {
     if let Some(mut runner) = runner.iter_mut().next()
         && player_q.get(event.collider2).is_ok()
         && let Ok(cue) = cue_q.get(event.collider1)
     {
-        let Ok(gxfrm1) = gxfrm_q.get(event.body1.unwrap_or(event.collider1)) else {
-            return;
-        };
-        let Ok(gxfrm2) = gxfrm_q.get(event.body2.unwrap_or(event.collider2)) else {
-            return;
-        };
-        let offs = gxfrm1.translation() - gxfrm2.translation();
-        let y_ang = gxfrm1.rotation().to_euler(EulerRot::YXZ).0;
-        let dot = gxfrm1.translation().dot(gxfrm2.translation());
-        dbg!(offs, y_ang, dot);
+        // let Ok(gxfrm1) = gxfrm_q.get(event.body1.unwrap_or(event.collider1)) else {
+        //     return;
+        // };
+        // let Ok(gxfrm2) = gxfrm_q.get(event.body2.unwrap_or(event.collider2)) else {
+        //     return;
+        // };
+        // let offs = gxfrm1.translation() - gxfrm2.translation();
+        // let y_ang = gxfrm1.rotation().to_euler(EulerRot::YXZ).0;
+        // let dot = gxfrm1.translation().dot(gxfrm2.translation());
+        // dbg!(offs, y_ang, dot);
 
         if !runner.is_running() {
             runner.start_node(&cue.0);

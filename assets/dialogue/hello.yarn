@@ -2,17 +2,37 @@ title: Hello
 color: blue
 position: -36,-75
 ---
-<<if not $once_hello>>
+<<if not visited("Hello")>>
 Alchemy. What a theme. Am I right? How to represent a protoscientific school of hermetic wisdom? Okay, let's try the four elements.
-<<set $once_hello to true>>
-<<set $earth to 0>>
-<<set $water to 0>>
-<<set $fire to 0>>
-<<set $air to 0>>
+<<set $earth = 0>>
+<<set $water = 0>>
+<<set $fire = 0>>
+<<set $air = 0>>
 <<else>>
+<<set $ch = random_range(0, 5)>>
 Four elements.
+<<if $ch == 0>>
+I know. It's not really alchemy. But atomic elements hadn't been discovered yet!
+<<elseif $ch == 1>>
+Style, form, diction, flow?
+<<elseif $ch == 2>>
+Bools, numbers, strings, functions?
+<<endif>>
 <<endif>>
 -> Water
+  <<if $water == 0>>
+  <<set $water_level = 0.25>>
+  <<set $water_count = 10>>
+  <<set $water_size = 0.25>>
+  Water is wet.
+  <<else>>
+  Splash.
+  <<set $water_level = $water_level + 0.25>>
+  <<set $water_count = $water_count + 10>>
+  <<set $water_size = $water_size * 1.25>>
+  <<endif>>
+  <<set $water = $water + 1>>
+  <<attach_script_3 "water" {$water_level} {$water_count} {$water_size}>>
 -> Earth
   <<declare $cube_size = 0.5 as number>>
   <<if $earth == 0>>
@@ -38,42 +58,16 @@ Four elements.
   <<endif>>
   <<attach_script_5 "spawn" 7 13 5 {$cube_size} {$mat}>>
   <<endif>>
--> Fire
 -> Air
--> Don't make excuses.
-    You're right, I should take more responsibility.
-	-> Nod
-		But really. Eight days. Two of those porting all my stuff and some 3rd-party stuff to 0.20.
-		-> Boo hoo.
-			You get it, though, right?
-			<<attach_script_3 "spawn" 5 5 0>>
-		-> Sounds like fun!
-			Yeah, I guess it is!
-			<<attach_script_3 "spawn" 15 20 0>>
--> That's fine.
-  Look at physics plus sound.
-  <<attach_script_3 "spawn" 10 5 0>>
--> Did you have help?
-  Nope.
-Neep.
-<<dialogue_stop>>
-
-
-===
-
-title: Pets
----
-Do you like animals? They were being used in experiments.
--> Pets are nice.
-  Sometimes they are. You heard about cats and dogs?
-  -> Yes.
-    Look at these two. Can't get along.
-    <<attach_script_3 "spawn_pets" -7.5 0.1 -2.0>>
-    <<jump Hello>>
-    <<dialogue_stop>>
-  -> No.
-    Oh. They're like, little animals, originally wild, but now domesticated.
-    <<jump Hello>>
-    <<dialogue_stop>>
+-> Fire
+    <<if $fire == 0>>
+    Fire, fire... no time for integrating Hanabi...
+    You heard about cats and dogs?
+    <<endif>>
+    <<set $fire = $fire + 1>>
+    Look at these two. They can't get along.
+    <<set $x = -7.5 + ($fire * 3) % 7>>
+    <<set $z = -9.0 + ($fire * 5) % 11>>
+    <<attach_script_3 "spawn_pets" {$x} 0.1 {$z}>>
 
 ===

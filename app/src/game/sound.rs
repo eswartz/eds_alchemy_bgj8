@@ -317,8 +317,7 @@ impl SampleSelector {
         }
     }
 
-    /// Pick a random sample of the given type,
-    /// guaranteed to be
+    /// Pick a random sample of the given type.
     pub(crate) fn pick_sample(
         &mut self,
         ty: SampleSelectorType,
@@ -365,7 +364,7 @@ fn spawn_noise_on_collision(
     collisions: Collisions,
     phys_info_q: Query<(&GlobalTransform, &LinearVelocity, &AngularVelocity, &Mass)>,
     listener_q: Query<&GlobalTransform, With<SpatialListener3D>>,
-    player_q: Query<&Player>,
+    player_q: Query<&PlayerMovement, With<Player>>,
     parent_q: Query<&ChildOf>,
     paused: Res<PhysicsPaused>,
 
@@ -402,6 +401,11 @@ fn spawn_noise_on_collision(
 
         let get_mat = |mut ent| {
             loop {
+                if let Ok(p) = player_q.get(ent) {
+                    if p.area == AreaContent::Water {
+                        return SurfaceMaterial::Water;
+                    }
+                }
                 if let Ok(mat) = surf_mat_q.get(ent) {
                     return *mat;
                 };
@@ -412,12 +416,18 @@ fn spawn_noise_on_collision(
             }
         };
 
-        let phys_mat_a = get_mat(event.collider1);
-        let phys_mat_b = get_mat(event.collider2);
+        let mut phys_mat_a = get_mat(event.collider1);
+        let mut phys_mat_b = get_mat(event.collider2);
 
         let (src, target) = if has_mat_b || player_b {
+            if phys_mat_b == SurfaceMaterial::Water {
+                phys_mat_a = phys_mat_b;
+            }
             (event.collider1, event.collider2)
         } else if has_mat_a || player_a {
+            if phys_mat_a == SurfaceMaterial::Water {
+                phys_mat_b = phys_mat_a;
+            }
             (event.collider2, event.collider1)
         } else {
             continue;

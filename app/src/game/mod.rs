@@ -2,6 +2,7 @@ mod action_handlers;
 mod bevy_funcs;
 mod damage_effect;
 mod dialogue;
+mod env;
 mod firing;
 mod sound;
 
@@ -40,6 +41,7 @@ use crate::game::bevy_funcs::register_script_funcs;
 use crate::game::damage_effect::DamageEffectPlugin;
 use crate::game::dialogue::decorate_dialog_cues;
 use crate::game::dialogue::spawn_dialogue_runner;
+use crate::game::env::EnvPlugin;
 use crate::game::sound::SoundPlugin;
 pub use action_handlers::*;
 
@@ -76,6 +78,7 @@ impl Plugin for GamePlugin {
             //
             .add_message::<AddPlayerDamage>()
             .add_plugins(ActionHandlersPlugin)
+            .add_plugins(EnvPlugin)
             // .add_plugins(FiringPlugin)
             .add_plugins(SoundPlugin)
             .add_plugins(FedryScriptingPlugin)
@@ -288,12 +291,6 @@ impl AutoEndLevelTimer {
         }
     }
 }
-
-/// A cube.
-#[derive(Component, Reflect, Default, Clone)]
-#[reflect(Component, Clone, Default)]
-#[type_path = "game"]
-pub(crate) struct Cube;
 
 // World state
 

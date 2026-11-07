@@ -36,6 +36,15 @@ pub struct FxAssets {
     pub dog_3: Handle<AudioSample>,
     #[asset(path = "sounds/273688__richerlandtv__pug-woof-2.ogg")]
     pub dog_4: Handle<AudioSample>,
+
+    #[asset(path = "sounds/clip-enter-532888__bricklover__water-splash-1.ogg")]
+    pub water_enter_1: Handle<AudioSample>,
+    #[asset(path = "sounds/524498__krizin__pool-water-enter-02.ogg")]
+    pub water_enter_2: Handle<AudioSample>,
+    #[asset(path = "sounds/clip-exit-532888__bricklover__water-splash-1.ogg")]
+    pub water_exit_1: Handle<AudioSample>,
+    #[asset(path = "sounds/524498__krizin__pool-water-exit-02.ogg")]
+    pub water_exit_2: Handle<AudioSample>,
 }
 
 #[derive(Resource, AssetCollection)]

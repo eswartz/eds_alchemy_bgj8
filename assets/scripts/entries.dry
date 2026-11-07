@@ -1,5 +1,9 @@
 use $sys.calls.*;
 
+
+def X_HSIZE: RealF = 16.0
+def Z_HSIZE: RealF = 16.0
+
 def spawn(ctx: Struct, ent: Uns64, data: Struct, param: Tuple) {
     bevy_call_func('remove_spawned')
 
@@ -158,7 +162,7 @@ def spawn_pets(ctx: Struct, ent: Uns64, data: Struct, offs: Tuple) {
     let rigid = bevy_call_func('get_rigid_entity', cat_ent)
     bevy_call_func(rigid, 'insert_components',
         'CrosshairTargetable', nil,
-        'RigidBody', 'Dynamic',
+        'rigid', 'Dynamic',
         'collision_layers', 'default|gameplay|world',
         'Mass', 10.0,
         'SurfaceMaterial', 'Glass',
@@ -166,7 +170,7 @@ def spawn_pets(ctx: Struct, ent: Uns64, data: Struct, offs: Tuple) {
     let rigid = bevy_call_func('get_rigid_entity', dog_ent)
     bevy_call_func(rigid, 'insert_components',
         'CrosshairTargetable', nil,
-        'RigidBody', 'Dynamic',
+        'rigid', 'Dynamic',
         'collision_layers', 'default|gameplay|world',
         'Mass', 25.0,
         'SurfaceMaterial', 'Stone',
@@ -174,7 +178,53 @@ def spawn_pets(ctx: Struct, ent: Uns64, data: Struct, offs: Tuple) {
 ##}
 }
 
+def water(ctx: Struct, ent: Uns64, data: Struct, param: Tuple) {
+    bevy_call_func('remove_spawned')
+
+    let depth: RealF = param[0] as RealF
+    let items: IntF = param[1] as IntF
+    let size: RealF = param[2] as RealF
+
+    bevy_call_func('spawn_entity',
+        'Name', "water",
+        'offset', [:, x: 0, z: 0, y: depth/2],
+        'shape', ['Cube', 'x', X_HSIZE*2.5, 'z', Z_HSIZE*2.5, 'y', depth],
+        'color', ['Hsva', 'hue', 240, 'saturation', 0.5, 'value', 0.95, 'alpha', 0.25],
+        'Spawned', nil,
+        'Sensor', nil,
+        'rigid', 'Static',      ## ensures collider
+        'SurfaceMaterial', 'Water',
+        'Water', nil,
+    );
+
+    var i: IntF = 0
+    while i < items do
+        i += 1
+        let hue = ((i * 17) % 360) as RealF
+        let color = ['Hsva', 'hue', hue, 'saturation', 0.875, 'value', 0.75]
+        let x = random_number(-X_HSIZE, X_HSIZE)
+        let z = random_number(-Z_HSIZE, Z_HSIZE)
+        bevy_call_func('spawn_entity',
+            'Name', "spawn",
+            'offset', [:, x, z, y: depth],
+            'shape', ['Sphere', size / 2],
+            'rigid_body', 'Dynamic',
+            'color', color,
+            'mass', 20.0, ## * (60 - y) / 5.0,
+            'SurfaceMaterial', 'Glass',
+            'LinearDamping', 0.95,
+            'AngularDamping', 0.95,
+            'restitution', 0.25,
+            'friction', 0.2,
+            'swept_ccd', 'linear',
+            'CollisionMargin', 0.0,
+            'Spawned', nil,
+        );
+    end
+}
+
 def FUNCS = [:,
     spawn,
     spawn_pets,
+    water,
 ]
