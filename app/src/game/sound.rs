@@ -509,7 +509,8 @@ fn spawn_noise_on_collision(
                 (event.collider2, phys_mat_b)
             };
 
-            let vol_mid = ((vel_length + ang_length) / 2.0).min(0.95);
+            const MAX_VOLUME: f32 = 0.5;
+            let vol_mid = ((vel_length + ang_length) / 2.0).min(MAX_VOLUME);
             if vol_mid < 0.01 {
                 continue;
             }
