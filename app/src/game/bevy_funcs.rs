@@ -1,23 +1,15 @@
 use bevy::prelude::*;
-use eds_bevy_common::{
-    base_dir::find_runtime_base_directory_by_folder,
-    effects::ShrinkAndDisappear,
-    layers::GameLayer,
-    markers::{DespawnAfter, Spawned},
-    physics::{
-        Collider, ColliderConstructor, ColliderConstructorHierarchy,
-        ColliderConstructorHierarchyReady, CollisionEventsEnabled, CollisionLayers, CollisionStart,
-        Friction, LinearDamping, LinearVelocity, Mass, Restitution, RigidBody, Vector,
-    },
-    surface_material::SurfaceMaterial,
-};
+use eds_bevy_common::physics::*;
+use eds_bevy_common::prelude::*;
 use fedry_bevy_plugin::prelude::*;
 use fedry_runtime::prelude::*;
 use rand::RngExt as _;
 
-use crate::{
-    assets::FxAssets,
-    game::{GameScript, env::remove_water, sound::spawn_explosion_sounds},
+use crate::game::env::spawn_bevy_water;
+use crate::game::{
+    GameScript,
+    env::{get_water_quality, remove_water},
+    sound::spawn_explosion_sounds,
 };
 
 /// Register game-specific functions.
@@ -97,6 +89,14 @@ pub(crate) fn make_children_physical_after_collision(
 
     let target = decode_entity(&rt, &args[0])?;
 
+    let break_strength = if let Some(arg) = args.get(1)
+        && let Some(v) = RtNumber::try_from(arg)
+    {
+        v.as_real() as f32
+    } else {
+        100.0
+    };
+
     // Make sure the parent senses events, by adding sensors and colliders to its own meshes.
     let mut any = false;
     if entity != target {
@@ -150,7 +150,7 @@ pub(crate) fn make_children_physical_after_collision(
                             Vector::ZERO
                         };
 
-                        if my_vel.dot(their_vel) > -10.0 {
+                        if my_vel.dot(their_vel) > -break_strength {
                             // not head-on or powerful enough
                             return;
                         }
@@ -264,8 +264,8 @@ pub(crate) fn spawn_water(
     In((_entity, _rt, args)): In<(Entity, RuntimeArc, Vec<ObjectPtr>)>,
     mut commands: Commands,
     ctx_p: ConvertContextParam,
+    video: Res<VideoSettings>,
 ) -> ExecResult {
-    use bevy_water::*;
     let height = if let Some(arg) = args.get(0)
         && let Some(h) = RtNumber::try_from(&arg)
     {
@@ -282,12 +282,7 @@ pub(crate) fn spawn_water(
         UVec2::new(4, 4)
     };
 
-    commands.insert_resource(WaterSettings {
-        height: height,
-        amplitude: 0.25f32.min(height * 0.5),
-        spawn_tiles: Some(span),
-        ..default()
-    });
-    commands.run_system_cached(bevy_water::setup_water);
+    commands.run_system_cached_with(spawn_bevy_water, (height, span, get_water_quality(&video)));
+
     Ok(default())
 }

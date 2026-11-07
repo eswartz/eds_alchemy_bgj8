@@ -702,7 +702,7 @@ fn on_enter_video_menu(
         EnumMenuActions::ShadowQualityEnum,
     )
     .add_item(
-        "Glass Refraction Quality",
+        "Glass / Water Quality",
         (MenuEnum::new(
             get_glass,
             set_glass,

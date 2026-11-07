@@ -21,13 +21,13 @@ Bools, numbers, strings, functions?
 <<endif>>
 -> Water
   <<if $water == 0>>
-  <<set $water_level = 0.25>>
-  <<set $water_count = 10>>
-  <<set $water_size = 0.25>>
+  <<set $water_level = 0.5>>
+  <<set $water_ball_count = 10>>
+  <<set $water_ball_size = 0.25>>
   <<else>>
   <<set $water_level = $water_level + 0.25>>
-  <<set $water_count = $water_count + 10>>
-  <<set $water_size = $water_size * 1.25>>
+  <<set $water_ball_count = $water_ball_count + 10>>
+  <<set $water_ball_size = $water_ball_size * 1.25>>
   <<endif>>
   <<if $water == 0>>
   Water is wet.
@@ -43,7 +43,7 @@ Bools, numbers, strings, functions?
   ...
   <<endif>>
   <<set $water = $water + 1>>
-  <<attach_script_3 "water" {$water_level} {$water_count} {$water_size}>>
+  <<attach_script_3 "water" {$water_level} {$water_ball_count} {$water_ball_size}>>
 -> Earth
   <<declare $cube_size = 0.5 as number>>
   <<if $earth == 0>>
@@ -90,6 +90,6 @@ Bools, numbers, strings, functions?
     <<set $fire = $fire + 1>>
     <<set $x = -7.5 + ($fire * 3) % 7>>
     <<set $z = -9.0 + ($fire * 5) % 11>>
-    <<attach_script_3 "spawn_pets" {$x} 0.1 {$z}>>
+    <<attach_script_4 "spawn_pets" {$x} 0.1 {$z} {random_range(50.0, 100.0)}>>
 -> (leave)
 ===

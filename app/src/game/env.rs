@@ -1,12 +1,7 @@
 use bevy::prelude::*;
-use bevy_seedling::sample::SamplePlayer;
 use eds_bevy_common::physics::*;
 use eds_bevy_common::prelude::*;
-use firewheel::Volume;
-use rand::RngExt as _;
-use rand::seq::IndexedRandom as _;
 
-use crate::assets::FxAssets;
 use crate::game::sound::spawn_water_enter_sounds;
 use crate::game::sound::spawn_water_exit_sounds;
 
@@ -20,6 +15,10 @@ impl Plugin for EnvPlugin {
                 amplitude: 0.0,
                 ..default()
             }) //
+            // .add_systems(
+            //     PreUpdate,
+            //     adjust_water.run_if(resource_changed::<VideoSettings>),
+            // )
             .add_systems(OnEnter(LevelState::Playing), (remove_water,))
             .add_systems(OnExit(LevelState::Playing), (remove_water,))
             .add_systems(
@@ -31,13 +30,7 @@ impl Plugin for EnvPlugin {
     }
 }
 
-fn check_water_entry_exit(
-    mut commands: Commands,
-    mut reader: MessageReader<AreaChanged>,
-    assets: Res<FxAssets>,
-) {
-    let mut rng = rand::rng();
-
+fn check_water_entry_exit(mut commands: Commands, mut reader: MessageReader<AreaChanged>) {
     for msg in reader.read() {
         if msg.from_area == AreaContent::Water && msg.to_area == AreaContent::Air {
             commands.run_system_cached_with(spawn_water_exit_sounds, msg.entity);
@@ -45,6 +38,30 @@ fn check_water_entry_exit(
             commands.run_system_cached_with(spawn_water_enter_sounds, msg.entity);
         }
     }
+}
+
+pub(crate) fn spawn_bevy_water(
+    In((height, span, water_quality)): In<(f32, UVec2, bevy_water::WaterQuality)>,
+    mut commands: Commands,
+) {
+    use bevy_water::*;
+
+    // Seems to be a bug here
+    let height = height
+        + if matches!(water_quality, WaterQuality::Basic | WaterQuality::Medium) {
+            0.25
+        } else {
+            0.0
+        };
+
+    commands.insert_resource(WaterSettings {
+        height,
+        amplitude: 0.25f32.min(height * 0.5),
+        spawn_tiles: Some(span),
+        water_quality,
+        ..default()
+    });
+    commands.run_system_cached(bevy_water::setup_water);
 }
 
 /// Marks floating.
@@ -89,4 +106,14 @@ pub(crate) fn remove_water(mut water: If<ResMut<bevy_water::WaterSettings>>) {
     water.amplitude = 0.;
     water.spawn_tiles = None;
     water.height = -100.;
+}
+
+/// Note: can't be a system else water disappears
+pub(crate) fn get_water_quality(video: &VideoSettings) -> bevy_water::WaterQuality {
+    match video.glass_quality {
+        GlassQuality::Off | GlassQuality::Low => bevy_water::WaterQuality::Basic,
+        GlassQuality::Medium => bevy_water::WaterQuality::Medium,
+        GlassQuality::High => bevy_water::WaterQuality::High,
+        GlassQuality::Ultra => bevy_water::WaterQuality::Ultra,
+    }
 }

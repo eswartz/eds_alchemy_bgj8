@@ -28,6 +28,21 @@ pub struct FxAssets {
     pub cat_meow_0: Handle<AudioSample>,
     #[asset(path = "sounds/66518__freemaster2__meow9.ogg")]
     pub cat_meow_1: Handle<AudioSample>,
+    #[asset(path = "sounds/656619__kinoton__angry-cat-1.ogg")]
+    pub cat_anger_1a: Handle<AudioSample>,
+    #[asset(path = "sounds/656619__kinoton__angry-cat-2.ogg")]
+    pub cat_anger_1b: Handle<AudioSample>,
+    #[asset(path = "sounds/656619__kinoton__angry-cat-3.ogg")]
+    pub cat_anger_1c: Handle<AudioSample>,
+    #[asset(path = "sounds/205650__myswat__funny-cat-always-grumpy-kitty-1.ogg")]
+    pub cat_anger_2a: Handle<AudioSample>,
+    #[asset(path = "sounds/205650__myswat__funny-cat-always-grumpy-kitty-2.ogg")]
+    pub cat_anger_2b: Handle<AudioSample>,
+    #[asset(path = "sounds/205650__myswat__funny-cat-always-grumpy-kitty-3.ogg")]
+    pub cat_anger_2c: Handle<AudioSample>,
+    #[asset(path = "sounds/205650__myswat__funny-cat-always-grumpy-kitty-4.ogg")]
+    pub cat_anger_2d: Handle<AudioSample>,
+
     #[asset(path = "sounds/157283__samueljustice00__pug-1.ogg")]
     pub dog_1: Handle<AudioSample>,
     #[asset(path = "sounds/157283__samueljustice00__pug-2.ogg")]

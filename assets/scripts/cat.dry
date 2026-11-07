@@ -103,9 +103,8 @@ def start_flee(ent: Uns64, data: Struct) {
     var vel = [x: 0.0, y: 0.0, z: 0.0]
     bevy_call_func(ent, 'set_velocity', vel)
 
-
     data.target.x = clamp(random_number(-X_HSIZE, X_HSIZE), -X_HSIZE, X_HSIZE)
-    data.target.y = (data.other_pos.y + 0.0) / 2.0
+    data.target.y = 0.0
     data.target.z = clamp(random_number(-Z_HSIZE, Z_HSIZE), -Z_HSIZE, Z_HSIZE)
 
     if random_number(0.0, 1.0) < 0.125 then
@@ -203,29 +202,35 @@ def attack(ctx: Struct, ent: Uns64, data: Struct, cbdata: Struct) {
 
     var vel = [x: vx, y: clamp(vy + my_vel.y, -100.0, 50.0), z: vz]
 
+    ## This is unintentional but the cat falls under the ground
+    ## quite often, so this makes it jump a lot.
     if pos.y < 0 then
         vel.y = -pos.y * 10.0
+
+        if random_number(0.0, 1.0) < 0.5 * ctx.delta_time then
+            bevy_call_func(ent, 'play_sound', [
+                'source': ['Asset',
+                    choose([
+                        "sounds/819958__rickismyname__cat-hissing.ogg",
+                        "sounds/205650__myswat__funny-cat-always-grumpy-kitty-1.ogg",
+                        "sounds/205650__myswat__funny-cat-always-grumpy-kitty-2.ogg",
+                        "sounds/205650__myswat__funny-cat-always-grumpy-kitty-3.ogg",
+                        "sounds/205650__myswat__funny-cat-always-grumpy-kitty-4.ogg",
+                        "sounds/656619__kinoton__angry-cat-1.ogg",
+                        "sounds/656619__kinoton__angry-cat-2.ogg",
+                        "sounds/656619__kinoton__angry-cat-3.ogg",
+                    ]),
+                ],
+                volume: ['Linear', random_number(0.5, 1.0)],
+                pitch_scale: random_number(1.0, 2.0),
+            ])
+        end
     end
 
 
     ##print(bevy_call_func(ent, 'ent_to_string'), " new vel: ", vel, "\n")
     bevy_call_func(ent, 'insert_components', 'LinearVelocity', vel)
 
-    if random_number(0.0, 1.0) < 0.25 * ctx.delta_time then
-        bevy_call_func(ent, 'play_sound', [
-            'source': ['Asset',
-                choose([
-                    "sounds/819958__rickismyname__cat-hissing.ogg",
-                    "sounds/205650__myswat__funny-cat-always-grumpy-kitty-1.ogg",
-                    "sounds/205650__myswat__funny-cat-always-grumpy-kitty-2.ogg",
-                    "sounds/205650__myswat__funny-cat-always-grumpy-kitty-3.ogg",
-                    "sounds/205650__myswat__funny-cat-always-grumpy-kitty-4.ogg",
-                ]),
-            ],
-            volume: ['Linear', random_number(0.5, 1.0)],
-            pitch_scale: random_number(1.0, 2.0),
-        ])
-    end
 
 }
 
@@ -236,10 +241,13 @@ def flee(ctx: Struct, ent: Uns64, data: Struct, cbdata: Struct) {
     var dy: RealF = cbdata.dy
     var dz: RealF = cbdata.dz
     let dist: RealF = cbdata.dist
+    let other_dist: RealF = cbdata.other_dist
     let pos: Struct = cbdata.pos
     let my_vel: Struct = cbdata.my_vel
 
-    bevy_call_func(ent, 'look_at', data.target, 0.5)
+    bevy_call_func(ent, 'look_at', data.other, 0.5)
+
+    ## bevy_call_func(ent, 'look_at', data.target, 0.5)
 
     if dist < 1.0 then
         ## new target!
@@ -247,8 +255,12 @@ def flee(ctx: Struct, ent: Uns64, data: Struct, cbdata: Struct) {
         return
     end
 
+    if other_dist < 1.0 then
+        start_attack(ent, data)
+    end
+
     ## Turn to face target
-    bevy_call_func(ent, 'look_at', data.target, 0.25)
+    ## bevy_call_func(ent, 'look_at', data.target, 0.25)
 
     data.flee_time -= ctx.delta_time
     if data.flee_time <= 0.0 then
@@ -265,10 +277,6 @@ def flee(ctx: Struct, ent: Uns64, data: Struct, cbdata: Struct) {
         data.speed *= 0.9
     end
     data.speed = clamp(data.speed, 0.0, max_speed)
-    data.attack_time -= ctx.delta_time
-    if data.attack_time <= 0.0 then
-        start_flee(ent, data)
-    end
 
     let vel = [x: dx, y: dy, z: dz * random_number(-2.0, 2.0)]
 
@@ -315,8 +323,16 @@ def on_update(ctx: Struct, ent: Uns64, data: Struct, ...) {
     let dist = ((dx * dx) + (dy * dy) + (dz * dz)) ** 0.5
     ##print([:, dist, dx, dy, dz], "\n")
 
+    let other_dist = begin
+        ## Directional distance from the other.
+        var dx = other_pos.x - pos.x
+        var dy = other_pos.y - pos.y
+        var dz = other_pos.z - pos.z
+
+        ((dx * dx) + (dy * dy) + (dz * dz)) ** 0.5
+    end
     let phase_handler = struct_get(phase_handlers, data.phase)
-    phase_handler(ctx, ent, data, [:, my_vel, pos, goal, dx, dy, dz, dist])
+    phase_handler(ctx, ent, data, [:, my_vel, pos, goal, dx, dy, dz, dist, other_dist])
 }
 
 [

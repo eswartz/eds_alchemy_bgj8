@@ -71,10 +71,11 @@ def ents_of(lst) -> Tuple {
 }
 
 [@doc: "Spawn the cat and dog at the given offset vector"]
-def spawn_pets(ctx: Struct, ent: Uns64, data: Struct, offs: Tuple) {
-    let x = offs[0]
-    let y = offs[1]
-    let z = offs[2]
+def spawn_pets(ctx: Struct, ent: Uns64, data: Struct, params: Tuple) {
+    let x: RealF = params[0]
+    let y: RealF = params[1]
+    let z: RealF = params[2]
+    let strength: RealF = params[3]
 
     bevy_call_func('remove_spawned')
 ##{  ## wasn't working to really remove the elements, using the call above instead
