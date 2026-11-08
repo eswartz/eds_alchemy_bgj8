@@ -193,8 +193,8 @@ jobs:
           cp -r assets windows/${{ env.binary }}/
           cp LICENSE*.* windows/${{ env.binary }}/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
           cp README*.* windows/${{ env.binary }}/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
-          cp -r ebc/assets linux/${{ env.binary }}/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
-          cp -r fedry/data linux/${{ env.binary }}/assets/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
+          cp -r ebc/assets windows/${{ env.binary }}/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
+          cp -r fedry/data windows/${{ env.binary }}/assets/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
 
       - name: Package as a zip
         run: |
