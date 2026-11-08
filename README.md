@@ -1,5 +1,7 @@
 # What a Mess!
 
+(Called `eds-alchemy` on disk)
+
 This is my game jam entry for Bevy Game Jam #8.
 
 The theme is ALCHEMY.
