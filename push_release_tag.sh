@@ -5,4 +5,4 @@ fi
 NAME="$1"
 shift
 
-git tag -f -a "$NAME" && git push origin "$NAME"
+git tag -f -a "$NAME" && git push origin "$NAME" -f
