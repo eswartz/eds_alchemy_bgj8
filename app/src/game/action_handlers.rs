@@ -8,9 +8,9 @@ use bevy_seedling::sample::PlaybackSettings;
 #[cfg(feature = "input_bei")]
 use bevy_enhanced_input::prelude::*;
 
-use crate::game::firing::{FireActionState, cancel_projectile, prepare_projectile};
-#[cfg(feature = "input_bei")]
-use crate::game::firing::{FirePowerLimits, FiringState};
+// use crate::game::firing::{FireActionState, cancel_projectile, prepare_projectile};
+// #[cfg(feature = "input_bei")]
+// use crate::game::firing::{FirePowerLimits, FiringState};
 use crate::game::*;
 
 pub struct ActionHandlersPlugin;
@@ -56,88 +56,88 @@ pub(crate) fn play_player_out_of_bounds(
     }
 }
 
-#[cfg(feature = "input_bei")]
-fn on_firing_start(
-    _fire: On<Start<actions::Firing>>,
-    alt_fire: Single<
-        &TriggerState,
-        (
-            With<Action<actions::AltFiring>>,
-            With<ActionOf<PlayerContext>>,
-        ),
-    >,
-    mut commands: Commands,
-    mut fire_state: ResMut<FiringState>,
-    limits: Res<FirePowerLimits>,
-    grabbed_opt: Option<Res<GrabbedItem>>,
-) {
-    if !matches!(*alt_fire, TriggerState::None) {
-        return;
-    }
-    (*fire_state).start(&limits);
-    if grabbed_opt.is_none() {
-        commands.run_system_cached(prepare_projectile);
-    }
-}
+// #[cfg(feature = "input_bei")]
+// fn on_firing_start(
+//     _fire: On<Start<actions::Firing>>,
+//     alt_fire: Single<
+//         &TriggerState,
+//         (
+//             With<Action<actions::AltFiring>>,
+//             With<ActionOf<PlayerContext>>,
+//         ),
+//     >,
+//     mut commands: Commands,
+//     mut fire_state: ResMut<FiringState>,
+//     limits: Res<FirePowerLimits>,
+//     grabbed_opt: Option<Res<GrabbedItem>>,
+// ) {
+//     if !matches!(*alt_fire, TriggerState::None) {
+//         return;
+//     }
+//     (*fire_state).start(&limits);
+//     if grabbed_opt.is_none() {
+//         commands.run_system_cached(prepare_projectile);
+//     }
+// }
 
-#[cfg(feature = "input_bei")]
-fn on_firing_hold(
-    fire: On<Fire<actions::Firing>>,
-    alt_fire: Single<
-        &TriggerState,
-        (
-            With<Action<actions::AltFiring>>,
-            With<ActionOf<PlayerContext>>,
-        ),
-    >,
-    mut fire_state: ResMut<FiringState>,
-    limits: Res<FirePowerLimits>,
-) {
-    if !matches!(*alt_fire, TriggerState::None) {
-        return;
-    }
-    (*fire_state).update(fire.fired_secs, &limits);
-}
+// #[cfg(feature = "input_bei")]
+// fn on_firing_hold(
+//     fire: On<Fire<actions::Firing>>,
+//     alt_fire: Single<
+//         &TriggerState,
+//         (
+//             With<Action<actions::AltFiring>>,
+//             With<ActionOf<PlayerContext>>,
+//         ),
+//     >,
+//     mut fire_state: ResMut<FiringState>,
+//     limits: Res<FirePowerLimits>,
+// ) {
+//     if !matches!(*alt_fire, TriggerState::None) {
+//         return;
+//     }
+//     (*fire_state).update(fire.fired_secs, &limits);
+// }
 
-#[cfg(feature = "input_bei")]
-fn on_firing_release(
-    _fire: On<Complete<actions::Firing>>,
-    alt_fire: Single<
-        &TriggerState,
-        (
-            With<Action<actions::AltFiring>>,
-            With<ActionOf<PlayerContext>>,
-        ),
-    >,
-    mut commands: Commands,
-    mut params: If<FireActionState>,
-    spatial: If<SpatialQuery>,
-    meshes: ResMut<Assets<Mesh>>,
-    xfrm_q: Query<&Transform>,
-) {
-    if !matches!(*alt_fire, TriggerState::None) {
-        return;
-    }
+// #[cfg(feature = "input_bei")]
+// fn on_firing_release(
+//     _fire: On<Complete<actions::Firing>>,
+//     alt_fire: Single<
+//         &TriggerState,
+//         (
+//             With<Action<actions::AltFiring>>,
+//             With<ActionOf<PlayerContext>>,
+//         ),
+//     >,
+//     mut commands: Commands,
+//     mut params: If<FireActionState>,
+//     spatial: If<SpatialQuery>,
+//     meshes: ResMut<Assets<Mesh>>,
+//     xfrm_q: Query<&Transform>,
+// ) {
+//     if !matches!(*alt_fire, TriggerState::None) {
+//         return;
+//     }
 
-    (*params).fire_projectile(commands.reborrow(), &*spatial, meshes, xfrm_q);
-}
+//     (*params).fire_projectile(commands.reborrow(), &*spatial, meshes, xfrm_q);
+// }
 
-/// We implement firing cancellation as using Alt fire to cancel it.
-#[cfg(feature = "input_bei")]
-fn on_firing_cancel(
-    _fire: On<Fire<actions::AltFiring>>,
-    mut fire_action: Single<
-        &mut TriggerState,
-        (With<Action<actions::Firing>>, With<ActionOf<PlayerContext>>),
-    >,
-    mut fire_state: If<ResMut<FiringState>>,
-    mut commands: Commands,
-) {
-    (*fire_state).clear();
-    **fire_action = TriggerState::None;
+// /// We implement firing cancellation as using Alt fire to cancel it.
+// #[cfg(feature = "input_bei")]
+// fn on_firing_cancel(
+//     _fire: On<Fire<actions::AltFiring>>,
+//     mut fire_action: Single<
+//         &mut TriggerState,
+//         (With<Action<actions::Firing>>, With<ActionOf<PlayerContext>>),
+//     >,
+//     mut fire_state: If<ResMut<FiringState>>,
+//     mut commands: Commands,
+// ) {
+//     (*fire_state).clear();
+//     **fire_action = TriggerState::None;
 
-    commands.run_system_cached(cancel_projectile);
-}
+//     commands.run_system_cached(cancel_projectile);
+// }
 
 #[cfg(feature = "input_bei")]
 fn on_flashlight_toggle(
@@ -159,16 +159,16 @@ fn on_flashlight_toggle(
     }
 }
 
-#[cfg(feature = "input_bei")]
-fn on_grab_toggle(
-    _fire: On<Start<actions::ToggleSelect>>,
-    mut commands: Commands,
-    mut highlighting_mode: If<ResMut<HighlightingMode>>,
-    _can_grab: If<Res<GrabbingBehavior>>,
-) {
-    **highlighting_mode = highlighting_mode.original_or_enabled().toggle_enabled();
-    if highlighting_mode.is_disabled() {
-        commands.run_system_cached(clear_highlighted);
-    }
-    commands.write_message(GrabbingCommand::ReleaseItems(None));
-}
+// #[cfg(feature = "input_bei")]
+// fn on_grab_toggle(
+//     _fire: On<Start<actions::ToggleSelect>>,
+//     mut commands: Commands,
+//     mut highlighting_mode: If<ResMut<HighlightingMode>>,
+//     _can_grab: If<Res<GrabbingBehavior>>,
+// ) {
+//     **highlighting_mode = highlighting_mode.original_or_enabled().toggle_enabled();
+//     if highlighting_mode.is_disabled() {
+//         commands.run_system_cached(clear_highlighted);
+//     }
+//     commands.write_message(GrabbingCommand::ReleaseItems(None));
+// }

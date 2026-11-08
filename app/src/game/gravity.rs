@@ -1,3 +1,4 @@
+#![allow(unused)]
 use std::collections::VecDeque;
 
 use avian3d::dynamics::integrator::Gravity;
@@ -48,28 +49,24 @@ pub enum ForceType {
     Repel,
 }
 
-pub fn get_mass(radius: f32, density: f32) -> f32 {
-    density * (4.0 / 3.0) * std::f32::consts::PI * radius.powf(3.0)
-}
+// pub fn get_mass(radius: f32, density: f32) -> f32 {
+//     density * (4.0 / 3.0) * std::f32::consts::PI * radius.powf(3.0)
+// }
 
-pub fn get_radius_for_mass(mass: f32, density: f32) -> f32 {
-    (mass / (density * (4.0 / 3.0) * std::f32::consts::PI)).powf(1.0 / 3.0)
-}
+// pub fn get_radius_for_mass(mass: f32, density: f32) -> f32 {
+//     (mass / (density * (4.0 / 3.0) * std::f32::consts::PI)).powf(1.0 / 3.0)
+// }
 
-pub fn get_density_for_radius(mass: f32, radius: f32) -> f32 {
-    mass / ((4.0 / 3.0) * std::f32::consts::PI * radius.powf(3.0))
-}
+// pub fn get_density_for_radius(mass: f32, radius: f32) -> f32 {
+//     mass / ((4.0 / 3.0) * std::f32::consts::PI * radius.powf(3.0))
+// }
 
-pub fn get_stock_radius_density_for_mass_pow10(mass_p10: f32) -> (f32, f32) {
-    // Adjust density and radius to match.
-    let mass = 10.0f32.powf(mass_p10);
-    let radius = (mass_p10 - 20.).max(0.1) * 3.0;
-    (radius, get_density_for_radius(mass, radius))
-}
-
-/// When this exists, apply an orbit simplification pass.
-#[derive(Resource, Default)]
-pub struct SimplifyOrbitsRequest;
+// pub fn get_stock_radius_density_for_mass_pow10(mass_p10: f32) -> (f32, f32) {
+//     // Adjust density and radius to match.
+//     let mass = 10.0f32.powf(mass_p10);
+//     let radius = (mass_p10 - 20.).max(0.1) * 3.0;
+//     (radius, get_density_for_radius(mass, radius))
+// }
 
 #[derive(Resource, PartialEq, Debug, Clone, Default)]
 pub struct GalaxyState {

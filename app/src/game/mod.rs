@@ -3,7 +3,7 @@ mod bevy_funcs;
 mod damage_effect;
 mod dialogue;
 mod env;
-mod firing;
+// mod firing;
 mod gravity;
 mod gravity_compute;
 mod sound;
@@ -46,7 +46,6 @@ use crate::game::dialogue::decorate_dialog_cues;
 use crate::game::dialogue::spawn_dialogue_runner;
 use crate::game::env::EnvPlugin;
 use crate::game::gravity::GravityPlugin;
-use crate::game::gravity_compute::GravityComputePlugin;
 use crate::game::sound::SoundPlugin;
 pub use action_handlers::*;
 
@@ -58,6 +57,7 @@ pub(crate) struct DialogueCue(pub String);
 
 pub struct GamePlugin;
 
+#[allow(unused)]
 #[derive(Message, Debug)]
 struct AddPlayerDamage {
     player: Entity,
