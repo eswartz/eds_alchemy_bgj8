@@ -20,7 +20,7 @@ env:
   # https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-storage-and-bandwidth-usage
   use_git_lfs: true
 
-  release_base_name: alchemy-${{ github.ref_name }}
+  release_base_name: what-a-mess-${{ github.ref_name }}
 
 jobs:
   # # Build for wasm
@@ -62,6 +62,7 @@ jobs:
   #         path: ${{ env.binary }}.zip
   #         name: wasm
   #         retention-days: 1
+  #         archive: false
 
   #     - name: Upload binaries to release
   #       if: ${{ env.add_binaries_to_github_release == 'true' }}
@@ -73,77 +74,78 @@ jobs:
   #         tag: ${{ github.ref }}
   #         overwrite: true
 
-  # # Build for Linux
-  # release-linux:
-  #   runs-on: ubuntu-22.04
+  # Build for Linux
+  release-linux:
+    runs-on: ubuntu-22.04
 
-  #   steps:
-  #     - uses: olegtarasov/get-tag@v2.1.2
-  #       id: get_version
-  #     - uses: actions/checkout@v7
-  #       with:
-  #         lfs: ${{ env.use_git_lfs }}
-  #         ssh-key: ${{ secrets.FEDRY_KEY }}
-  #     - name: Setup SSH Keys (as used by cargo)
-  #       env:
-  #         SSH_PRIVATE_KEY: ${{ secrets.FEDRY_KEY }}
-  #       run: |
-  #         mkdir -p ~/.ssh
-  #         echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-  #         chmod 600 ~/.ssh/id_rsa
-  #     - uses: actions/checkout@v7
-  #       with:
-  #         repository: eswartz/eds_bevy_common
-  #         ref: bevy-20
-  #         path: ebc
-  #         lfs: true
-  #     - uses: actions/checkout@v7
-  #       with:
-  #         repository: eswartz/fedry
-  #         ref: main
-  #         path: fedry
-  #         ssh-key: ${{ secrets.FEDRY_KEY }}
-  #     - uses: dtolnay/rust-toolchain@nightly
-  #       with:
-  #         targets: x86_64-unknown-linux-gnu
-  #     - name: install dependencies
-  #       run: |
-  #         sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libwayland-dev
+    steps:
+      - uses: olegtarasov/get-tag@v2.1.2
+        id: get_version
+      - uses: actions/checkout@v7
+        with:
+          lfs: ${{ env.use_git_lfs }}
+          ssh-key: ${{ secrets.FEDRY_KEY }}
+      - name: Setup SSH Keys (as used by cargo)
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.FEDRY_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+      - uses: actions/checkout@v7
+        with:
+          repository: eswartz/eds_bevy_common
+          ref: bevy-20
+          path: ebc
+          lfs: true
+      - uses: actions/checkout@v7
+        with:
+          repository: eswartz/fedry
+          ref: main
+          path: fedry
+          ssh-key: ${{ secrets.FEDRY_KEY }}
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: x86_64-unknown-linux-gnu
+      - name: install dependencies
+        run: |
+          sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libwayland-dev
 
-  #     - name: Build
-  #       run: |
-  #         cargo build ${{ env.target_flags }} --target x86_64-unknown-linux-gnu
+      - name: Build
+        run: |
+          cargo build ${{ env.target_flags }} --target x86_64-unknown-linux-gnu
 
-  #     - name: Prepare package
-  #       run: |
-  #         mkdir -p linux/${{ env.binary }}
-  #         cp target/x86_64-unknown-linux-gnu/${{ env.target_dir }}/${{ env.binary }} linux/${{ env.binary }}/
-  #         cp LICENSE* README* linux/${{ env.binary }}/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
-  #         cp -r ebc/assets linux/${{ env.binary }}/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
-  #         cp -r fedry/data linux/${{ env.binary }}/assets/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
-  #         cp -r assets linux/${{ env.binary }}/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
+      - name: Prepare package
+        run: |
+          mkdir -p linux/${{ env.binary }}
+          cp target/x86_64-unknown-linux-gnu/${{ env.target_dir }}/${{ env.binary }} linux/${{ env.binary }}/
+          cp LICENSE* README* linux/${{ env.binary }}/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
+          cp -r ebc/assets linux/${{ env.binary }}/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
+          cp -r fedry/data linux/${{ env.binary }}/assets/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
+          cp -r assets linux/${{ env.binary }}/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
 
-  #     - name: Package as a zip
-  #       working-directory: ./linux
-  #       run: |
-  #         zip --recurse-paths ../${{ env.release_base_name }}-linux.zip ${{ env.binary }}
+      - name: Package as a zip
+        working-directory: ./linux
+        run: |
+          zip --recurse-paths ../${{ env.release_base_name }}-linux.zip ${{ env.binary }}
 
-  #     - name: Upload binaries to artifacts
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         path: ${{ env.release_base_name }}-linux.zip
-  #         name: linux
-  #         retention-days: 1
+      - name: Upload binaries to artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          path: ${{ env.release_base_name }}-linux.zip
+          name: linux
+          retention-days: 1
+          archive: false
 
-  #     - name: Upload binaries to release
-  #       if: ${{ env.add_binaries_to_github_release == 'true' }}
-  #       uses: softprops/action-gh-release@v3
-  #       with:
-  #         files: ${{ env.release_base_name }}-linux.zip
-  #         overwrite_files: true
-  #         prerelease: true
-  #         draft: true
-  #         fail_on_unmatched_files: true
+      - name: Upload binaries to release
+        if: ${{ env.add_binaries_to_github_release == 'true' }}
+        uses: softprops/action-gh-release@v3
+        with:
+          files: ${{ env.release_base_name }}-linux.zip
+          overwrite_files: true
+          prerelease: true
+          draft: true
+          fail_on_unmatched_files: true
 
   # Build for Windows
   release-windows:
@@ -180,15 +182,15 @@ jobs:
         with:
           targets: x86_64-pc-windows-msvc
 
-      # - name: Build
-      #  run: |
-      #    cargo build ${{ env.target_flags }} --target x86_64-pc-windows-msvc
+      - name: Build
+        run: |
+         cargo build ${{ env.target_flags }} --target x86_64-pc-windows-msvc
 
       - name: Prepare package
         run: |
           mkdir windows
           mkdir windows\${{ env.binary }}
-          # cp target/x86_64-pc-windows-msvc/${{ env.target_dir }}/${{ env.binary }}.exe windows/${{ env.binary }}/
+          cp target/x86_64-pc-windows-msvc/${{ env.target_dir }}/${{ env.binary }}.exe windows/${{ env.binary }}/
           mkdir assets -ea 0 # create the assets directory if it does not exist, it will get ignored in the zip if empty
           cp -r assets windows/${{ env.binary }}/
           cp LICENSE*.* windows/${{ env.binary }}/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
@@ -206,6 +208,7 @@ jobs:
           path: ${{ env.release_base_name }}-win64.zip
           name: windows
           retention-days: 1
+          archive: false
 
       - name: Upload binaries to release
         if: ${{ env.add_binaries_to_github_release == 'true' }}
@@ -218,75 +221,76 @@ jobs:
           fail_on_unmatched_files: true
 
 
-  # # Build for MacOS Apple Silicon
-  # release-macOS-apple-silicon:
-  #   runs-on: macOS-latest
+  # Build for MacOS Apple Silicon
+  release-macOS-apple-silicon:
+    runs-on: macOS-latest
 
-  #   steps:
-  #     - uses: olegtarasov/get-tag@v2.1.2
-  #       id: get_version
-  #     - uses: actions/checkout@v7
-  #       with:
-  #         lfs: ${{ env.use_git_lfs }}
-  #         ssh-key: ${{ secrets.FEDRY_KEY }}
-  #     - name: Setup SSH Keys (as used by cargo)
-  #       shell: bash
-  #       env:
-  #         SSH_PRIVATE_KEY: ${{ secrets.FEDRY_KEY }}
-  #       run: |
-  #         mkdir -p ~/.ssh
-  #         echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-  #         chmod 600 ~/.ssh/id_rsa
-  #     - uses: actions/checkout@v7
-  #       with:
-  #         repository: eswartz/eds_bevy_common
-  #         ref: bevy-20
-  #         path: ebc
-  #         lfs: true
-  #     - uses: actions/checkout@v7
-  #       with:
-  #         repository: eswartz/fedry
-  #         ref: main
-  #         path: fedry
-  #         ssh-key: ${{ secrets.FEDRY_KEY }}
-  #     - uses: dtolnay/rust-toolchain@nightly
-  #       with:
-  #         targets: aarch64-apple-darwin
-  #     - name: Environment
-  #       # macOS 11 was the first version to support ARM
-  #       run: |
-  #         export MACOSX_DEPLOYMENT_TARGET="11"
+    steps:
+      - uses: olegtarasov/get-tag@v2.1.2
+        id: get_version
+      - uses: actions/checkout@v7
+        with:
+          lfs: ${{ env.use_git_lfs }}
+          ssh-key: ${{ secrets.FEDRY_KEY }}
+      - name: Setup SSH Keys (as used by cargo)
+        shell: bash
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.FEDRY_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+      - uses: actions/checkout@v7
+        with:
+          repository: eswartz/eds_bevy_common
+          ref: bevy-20
+          path: ebc
+          lfs: true
+      - uses: actions/checkout@v7
+        with:
+          repository: eswartz/fedry
+          ref: main
+          path: fedry
+          ssh-key: ${{ secrets.FEDRY_KEY }}
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: aarch64-apple-darwin
+      - name: Environment
+        # macOS 11 was the first version to support ARM
+        run: |
+          export MACOSX_DEPLOYMENT_TARGET="11"
 
-  #     - name: Build
-  #       run: |
-  #         cargo build ${{ env.target_flags }} --target aarch64-apple-darwin
+      - name: Build
+        run: |
+          cargo build ${{ env.target_flags }} --target aarch64-apple-darwin
 
-  #     - name: Prepare Package
-  #       run: |
-  #         mkdir -p ${{ env.binary }}.app/Contents/MacOS
-  #         cp target/aarch64-apple-darwin/${{ env.target_dir }}/${{ env.binary }} ${{ env.binary }}.app/Contents/MacOS/
-  #         cp -r assets ${{ env.binary }}.app/Contents/MacOS/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
-  #         cp -r ebc/assets ${{ env.binary }}.app/Contents/MacOS/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
-  #         cp -r fedry/data ${{ env.binary }}.app/Contents/MacOS/assets/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
-  #         cp LICENSE* README* ${{ env.binary }}.app/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
-  #         hdiutil create -fs HFS+ -volname "${{ env.release_base_name }}-macOS-apple-silicon" -srcfolder ${{ env.binary }}.app ${{ env.release_base_name }}-macOS-apple-silicon.dmg
+      - name: Prepare Package
+        run: |
+          mkdir -p ${{ env.binary }}.app/Contents/MacOS
+          cp target/aarch64-apple-darwin/${{ env.target_dir }}/${{ env.binary }} ${{ env.binary }}.app/Contents/MacOS/
+          cp -r assets ${{ env.binary }}.app/Contents/MacOS/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
+          cp -r ebc/assets ${{ env.binary }}.app/Contents/MacOS/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
+          cp -r fedry/data ${{ env.binary }}.app/Contents/MacOS/assets/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
+          cp LICENSE* README* ${{ env.binary }}.app/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
+          hdiutil create -fs HFS+ -volname "${{ env.release_base_name }}-macOS-apple-silicon" -srcfolder ${{ env.binary }}.app ${{ env.release_base_name }}-macOS-apple-silicon.dmg
 
-  #     - name: Upload binaries to artifacts
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         path: ${{ env.release_base_name }}-macOS-apple-silicon.dmg
-  #         name: macOS-apple-silicon
-  #         retention-days: 1
+      - name: Upload binaries to artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          path: ${{ env.release_base_name }}-macOS-apple-silicon.dmg
+          name: macOS-apple-silicon
+          retention-days: 1
+          archive: false
 
-  #     - name: Upload binaries to release
-  #       if: ${{ env.add_binaries_to_github_release == 'true' }}
-  #       uses: softprops/action-gh-release@v3
-  #       with:
-  #         files: ${{ env.release_base_name }}-macOS-apple-silicon.dmg
-  #         overwrite_files: true
-  #         prerelease: true
-  #         draft: true
-  #         fail_on_unmatched_files: true
+      - name: Upload binaries to release
+        if: ${{ env.add_binaries_to_github_release == 'true' }}
+        uses: softprops/action-gh-release@v3
+        with:
+          files: ${{ env.release_base_name }}-macOS-apple-silicon.dmg
+          overwrite_files: true
+          prerelease: true
+          draft: true
+          fail_on_unmatched_files: true
 
 ################
 
