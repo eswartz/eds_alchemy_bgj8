@@ -159,7 +159,10 @@ def wander(ctx: Struct, ent: Uns64, data: Struct, cbdata: Struct) {
     bevy_call_func(ent, 'set_velocity', vel)
 
     let pos = cbdata.pos
-    let new_pos = [x: pos.x + vel.x, y: pos.y + vel.y, z: pos.z + vel.z]
+    let new_pos = [
+        x: clamp(pos.x + vel.x, -X_HSIZE, X_HSIZE),
+        y: pos.y + vel.y,
+        z: clamp(pos.z + vel.z, -X_HSIZE, X_HSIZE),]
     data.target = new_pos
 
     ## Turn to face movement
@@ -196,16 +199,16 @@ def attack(ctx: Struct, ent: Uns64, data: Struct, cbdata: Struct) {
     let speed = clamp(data.speed * dist, 0.0, data.max_speed)
     data.speed *= data.accel
 
-    let vx = dx * speed / dist + random_number(-2, 2)
+    let vx = dx * speed / dist + random_number(-2.0, 1.0)
     let vy = dy * speed / dist
-    let vz = dz * speed / dist + random_number(-1, 1)
+    let vz = dz * speed / dist + random_number(-1.0, 2.0)
 
-    var vel = [x: vx, y: clamp(vy + my_vel.y, -100.0, 50.0), z: vz]
+    var vel = [x: vx, y: clamp(vy + my_vel.y, -100.0, 100.0), z: vz]
 
     ## This is unintentional but the cat falls under the ground
     ## quite often, so this makes it jump a lot.
     if pos.y < 0 then
-        vel.y = -pos.y * 10.0
+        vel.y = -pos.y * 5.0
 
         if random_number(0.0, 1.0) < 0.5 * ctx.delta_time then
             bevy_call_func(ent, 'play_sound', [

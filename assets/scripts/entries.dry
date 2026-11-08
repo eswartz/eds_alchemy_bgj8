@@ -79,7 +79,7 @@ def fire(ctx: Struct, ent: Uns64, data: Struct, params: Tuple) {
     bevy_call_func('set_gravity', -9.8)
     bevy_call_func('set_player_mode', 'Fps')
     bevy_call_func('set_player_input', 'Fps')
-    bevy_call_func('apply_motion_blur', [shutter_angle: 0.0, samples: 0])
+    bevy_call_func('apply_motion_blur', [shutter_angle: 2.5, samples: 2])
 
     let x: RealF = params[0]
     let y: RealF = params[1]
@@ -255,7 +255,7 @@ def water(ctx: Struct, ent: Uns64, data: Struct, param: Tuple) {
 
 def air(ctx: Struct, ent: Uns64, data: Struct, param: Tuple) {
     bevy_call_func('remove_spawned')
-    bevy_call_func('apply_motion_blur', [shutter_angle: 2.0, samples: 2])
+    bevy_call_func('apply_motion_blur', [shutter_angle: 1.25, samples: 2])
     bevy_call_func('set_gravity', 0)
     bevy_call_func('set_player_mode', 'Space')
     bevy_call_func('set_player_input', 'Space')
