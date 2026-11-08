@@ -188,7 +188,7 @@ jobs:
         run: |
           mkdir windows
           mkdir windows\${{ env.binary }}
-          cp target/x86_64-pc-windows-msvc/${{ env.target_dir }}/${{ env.binary }}.exe windows/${{ env.binary }}/
+          # cp target/x86_64-pc-windows-msvc/${{ env.target_dir }}/${{ env.binary }}.exe windows/${{ env.binary }}/
           mkdir assets -ea 0 # create the assets directory if it does not exist, it will get ignored in the zip if empty
           cp -r assets windows/${{ env.binary }}/
           cp LICENSE*.* windows/${{ env.binary }}/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
