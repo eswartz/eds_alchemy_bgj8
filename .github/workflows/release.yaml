@@ -9,7 +9,7 @@ env:
   # update with the name of the main binary
   binary: eds-alchemy
   repo: eswartz/eds_alchemy_bgj8
-  add_binaries_to_github_release: true
+  # add_binaries_to_github_release: true   # perms?!
   # itch_target: eswartz75/eds_alchemy
 
   target_flags: -Fdev_native
@@ -193,8 +193,8 @@ jobs:
           cp -r assets windows/${{ env.binary }}/
           cp LICENSE*.* windows/${{ env.binary }}/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
           cp README*.* windows/${{ env.binary }}/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
-          cp ebc/assets/* windows/${{ env.binary }}/assets/ -Force || true # Try to copy, but ignore if it can't copy if source directory does not exist
-          cp fedry/data windows/${{ env.binary }}/assets/  || true # Try to copy, but ignore if it can't copy if source directory does not exist
+          cp -r -Force ebc/assets/* windows/${{ env.binary }}/assets/ || true # Try to copy, but ignore if it can't copy if source directory does not exist
+          cp -r fedry/data windows/${{ env.binary }}/assets/  || true # Try to copy, but ignore if it can't copy if source directory does not exist
 
       - name: Package as a zip
         run: |
