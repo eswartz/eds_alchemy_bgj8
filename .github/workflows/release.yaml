@@ -185,9 +185,10 @@ jobs:
           cargo build ${{ env.target_flags }} --target x86_64-pc-windows-msvc
 
       - name: Prepare package
+        shell: bash
         run: |
           mkdir windows
-          mkdir windows\${{ env.binary }}
+          mkdir windows/${{ env.binary }}
           cp target/x86_64-pc-windows-msvc/${{ env.target_dir }}/${{ env.binary }}.exe windows/${{ env.binary }}/
           mkdir assets -ea 0 # create the assets directory if it does not exist, it will get ignored in the zip if empty
           cp -r assets windows/${{ env.binary }}/
