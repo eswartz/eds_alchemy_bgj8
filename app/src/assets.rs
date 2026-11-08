@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_asset_loader::asset_collection::AssetCollection;
 use bevy_seedling::prelude::AudioSample;
+use eds_bevy_common::midi_synth::asset::SoundFont;
 use fedry_bevy_plugin::asset::ScriptModule;
 
 #[derive(Resource, AssetCollection)]
@@ -17,7 +18,10 @@ pub struct GuiAssets {
 
 #[derive(Resource, AssetCollection)]
 #[allow(unused)]
-pub struct MusicAssets {}
+pub struct MusicAssets {
+    #[asset(path = "sounds/Boychoir.sf2")]
+    pub boy_choir: Handle<SoundFont>,
+}
 
 impl MusicAssets {}
 

@@ -1,10 +1,15 @@
+use bevy::post_process::motion_blur::MotionBlur;
 use bevy::prelude::*;
+use eds_bevy_common::midi_synth::synth::MidiSynth;
+use eds_bevy_common::midi_synth::synth::MidiSynthParams;
+use eds_bevy_common::midi_synth::synth::MidiSynthsPaused;
 use eds_bevy_common::physics::*;
 use eds_bevy_common::prelude::*;
 use fedry_bevy_plugin::prelude::*;
 use fedry_runtime::prelude::*;
 use rand::RngExt as _;
 
+use crate::assets::MusicAssets;
 use crate::game::env::spawn_bevy_water;
 use crate::game::{
     GameScript,
@@ -46,6 +51,16 @@ pub(crate) fn register_script_funcs(mut commands: Commands, runtime: If<Res<Scri
     bevy_system_service.add_runtime_system(
         rt.to_atom("spawn_water"),
         commands.register_system(spawn_water),
+    );
+
+    bevy_system_service.add_runtime_system(
+        rt.to_atom("spawn_midi_synth"),
+        commands.register_system(spawn_midi_synth),
+    );
+
+    bevy_system_service.add_runtime_system(
+        rt.to_atom("apply_motion_blur"),
+        commands.register_system(apply_motion_blur),
     );
 }
 
@@ -283,6 +298,52 @@ pub(crate) fn spawn_water(
     };
 
     commands.run_system_cached_with(spawn_bevy_water, (height, span, get_water_quality(&video)));
+
+    Ok(default())
+}
+
+fn spawn_midi_synth(
+    In((entity, _rt, _args)): In<(Entity, RuntimeArc, Vec<ObjectPtr>)>,
+    mut commands: Commands,
+    sf_assets: Res<MusicAssets>,
+    muted: Res<MidiSynthsPaused>,
+    mut synth_map: ResMut<SynthProxyMap>,
+) -> ExecResult {
+    let (sample_sender, sample_receiver) = crossbeam_channel::unbounded();
+    let params = MidiSynthParams::default().is_world_positioned(true);
+    let synth = MidiSynth::new(
+        params,
+        sf_assets.boy_choir.clone(),
+        muted.0.clone(),
+        entity,
+        sample_sender,
+        sample_receiver,
+    )
+    .map_err(|err| RuntimeError::LiteralError(format!("{err}")))?;
+    commands.entity(entity).insert((synth,));
+
+    synth_map.register_synth(entity);
+
+    commands.write_message(SynthMessage::new(entity, SynthCommand::Reset));
+    Ok(default())
+}
+
+fn apply_motion_blur(
+    In((_entity, _rt, args)): In<(Entity, RuntimeArc, Vec<ObjectPtr>)>,
+    mut commands: Commands,
+    ctx_p: ConvertContextParam,
+    camera_q: Query<Entity, With<WorldCamera>>,
+) -> ExecResult {
+    if args.len() < 1 {
+        return Err(RuntimeError::MissingArgument(0));
+    }
+
+    let ctx = ctx_p.as_ctx();
+    let motion_blur = convert_obj_to_value::<MotionBlur>(&ctx, &args[0])?;
+
+    for ent in camera_q.iter() {
+        commands.entity(ent).insert(motion_blur.clone());
+    }
 
     Ok(default())
 }

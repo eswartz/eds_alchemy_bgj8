@@ -1,4 +1,5 @@
 use bevy::post_process::bloom::Bloom;
+use bevy::post_process::motion_blur::MotionBlur;
 use bevy::render::occlusion_culling::OcclusionCulling;
 use bevy::render::view::ColorGrading;
 use bevy_seedling::prelude::*;
@@ -93,6 +94,10 @@ fn configure_world_camera(mut ent_commands: EntityCommands, use_clustered: bool)
             DepthPrepass,
             OcclusionCulling,
             Bloom::default(),
+            MotionBlur {
+                shutter_angle: 1.0,
+                samples: 2,
+            },
         ),
         (
             PlayerCamera(CameraMode::FirstPerson),

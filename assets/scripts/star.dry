@@ -1,0 +1,58 @@
+use $sys.calls.*;
+
+def add_notes(ent: Uns64, channel: UnsF, program: UnsF, note: UnsF, delay: RealF) {
+    ## Write MIDI messages
+    bevy_call_func('write_message', 'MidiSynthMessage', [
+        command: 'channel_volume',
+        entity: ent,
+        velocity: 0.5,
+    ])
+    bevy_call_func('write_message', 'MidiSynthMessage', [
+        command: 'program_change',
+        entity: ent,
+        channel: channel,
+        program: program,
+    ])
+    bevy_call_func('write_message', 'MidiSynthMessage', [
+        command: 'note_on',
+        entity: ent,
+        channel: channel,
+        midi: note,
+        velocity: 0.25,
+    ])
+    bevy_call_func('write_message', 'MidiSynthMessage', [
+        command: 'note_off',
+        entity: ent,
+        channel: channel,
+        midi: note,
+        delay: delay,
+    ])
+}
+
+def on_init(ctx: Struct, ent: Uns64, data: Struct) {
+    bevy_call_func(ent, 'spawn_midi_synth')
+    delay((random_number(1, 5)) as IntF)
+}
+
+def notes = [
+    60 + 7,
+    60 + 10,
+    72,
+    72 + 3,
+    72 + 5,
+    72 + 7,
+    72 + 10,
+    84,
+]
+def on_update(ctx: Struct, ent: Uns64, data: Struct) {
+    let dly = random_number(1, 5) as IntF
+    let index: UnsF = (random_number(0, sequence_length(notes))) as UnsF
+    let note = notes[index]
+    add_notes(ent, 1, 1, note, dly)
+    delay(5.0)
+}
+
+[:,
+    on_init,
+    on_update,
+]

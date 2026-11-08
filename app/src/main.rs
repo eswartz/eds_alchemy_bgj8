@@ -17,7 +17,7 @@ use bevy_yarnspinner::prelude::YarnSpinnerPlugin;
 #[cfg(target_arch = "wasm32")]
 use console_log;
 use eds_bevy_common::midi_synth::synth::MidiSynthPlugin;
-use eds_bevy_common::physics::{SolverConfig, SubstepCount, TimeToSleep};
+use eds_bevy_common::physics::{SubstepCount, TimeToSleep};
 use std::sync::Arc;
 use std::time::Duration;
 

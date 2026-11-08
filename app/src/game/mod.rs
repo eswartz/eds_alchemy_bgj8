@@ -39,6 +39,7 @@ use eds_bevy_common::prelude::*;
 
 use crate::assets::GuiAssets;
 use crate::assets::ModelAssets;
+use crate::assets::MusicAssets;
 use crate::game::bevy_funcs::register_script_funcs;
 use crate::game::damage_effect::DamageEffectPlugin;
 use crate::game::dialogue::decorate_dialog_cues;
@@ -668,7 +669,7 @@ pub(crate) struct OurMidiSynth;
 
 pub(crate) fn spawn_midi_synths(
     mut commands: Commands,
-    sf_assets: Res<CommonSoundFontAssets>,
+    sf_assets: Res<MusicAssets>,
     muted: Res<MidiSynthsPaused>,
     synth_q: Query<Entity, (With<OurMidiSynth>, Without<MidiSynth>)>,
     mut synth_map: ResMut<SynthProxyMap>,
@@ -679,7 +680,7 @@ pub(crate) fn spawn_midi_synths(
         let (sample_sender, sample_receiver) = crossbeam_channel::unbounded();
         let synth = MidiSynth::new(
             params.clone(),
-            sf_assets.timgm6mb.clone(),
+            sf_assets.boy_choir.clone(),
             muted.0.clone(),
             ent,
             sample_sender,
