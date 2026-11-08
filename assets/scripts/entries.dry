@@ -21,6 +21,7 @@ def earth(ctx: Struct, ent: Uns64, data: Struct, param: Tuple) {
     bevy_call_func('apply_motion_blur', [shutter_angle: 0.0, samples: 0])
     bevy_call_func('set_gravity', -9.8)
     bevy_call_func('set_player_mode', 'Fps')
+    bevy_call_func('set_player_input', 'Fps')
 
     let height: IntF = param[1] as IntF
     let width: IntF = param[0] as IntF // 2
@@ -77,6 +78,7 @@ def ents_of(lst) -> Tuple {
 def fire(ctx: Struct, ent: Uns64, data: Struct, params: Tuple) {
     bevy_call_func('set_gravity', -9.8)
     bevy_call_func('set_player_mode', 'Fps')
+    bevy_call_func('set_player_input', 'Fps')
     bevy_call_func('apply_motion_blur', [shutter_angle: 0.0, samples: 0])
 
     let x: RealF = params[0]
@@ -203,6 +205,7 @@ def water(ctx: Struct, ent: Uns64, data: Struct, param: Tuple) {
     bevy_call_func('apply_motion_blur', [shutter_angle: 0.0, samples: 0])
     bevy_call_func('set_gravity', -9.8)
     bevy_call_func('set_player_mode', 'Fps')
+    bevy_call_func('set_player_input', 'Fps')
 
     let depth: RealF = param[0] as RealF
     let items: IntF = param[1] as IntF
@@ -253,8 +256,9 @@ def water(ctx: Struct, ent: Uns64, data: Struct, param: Tuple) {
 def air(ctx: Struct, ent: Uns64, data: Struct, param: Tuple) {
     bevy_call_func('remove_spawned')
     bevy_call_func('apply_motion_blur', [shutter_angle: 2.0, samples: 2])
-    ##bevy_call_func('set_gravity', 0)
-    ##bevy_call_func('set_player_mode', 'Space')
+    bevy_call_func('set_gravity', 0)
+    bevy_call_func('set_player_mode', 'Space')
+    bevy_call_func('set_player_input', 'Space')
 
     let count: UnsF = param[0] as UnsF
     let size: RealF = param[1] as RealF
