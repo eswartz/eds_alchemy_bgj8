@@ -7,8 +7,6 @@ use fedry_bevy_plugin::prelude::ScriptControl;
 use strum::VariantArray;
 
 use crate::ExitRequest;
-use crate::game::Difficulty;
-use crate::game::LevelDifficulty;
 use eds_bevy_common::prelude::*;
 
 const GAME_TITLE: &str = "What a Mess";
@@ -21,7 +19,6 @@ impl Plugin for MenuPlugin {
             .add_systems(OnEnter(OverlayState::MainMenu), on_enter_main_menu)
             .add_systems(OnEnter(OverlayState::EscapeMenu), on_enter_escape_menu)
             .add_systems(OnExit(OverlayState::EscapeMenu), on_exit_escape_menu)
-            .add_systems(OnEnter(OverlayState::GameMenu), on_enter_game_menu)
             .add_systems(OnEnter(OverlayState::OptionsMenu), on_enter_options_menu)
             .add_systems(OnEnter(OverlayState::AudioMenu), on_enter_audio_menu)
             .add_systems(OnEnter(OverlayState::VideoMenu), on_enter_video_menu)
@@ -31,8 +28,6 @@ impl Plugin for MenuPlugin {
 
 #[derive(Debug)]
 pub(crate) enum SimpleMenuActions {
-    // PlayGame,
-    GameMenu,
     OptionsMenu,
     AudioMenu,
     VideoMenu,
@@ -63,9 +58,6 @@ impl MenuItemHandler for SimpleMenuActions {
             MenuActionMessage::Activate(_) | MenuActionMessage::Next(_) => match self {
                 SimpleMenuActions::Back => {
                     commands.insert_resource(GoBackInMenuRequest);
-                }
-                SimpleMenuActions::GameMenu => {
-                    commands.insert_resource(GoIntoMenuRequest(OverlayState::GameMenu));
                 }
                 SimpleMenuActions::OptionsMenu => {
                     commands.insert_resource(GoIntoMenuRequest(OverlayState::OptionsMenu));
@@ -143,71 +135,9 @@ fn on_enter_main_menu(
     //     (), SimpleMenuActions::PlayGame);
 
     builder
-        .add_item("Game", (), SimpleMenuActions::GameMenu)
+        // .add_item("Game", (), SimpleMenuActions::GameMenu)
         .add_item("Options", (), SimpleMenuActions::OptionsMenu)
         .add_item("Quit", (), SimpleMenuActions::Quit)
-        .finish(&mut history);
-}
-
-fn on_enter_game_menu(
-    style: Res<MenuStyle>,
-    program_state: Res<State<ProgramState>>,
-    mut commands: Commands,
-    mut history: ResMut<MenuItemSelectionHistory>,
-    level_list: Res<LevelList>,
-    current_level: Option<Res<CurrentLevel>>,
-) {
-    macro_rules! make_res_enum_getter_setter {
-        ($getter:ident $setter:ident => $enum:ident $res:ident $field:tt) => {
-            let $getter = commands.register_system(IntoSystem::into_system(
-                |In(entity): In<Entity>, mut enum_q: Query<&mut MenuEnum>, res: Res<$res>| {
-                    enum_q.get_mut(entity).unwrap().current = Some(
-                        $enum::VARIANTS
-                            .iter()
-                            .position(|e| *e == res.$field)
-                            .unwrap(),
-                    );
-                },
-            ));
-            let $setter = commands.register_system(IntoSystem::into_system(
-                |In(v): In<usize>, mut res: ResMut<$res>| {
-                    res.$field = $enum::VARIANTS[v];
-                },
-            ));
-        };
-    }
-
-    make_res_enum_getter_setter!(get_difficulty set_difficulty => Difficulty LevelDifficulty 0);
-
-    let mut builder = MenuItemBuilder::new(
-        commands,
-        OverlayState::GameMenu,
-        *program_state.get(),
-        &style,
-        &history,
-    )
-    .page();
-
-    add_level_selector(
-        &mut builder,
-        "Start",
-        &level_list,
-        current_level.as_deref(),
-        EnumMenuActions::SelectStartLevelEnum,
-    );
-
-    builder
-        .add_item(
-            "Difficulty",
-            MenuEnum::new(
-                get_difficulty,
-                set_difficulty,
-                || Difficulty::VARIANTS.len(),
-                |index| Difficulty::VARIANTS[index].to_string(),
-            ),
-            EnumMenuActions::DifficultyEnum,
-        )
-        .add_item("Back", (), SimpleMenuActions::Back)
         .finish(&mut history);
 }
 
@@ -296,7 +226,6 @@ impl MenuItemHandler for SliderMenuActions {}
 
 #[derive(Debug, Clone)]
 pub(crate) enum EnumMenuActions {
-    DifficultyEnum,
     SelectStartLevelEnum,
     AntialiasingEnum,
     MeshQualityEnum,
@@ -638,6 +567,7 @@ fn on_enter_video_menu(
         &style,
         &history,
     )
+    .with_font_size_scale(0.75)
     .page()
     .add_item(
         "Field of View",
@@ -661,7 +591,7 @@ fn on_enter_video_menu(
             |v| v,
             |v| v,
             -2.0f32..=2.0f32,
-            0.25,
+            0.125,
         ),
         SliderMenuActions::ExposureSlider,
     )
