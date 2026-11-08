@@ -29,8 +29,12 @@ Typical WASD navigation plus controller support.
 * `F11` / `Alt-Enter`: toggle fullscreen
 * `Esc`: menu
 
-(Like the previous game ("Fever"), I spent most time on infrastructure,
-and somehow there's even less gameplay than before!)
+## Menus
+
+* `up/down`: select item
+* `left/right`: decrease/increase value / enum
+* `mouse drag`: decrease/increase value / enum
+* `backspace`: reset value to default
 
 # Major Crates Used
 

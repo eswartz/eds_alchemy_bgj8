@@ -124,27 +124,7 @@ fn on_enter_main_menu(
     .page();
 
     let title_style: MenuStyle = (*style).clone().with_font_size_scale(TITLE_FONT_SCALE);
-    builder.add_label(
-        GAME_TITLE,
-        &title_style,
-        (
-            LineHeight::RelativeToFont(1.0),
-            // FixedNode,
-            // Node {
-            //     width: Val::Percent(100.),
-            //     height: Val::Percent(10.),
-            //     flex_direction: FlexDirection::Column,
-            //     align_items: AlignItems::Center,
-            //     align_content: AlignContent::Center,
-            //     justify_content: JustifyContent::Center,
-            //     top: Val::Em(0.5),
-            //     bottom: Val::Em(1.5),
-            //     // left: Val::Em(1.0),
-            //     // right: Val::Em(10.0),
-            //     ..default()
-            // },
-        ),
-    );
+    builder.add_label(GAME_TITLE, &title_style, (LineHeight::RelativeToFont(1.0),));
 
     add_level_selector(
         &mut builder,
@@ -302,6 +282,7 @@ fn on_exit_escape_menu(mut pause: ResMut<PauseState>) {
 #[derive(Debug, Clone)]
 pub(crate) enum SliderMenuActions {
     FovSlider,
+    ExposureSlider,
     MoveSensitivityXSlider,
     MoveSensitivityYSlider,
     MoveSensitivityZSlider,
@@ -612,6 +593,16 @@ fn on_enter_video_menu(
             s.fov_degrees = v;
         },
     ));
+    let get_exposure = commands.register_system(IntoSystem::into_system(
+        |In(entity): In<Entity>, s: Res<VideoSettings>, mut slider_q: Query<&mut MenuSlider>| {
+            slider_q.get_mut(entity).unwrap().current = Some(s.exposure);
+        },
+    ));
+    let set_exposure = commands.register_system(IntoSystem::into_system(
+        |In(v): In<f32>, mut s: ResMut<VideoSettings>| {
+            s.exposure = v;
+        },
+    ));
 
     macro_rules! make_res_enum_getter_setter {
         ($getter:ident $setter:ident => $enum:ident $res:ident $field:tt) => {
@@ -660,6 +651,19 @@ fn on_enter_video_menu(
             5.0,
         ),
         SliderMenuActions::FovSlider,
+    )
+    .add_item(
+        "Exposure",
+        MenuSlider::new(
+            get_exposure,
+            set_exposure,
+            || Some(VideoSettings::default().exposure),
+            |v| v,
+            |v| v,
+            -2.0f32..=2.0f32,
+            0.25,
+        ),
+        SliderMenuActions::ExposureSlider,
     )
     .add_item(
         "Antialiasing",

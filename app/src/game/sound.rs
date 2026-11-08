@@ -603,7 +603,7 @@ fn spawn_noise_on_collision(
 }
 
 pub(crate) fn spawn_water_enter_sounds(
-    In(ent): In<(Entity)>,
+    In(ent): In<Entity>,
     mut commands: Commands,
     assets: Res<FxAssets>,
 ) {
@@ -626,7 +626,7 @@ pub(crate) fn spawn_water_enter_sounds(
 }
 
 pub(crate) fn spawn_water_exit_sounds(
-    In(ent): In<(Entity)>,
+    In(ent): In<Entity>,
     mut commands: Commands,
     assets: Res<FxAssets>,
 ) {
@@ -649,7 +649,7 @@ pub(crate) fn spawn_water_exit_sounds(
 }
 
 pub(crate) fn spawn_explosion_sounds(
-    In(ent): In<(Entity)>,
+    In(ent): In<Entity>,
     mut commands: Commands,
     assets: Res<FxAssets>,
 ) {
