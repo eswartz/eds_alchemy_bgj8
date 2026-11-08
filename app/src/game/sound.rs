@@ -663,6 +663,7 @@ pub(crate) fn spawn_explosion_sounds(
                 &assets.firecracker_2,
                 &assets.pop_1,
                 &assets.pop_2,
+                &assets.break_1,
             ]
             .choose(&mut rand::rng())
             .unwrap())

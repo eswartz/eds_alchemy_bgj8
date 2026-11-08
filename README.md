@@ -20,9 +20,11 @@ Typical WASD navigation plus controller support.
 
 * `WASD`: movement
 * mouse movement: look
+* `Backspace`: turn around
 * `Space`/`c`: jump/crouch
 * `Pause` / `Alt-P` (Win/Lin) / `Ctrl-P` (macOS): pause
 * `F12` / `Alt-M` (Win/Lin) / `Ctrl-M` (macOS): mute
+* `F11` / `Alt-Enter`: toggle fullscreen
 * `Esc`: menu
 
 (Like the previous game ("Fever"), I spent most time on infrastructure,

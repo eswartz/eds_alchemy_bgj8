@@ -108,6 +108,6 @@ Bools, numbers, strings, functions?
     <<set $fire = $fire + 1>>
     <<set $x = -7.5 + ($fire * 3) % 7>>
     <<set $z = -9.0 + ($fire * 5) % 11>>
-    <<attach_script_4 "fire" {$x} 0.1 {$z} {random_range(50.0, 100.0)}>>
+    <<attach_script_4 "fire" {$x} 0.1 {$z} {random_range(40.0, 70.0)}>>
 -> (leave)
 ===

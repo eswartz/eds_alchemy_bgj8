@@ -73,6 +73,8 @@ pub struct FxAssets {
     pub pop_1: Handle<AudioSample>,
     #[asset(path = "sounds/789793__quatricise__pop-4.ogg")]
     pub pop_2: Handle<AudioSample>,
+    #[asset(path = "sounds/583310__fission9__tile-breaking.ogg")]
+    pub break_1: Handle<AudioSample>,
 }
 
 #[derive(Resource, AssetCollection)]

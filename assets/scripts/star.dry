@@ -3,11 +3,6 @@ use $sys.calls.*;
 def add_notes(ent: Uns64, channel: UnsF, program: UnsF, note: UnsF, delay: RealF) {
     ## Write MIDI messages
     bevy_call_func('write_message', 'MidiSynthMessage', [
-        command: 'channel_volume',
-        entity: ent,
-        velocity: 0.5,
-    ])
-    bevy_call_func('write_message', 'MidiSynthMessage', [
         command: 'program_change',
         entity: ent,
         channel: channel,
@@ -35,6 +30,8 @@ def on_init(ctx: Struct, ent: Uns64, data: Struct) {
 }
 
 def notes = [
+    36,
+    48,
     60 + 7,
     60 + 10,
     72,

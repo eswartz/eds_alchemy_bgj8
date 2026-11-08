@@ -79,7 +79,7 @@ def fire(ctx: Struct, ent: Uns64, data: Struct, params: Tuple) {
     bevy_call_func('set_gravity', -9.8)
     bevy_call_func('set_player_mode', 'Fps')
     bevy_call_func('set_player_input', 'Fps')
-    bevy_call_func('apply_motion_blur', [shutter_angle: 2.5, samples: 2])
+    bevy_call_func('apply_motion_blur', [shutter_angle: 1.25, samples: 2])
 
     let x: RealF = params[0]
     let y: RealF = params[1]
@@ -172,32 +172,13 @@ def fire(ctx: Struct, ent: Uns64, data: Struct, params: Tuple) {
     ## Wait for the models above to be fully loaded,
     ## trigger WorldInstanceReady, then for the callback
     ## below to ...
-    while not bevy_call_func(cat_ent, 'make_children_physical_after_collision', cat_parts_ent) do
+    while not bevy_call_func(cat_ent, 'make_children_physical_after_collision', cat_parts_ent, strength) do
         delay(0.1)
     end
 
-    while not bevy_call_func(dog_ent, 'make_children_physical_after_collision', dog_parts_ent) do
+    while not bevy_call_func(dog_ent, 'make_children_physical_after_collision', dog_parts_ent, strength) do
         delay(0.1)
     end
-
-##{
-    let rigid = bevy_call_func('get_rigid_entity', cat_ent)
-    bevy_call_func(rigid, 'insert_components',
-        'CrosshairTargetable', nil,
-        'rigid', 'Dynamic',
-        'collision_layers', 'default|gameplay|world',
-        'Mass', 10.0,
-        'SurfaceMaterial', 'Glass',
-    )
-    let rigid = bevy_call_func('get_rigid_entity', dog_ent)
-    bevy_call_func(rigid, 'insert_components',
-        'CrosshairTargetable', nil,
-        'rigid', 'Dynamic',
-        'collision_layers', 'default|gameplay|world',
-        'Mass', 25.0,
-        'SurfaceMaterial', 'Stone',
-    )
-##}
 }
 
 def water(ctx: Struct, ent: Uns64, data: Struct, param: Tuple) {

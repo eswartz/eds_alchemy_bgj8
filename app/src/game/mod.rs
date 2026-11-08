@@ -591,7 +591,7 @@ fn lost_level(
         let Ok((ref mut text, ref mut color)) = score_q.get_mut(ent) else {
             return;
         };
-        text.0 = "Failed...\nTry again!".to_string();
+        text.0 = "You got killed\nby falling objects...\nTry again!".to_string();
         color.0 = Color::Srgba(tailwind::RED_700);
     });
     commands.insert_resource(AutoEndLevelTimer::new(Duration::from_secs(

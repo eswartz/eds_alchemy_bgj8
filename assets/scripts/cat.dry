@@ -33,7 +33,7 @@ def on_init(ctx: Struct, ent: Uns64, data: Struct, ...) {
 
     print("got dog ", bevy_call_func(others[0], 'ent_to_string'), "\n")
     data.other = others[0]
-    data.max_speed = 10.0
+    data.max_speed = 15.0
     data.speed = 0.5
     data.accel = random_number(1.1, 1.2)
 
@@ -64,8 +64,9 @@ def on_init(ctx: Struct, ent: Uns64, data: Struct, ...) {
 }
 
 def start_attack(ent: Uns64, data: Struct) {
+    print("ATTACK\n")
     data.phase = 'attack'
-    data.attack_time = random_number(2.0, 10.0)
+    data.attack_time = random_number(2.0, 5.0)
 
     if random_number(0.0, 1.0) < 0.25 then
     bevy_call_func(ent, 'play_sound', [
@@ -91,7 +92,7 @@ def start_wander(ent: Uns64, data: Struct) {
     data.target.x = clamp(data.other_pos.x + random_number(-10.0, 10.0), -X_HSIZE, X_HSIZE)
     data.target.y = (data.other_pos.y + 0.0) / 2.0
     data.target.z = clamp(data.other_pos.z + random_number(-10.0, 10.0), -Z_HSIZE, Z_HSIZE)
-
+    print("wander to ", data.target, "\n")
 }
 
 
@@ -107,6 +108,7 @@ def start_flee(ent: Uns64, data: Struct) {
     data.target.y = 0.0
     data.target.z = clamp(random_number(-Z_HSIZE, Z_HSIZE), -Z_HSIZE, Z_HSIZE)
 
+    print("flee to ", data.target, "\n")
     if random_number(0.0, 1.0) < 0.125 then
         bevy_call_func(ent, 'play_sound', [
             'source': ['Asset',
@@ -199,9 +201,9 @@ def attack(ctx: Struct, ent: Uns64, data: Struct, cbdata: Struct) {
     let speed = clamp(data.speed * dist, 0.0, data.max_speed)
     data.speed *= data.accel
 
-    let vx = dx * speed / dist + random_number(-2.0, 1.0)
+    let vx = dx * speed / dist + random_number(-2.0, 2.0)
     let vy = dy * speed / dist
-    let vz = dz * speed / dist + random_number(-1.0, 2.0)
+    let vz = dz * speed / dist + random_number(-2.0, 2.0)
 
     var vel = [x: vx, y: clamp(vy + my_vel.y, -100.0, 100.0), z: vz]
 
@@ -248,9 +250,8 @@ def flee(ctx: Struct, ent: Uns64, data: Struct, cbdata: Struct) {
     let pos: Struct = cbdata.pos
     let my_vel: Struct = cbdata.my_vel
 
+    ## Face dog
     bevy_call_func(ent, 'look_at', data.other, 0.5)
-
-    ## bevy_call_func(ent, 'look_at', data.target, 0.5)
 
     if dist < 1.0 then
         ## new target!
@@ -258,19 +259,16 @@ def flee(ctx: Struct, ent: Uns64, data: Struct, cbdata: Struct) {
         return
     end
 
-    if other_dist < 1.0 then
+    if other_dist < data.safe_distance * 0.5 then
         start_attack(ent, data)
+        return
     end
-
-    ## Turn to face target
-    ## bevy_call_func(ent, 'look_at', data.target, 0.25)
 
     data.flee_time -= ctx.delta_time
     if data.flee_time <= 0.0 then
         start_wander(ent, data)
         return
     end
-
 
     var sleep = 0.25
     let max_speed: RealF = data.max_speed
@@ -281,7 +279,7 @@ def flee(ctx: Struct, ent: Uns64, data: Struct, cbdata: Struct) {
     end
     data.speed = clamp(data.speed, 0.0, max_speed)
 
-    let vel = [x: dx, y: dy, z: dz * random_number(-2.0, 2.0)]
+    let vel = [x: dx, y: dy, z: dz + random_number(-2.0, 2.0)]
 
     let pos = cbdata.pos
     let new_pos = [x: pos.x + vel.x, y: pos.y + vel.y, z: pos.z + vel.z]
