@@ -57,7 +57,7 @@ jobs:
   #         zip --recurse-paths ../${{ env.binary }}.zip .
 
   #     - name: Upload binaries to artifacts
-  #       uses: actions/upload-artifact@v4
+  #       uses: actions/upload-artifact@v7
   #       with:
   #         path: ${{ env.binary }}.zip
   #         name: wasm
@@ -130,7 +130,7 @@ jobs:
           zip --recurse-paths ../${{ env.release_base_name }}-linux.zip ${{ env.binary }}
 
       - name: Upload binaries to artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           path: ${{ env.release_base_name }}-linux.zip
           name: linux
@@ -203,7 +203,7 @@ jobs:
           Compress-Archive -Path windows/${{ env.binary }} -DestinationPath ${{ env.release_base_name }}-win64.zip
 
       - name: Upload binaries to artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           path: ${{ env.release_base_name }}-win64.zip
           name: windows
@@ -275,7 +275,7 @@ jobs:
           hdiutil create -fs HFS+ -volname "${{ env.release_base_name }}-macOS-apple-silicon" -srcfolder ${{ env.binary }}.app ${{ env.release_base_name }}-macOS-apple-silicon.dmg
 
       - name: Upload binaries to artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           path: ${{ env.release_base_name }}-macOS-apple-silicon.dmg
           name: macOS-apple-silicon
