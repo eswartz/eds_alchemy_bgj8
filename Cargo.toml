@@ -159,7 +159,7 @@ bevy_asset_loader = { version = "0.28.0", features = [
 ] }
 
 # bevy_mod_outline = { version = "0.13" }
-bevy_mod_outline = { git = "https://github.com/Eventhra-Studio/bevy_mod_outline.git", branch = "master" }
+bevy_mod_outline = { git = "https://github.com/komadori/bevy_mod_outline.git", branch = "master" }
 # bevy_mod_outline = { git = "https://github.com/eswartz/bevy_mod_outline-fork.git" }
 
 # bevy_tweening = "0.16.0"
