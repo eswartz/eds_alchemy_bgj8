@@ -11,9 +11,9 @@ The theme is ALCHEMY.
 Just go to the metal object and engage in conversation.
 Try the options multiple times.
 
-# Bugs
+# Bugs?
 
-On startup, if you get a big red error message and a "ran out of fuel"
+If on startup, you get a big red error message and a "ran out of fuel"
 message on the console, try again...
 
 # Controls
@@ -32,8 +32,8 @@ Typical WASD navigation plus controller support.
 ## Menus
 
 * `up/down`: select item
-* `left/right`: decrease/increase value / enum
-* `mouse drag`: decrease/increase value / enum
+* `left/right`: decrease/increase value/enum
+* `mouse drag`: decrease/increase value/enum
 * `backspace`: reset value to default
 
 # Major Crates Used
@@ -46,11 +46,13 @@ Although I did the jam solo, hundreds of other people did the hard work!
 - `skein` (Blender/glTF integration) -- patched to let unit struct components work
 - `avian` (physics) -- this entry exercises this a lot! No patches!
 - `bevy_seedling` + `Firewheel` (audio) -- another worthy set of crates, patched locally for Bevy 0.20
+- `bevy_enhanced_input` -- as-is
+- `bevy-inspector-egui` -- as-is
 - `bevy_yarn_spinner` (dialogue) -- also patched locally for 0.20
 - `bevy_water` (water effect) -- thrown in at the last minute
 - `bevy_app_compute` (compute shaders) -- two levels of patching (PR + bevy 0.20 migration)
 - `bevy_mod_outline`, `bevy_tweening` -- used but not really exercised here
-
+- 
 # Patches
 
 ```
@@ -82,9 +84,9 @@ eds_bevy_common = { git = "https://github.com/eswartz/eds_bevy_common.git", bran
 - `assets/scripts/*`: own work
 - `assets/shaders/*`: own work
 - `assets/textures/*`: own work (made in Krita)
-- `assets/models/cat*.glb` + `assets/models/pug*.glb`: free models via https://www.cgtrader.com/designers/pixelcgstudio2025?utm_source=credit
+- `assets/models/cat*.glb` + `assets/models/pug*.glb`: work derived from free models via https://www.cgtrader.com/designers/pixelcgstudio2025?utm_source=credit
   These were adapted using techniques in:
   https://blender.stackexchange.com/questions/258583/how-can-you-fill-one-meshs-volume-with-as-many-of-another-mesh-that-will-fit
-  plus a lot of Blender effort
-- `assets/sounds/*`: from freesound (name prefixes retained), edited in ocenaudio
-- `assets/fonts/*`: from egui, google fonts (OFL, Apache, MIT -- see accompanying licenses)
+  plus a lot of Blender effort!
+- `assets/sounds/*`: from freesound.org (name prefixes retained), edited in ocenaudio
+- `assets/fonts/*`: from egui, Google Fonts (OFL, Apache, MIT -- see accompanying licenses)
