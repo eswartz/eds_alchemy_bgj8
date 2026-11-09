@@ -83,10 +83,10 @@ We thank you you leeting us presenting this experiment.
 <<set $ch = $ch + 1>>
 <<endif>>
 If you need more information...
-  -> Yes!
-    <<jump Part1>>
   -> No thanks.
     <<jump Simulate>>
+  -> Yes!
+    <<jump Part1>>
 ===
 
 title: Simulate
@@ -97,7 +97,7 @@ Try out the experiments at your leisure.
   <<declare $water_ball_count = 10>>
   <<declare $water_ball_size = 0.25>>
   <<if $water > 0>>
-  <<set $water_level = $water_level * 1.1>>
+  <<set $water_level = $water_level * 1.25>>
   <<set $water_ball_count = $water_ball_count + 10>>
   <<set $water_ball_size = $water_ball_size * 1.25>>
   <<endif>>
@@ -121,15 +121,15 @@ Try out the experiments at your leisure.
   It won't nourish, help or hurt you, though.
   <<elseif $water == 5>>
   We first witnessed these Terra-Humans spontaneously abandoning their planet. A very small number, given their population, but significant.
-  They had already provided us so much information from the cyber-devices circling in a cloud outside their planet's atmospheric life layer.
+  They had already provided us so much information from the cyber-devices circling in a cloud outside their planet's atmosphere.
   Their mathematics made sense. That's where we found others like us.
   <<elseif $water == 6>>
   We had long learned a lot about the humans from their emenations so we had hours of modeling time to form a complete picture of the people and their planet.
-  But we know what the humans would never discover: that the limits of biological modeling lie in the uncountable infinities. Life cannot model life without becoming life, et cetera.
+  But we know what the humans would never discover -- that the limits of biological modeling lie in the uncountable infinities. Life cannot model life without becoming life, et cetera.
   So these travelers from Terra, by escaping in their flying exohabitats, gave us the final pieces of knowledge we needed.
   Their cyber-chemical bodies!
   <<elseif $water == 7>>
-  (Management takes pains to emphasize, much-appreciated-and-enduring patron or visitor: if you are also inhabitating a cyber-chemical body, you are so very precious to us.)
+  (Management takes pains to emphasize, much-appreciated-and-enduring patron or visitor -- if you are also inhabitating a cyber-chemical body, you are so very precious to us.)
   By pairing with a biological living creature, we learned so much more about the actual devices that powered their cyber-chemical bodies.
   Thus was the environment in which Logikaffe came of age.
   <<elseif $water == 8>>
@@ -137,35 +137,34 @@ Try out the experiments at your leisure.
   Thus we conclude the section named "Aqua Vitae is Not Good For You".
   This experiment is just water. Sorry for drowning you.
   <<else>>
-  ...
+  And it deepens.
   <<endif>>
   <<set $water = $water + 1>>
   <<attach_script_3 "water" {$water_level} {$water_ball_count} {$water_ball_size}>>
 -> Earth
-  <<declare $cube_size = 0.5 as number>>
+  <<declare $cube_size = 0.5>>
   <<if $earth == 0>>
-  <<set $cube_size = 0.5>>
-  Do cubes count?
-  <<set $earth = $earth + 1>>
+  Logikaffe was fond of static equilibrium.
+  This experiment demonstrates the incredible power of rigid bodies and gravity.
+  Behold, cubes!
   <<attach_script_5 "earth" 5 5 0 {$cube_size} Glass>>
   <<elseif $earth == 1>>
-  How about a lot of cubes?
+  The projectors can instantiate more cubes!
   <<set $earth = $earth + 1>>
   <<set $cube_size to 0.75>>
   <<attach_script_5 "earth" 5 10 0 {$cube_size} Wood>>
-  <<else>>
-  <<if $earth < 3>>
-  How about just *too many* cubes?
+  <<elseif $earth == 2>>
+  They can even generate an absurd number of them.
   <<set $earth = $earth + 1>>
   <<set $cube_size = 1.0>>
   <<set $mat = "Stone">>
   <<else>>
-  I'm out of ideas.
+  This just goes on forever.
   <<set $mat = "Sand">>
   <<set $cube_size = $cube_size + 0.25>>
-  <<endif>>
   <<attach_script_5 "earth" {random_range(5,7)} {random_range(10,13)} {random_range(3,5)} {$cube_size} {$mat}>>
   <<endif>>
+  <<set $earth = $earth + 1>>
 -> Air
   <<declare $air_count = 100>>
   <<if $air == 0>>
@@ -174,12 +173,17 @@ Try out the experiments at your leisure.
   He also inhaled quite the lungful of noxious gases during the courses of his experiments, even though he never used them.
   Air is not well-represented in Logikaffe's works, mainly since he liked seeing things.
   This represents gravity, the source of all life.
+  Coincidentally, the projectors must take control of all gravity during this exhibit.
+  Please crouch ((`c`)) to get back to land.
   <<elseif $air == 1>>
-  Boring? Its music can be quite relaxing.
+  The materials needed to support this exhibit must be quite limited.
+  Not really, that's a little joke amongst us at the expense of retro computers.
   <<elseif $air == 2>>
+  Do you find it boring? Its music can be quite relaxing.
   Even more spheres may be added.
   <<elseif $air == 3>>
-  Your visor may overheat.
+  Beware, continuing in this experiment may cause your visor may overheat.
+  It may even destroy your connection to this museum.
   Management wishes to remind you that this is a user issue.
   <<elseif $air == 4>>
   This is one of Logikaffe's last experiments. It shows. He was barely capable of planning at this point.
@@ -191,18 +195,24 @@ Try out the experiments at your leisure.
   <<set $air_count = $air_count + 100>>
 -> Fire
   <<if $fire == 0>>
-  Fire, fire... no time for integrating Hanabi...
-  You heard about cats and dogs?
-  Look at these two. They can't get along.
+  Ah, fire, that liquid molten bringer of life.
+  Or so we've heard. We need to be cooled. This metal duct radiates out the heat, which is filtered by your visor because otherwise all would be a white void.
+  We hope you have not been climbing the difficult stairs, honored and revered patron or visitor. The same dialogue is reached from the ground level.
+  We found that Logikaffe's technology was not actually capable of generating fire, for such an event would melt the cyber-device or the cyber-chemical body.
+  Logikaffe explored this in metaphor instead.
+  He had simulations of common domesticated associates ("pets") from Terra. He wrote that they generated an essential element in the philosopher's stone. 
+  (In his writings, he equates this stone with the hermetic word "eyeballs".)
+  Look at these two representatives of "pets". 
+  They can't get along.
   <<elseif $fire == 1>>
-  Did you see that?
+  Did you see that? They fight like undomesticated wild animals.
   <<elseif $fire == 2>>
   These animals are like oil and water.
-  (What element is oil? Water plus earth?)
+  (The elements of water and earth comprise oil, and human foodstuffs, and all manner of excrement.)
   <<elseif $fire == 3>>
-  Are you seeing this?
+  Logikaffe did not know the biology of Terran animals.
   <<elseif $fire == 4>>
-  They just go to pieces.
+  This angry cat just makes everything go to pieces.
   <<else>>
   ...
   <<endif>>

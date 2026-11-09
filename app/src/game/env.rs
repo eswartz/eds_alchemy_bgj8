@@ -102,10 +102,14 @@ fn float_on_water(
     }
 }
 
-pub(crate) fn remove_water(mut water: If<ResMut<bevy_water::WaterSettings>>) {
+pub(crate) fn remove_water(mut water: If<ResMut<bevy_water::WaterSettings>>, mut commands: Commands, water_q: Query<Entity, With<Water>>,) {
     water.amplitude = 0.;
     water.spawn_tiles = None;
     water.height = -100.;
+
+    for ent in water_q.iter() {
+        commands.entity(ent).try_despawn();
+    }
 }
 
 /// Note: can't be a system else water disappears
