@@ -2,34 +2,51 @@
 
 (Called `eds-alchemy` on disk)
 
-This is my game jam entry for Bevy Game Jam #8.
+This is my entry for Bevy Game Jam #8 (theme: ALCHEMY). My second jam!
 
-The theme is ALCHEMY.
+Learn from an out-of-the way museum about a sorcerer who harnessed infernal powers for dubious ends.
 
 # How to Play
 
 Just go to the metal object and engage in conversation.
+
 Try the options multiple times.
 
-# Bugs?
+# Bugs
 
-If on startup, you get a big red error message and a "ran out of fuel"
-message on the console, try again...
+* Yes, the dialog is formatted strangely. I think it should always be legible, though.
 
-# Controls
+* I noticed on an older Win 10 laptop of mine, the scene was very dark, maybe due to ancient drivers with a misinterpretation of sRGB. Look at `Video > Exposure` for a hacky workaround.
 
-Typical WASD navigation plus controller support. 
+* I noticed the water tends to cause rendering artifacts on macOS Metal. Sorry about that.
+
+* The "Air" effect uses a GPU compute shader and was not engineered in time to synchronize reliably with the frame rate. Under heavy load (as in later iterations), the simulation may flicker annoyingly. Escape and restart the level if this bothers you.
+
+* If on startup, you get a big red error message and a "ran out of fuel" message on the console, try again... it's a bug of mine, likely easy to fix, but too rare to hunt down in the rush toward the deadline.
+
+# Player controls
+
+This uses FPS camera controls using typical WASD navigation along with controller support. 
 
 * `WASD`: movement
 * mouse movement: look
 * `Backspace`: turn around
 * `Space`/`c`: jump/crouch
-* `Pause` / `Alt-P` (Win/Lin) / `Ctrl-P` (macOS): pause
+* `L`: toggle flashlight
+* `Pause` / `Alt-P` (Win/Lin) / `Ctrl-P` (macOS) / gamepad `mode`: pause
 * `F12` / `Alt-M` (Win/Lin) / `Ctrl-M` (macOS): mute
 * `F11` / `Alt-Enter`: toggle fullscreen
 * `Esc`: menu
 
-## Menus
+# Dialog controls
+
+* Number keys: select choices.
+* `Space` or `Alt`/`Option`: speed up text.
+* Right mouse button: move camera in dialog
+
+(Sorry, controllers are inoperative in dialog mode! Sorry!)
+
+# Menus
 
 * `up/down`: select item
 * `left/right`: decrease/increase value/enum
@@ -38,7 +55,7 @@ Typical WASD navigation plus controller support.
 
 # Major Crates Used
 
-Although I did the jam solo, hundreds of other people did the hard work!
+Although I did the jam solo, hundreds of other people did the hard work that made this a relatively short project!
 
 - Rust nightly -- whoo!
 - `bevy` 0.20
@@ -52,7 +69,11 @@ Although I did the jam solo, hundreds of other people did the hard work!
 - `bevy_water` (water effect) -- thrown in at the last minute
 - `bevy_app_compute` (compute shaders) -- two levels of patching (PR + bevy 0.20 migration)
 - `bevy_mod_outline`, `bevy_tweening` -- used but not really exercised here
-- 
+
+Thanks to all the people who maintain these crates, year after year.
+
+And thank YOU for playing!
+
 # Patches
 
 ```
@@ -67,7 +88,7 @@ bevy_yarnspinner = { git = "https://github.com/eswartz/YarnSpinner-Rust-fork.git
 eds_bevy_common = { git = "https://github.com/eswartz/eds_bevy_common.git", branch = "bevy-20" }
 ```
 
-# Personal Sources
+# Own Sources
 
 - `src` -- own work (though some bits were stolen from other unpublished experiments of mine)
 - `eds_bevy_common` (framework) -- my long-baking framework which saved most of the effort, though I spent a bit of time again in Bevy 0.20 migration
@@ -88,5 +109,5 @@ eds_bevy_common = { git = "https://github.com/eswartz/eds_bevy_common.git", bran
   These were adapted using techniques in:
   https://blender.stackexchange.com/questions/258583/how-can-you-fill-one-meshs-volume-with-as-many-of-another-mesh-that-will-fit
   plus a lot of Blender effort!
-- `assets/sounds/*`: from freesound.org (name prefixes retained), edited in ocenaudio
+- `assets/sounds/*`: mostly from freesound.org (name prefixes retained), edited in ocenaudio
 - `assets/fonts/*`: from egui, Google Fonts (OFL, Apache, MIT -- see accompanying licenses)
