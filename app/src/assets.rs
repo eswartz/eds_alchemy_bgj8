@@ -9,6 +9,8 @@ pub struct GuiAssets {
     // #[asset(path = "fonts/UncialAntiqua-Regular.ttf")]
     #[asset(path = "fonts/IrishGrover-Regular.ttf")]
     pub main_font: Handle<Font>,
+    #[asset(path = "fonts/Blinker-SemiBold.ttf")]
+    pub dialog_font: Handle<Font>,
     #[asset(path = "fonts/SymbolsNerdFont-Regular.ttf")]
     pub symbols_nerd_font: Handle<Font>,
 

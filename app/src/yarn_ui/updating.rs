@@ -84,7 +84,6 @@ fn present_options(event: On<PresentOptions>, mut commands: Commands) {
 
 fn continue_dialogue(
     keys: Res<ButtonInput<KeyCode>>,
-    mouse_buttons: Res<ButtonInput<MouseButton>>,
     touches: Res<Touches>,
     mut dialogue_runners: Query<&mut DialogueRunner>,
     mut typewriter: ResMut<Typewriter>,
@@ -95,11 +94,9 @@ fn continue_dialogue(
         (With<DialogueContinueNode>, Without<DialogueRootNode>),
     >,
 ) {
-    let explicit_continue = /* keys.just_pressed(KeyCode::Space)
-        || keys.just_pressed(KeyCode::Enter) */
-        keys.get_just_pressed().count() != 0
-        || mouse_buttons.just_pressed(MouseButton::Left)
-        || touches.any_just_pressed();
+    const STOP_KEYS: &[KeyCode] = &[KeyCode::Space, KeyCode::AltLeft, KeyCode::AltRight];
+    let explicit_continue_key = keys.any_just_pressed(STOP_KEYS.to_vec());
+    let explicit_continue = explicit_continue_key || touches.any_just_pressed();
     if explicit_continue && !typewriter.is_finished() {
         typewriter.fast_forward();
         return;

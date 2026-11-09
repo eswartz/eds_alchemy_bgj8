@@ -138,14 +138,15 @@ fn select_option(
         }
     }
 
+    const COLOR_OPTION: Color = Color::Srgba(css::DARK_VIOLET);
     for (entity, hovered, pressed, button) in buttons.iter_mut() {
         let (color, icon) = match (hovered.get(), pressed) {
             (_, true) if selection.is_none() => {
                 selection = Some(button.0);
-                (css::TOMATO.into(), SystemCursorIcon::Default)
+                (COLOR_OPTION.into(), SystemCursorIcon::Default)
             }
             (true, _) => (Color::WHITE, SystemCursorIcon::Pointer),
-            (_, _) => (css::TOMATO.into(), SystemCursorIcon::Default),
+            (_, _) => (COLOR_OPTION.into(), SystemCursorIcon::Default),
         };
         commands.entity(*window).insert(CursorIcon::System(icon));
         *text_writer.color(entity, 2) = TextColor(color);

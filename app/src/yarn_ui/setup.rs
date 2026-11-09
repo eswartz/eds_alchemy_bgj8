@@ -75,7 +75,7 @@ fn setup(mut commands: Commands, font: Res<AlchemyDialogFont>, gui_assets: Res<G
                 grid_template_columns: vec![RepeatedGridTrack::minmax(
                     1,
                     MinTrackSizingFunction::Auto,
-                    MaxTrackSizingFunction::Percent(DIALOG_WIDTH_PERCENT),
+                    MaxTrackSizingFunction::MaxContent,
                 )],
                 ..default()
             },
@@ -211,8 +211,8 @@ pub(crate) fn spawn_options<'a, T>(
                 .spawn((
                     fmt_name("option button"),
                     Node {
-                        justify_content: JustifyContent::FlexStart,
-                        width: Val::Percent(100.0),
+                        // justify_content: JustifyContent::FlexStart,
+                        // width: Val::Percent(100.0),
                         ..default()
                     },
                 ))
@@ -313,7 +313,7 @@ mod text_style {
                 font_size: FontSize::Px(18.0),
                 ..standard(font).0
             },
-            TextColor(css::TOMATO.into()),
+            TextColor(css::MEDIUM_ORCHID.into()),
         )
     }
 }

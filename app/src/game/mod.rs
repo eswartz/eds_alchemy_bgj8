@@ -37,6 +37,7 @@ use eds_bevy_common::midi_synth::prelude::*;
 use eds_bevy_common::physics::*;
 use eds_bevy_common::prelude::*;
 
+use crate::assets::FxAssets;
 use crate::assets::GuiAssets;
 use crate::assets::ModelAssets;
 use crate::assets::MusicAssets;
@@ -229,7 +230,10 @@ pub(crate) fn setup_styles(
         .with_page_image(Some(gui_assets.menu_background_image.clone())) // .
     ;
     commands.insert_resource(InstructionFont(the_font.clone()));
-    commands.insert_resource(crate::yarn_ui::AlchemyDialogFont(the_font.clone()));
+
+    commands.insert_resource(crate::yarn_ui::AlchemyDialogFont(
+        gui_assets.dialog_font.clone(),
+    ));
 }
 
 /// Current difficulty.

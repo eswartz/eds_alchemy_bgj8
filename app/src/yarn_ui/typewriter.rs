@@ -97,7 +97,7 @@ impl Typewriter {
     }
 
     fn graphemes_per_second(&self) -> f32 {
-        if self.fast_typing { 240.0 } else { 60.0 }
+        if self.fast_typing { 360.0 } else { 120.0 }
     }
 }
 

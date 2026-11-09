@@ -17,7 +17,14 @@ use crate::{
 #[type_path = "game"]
 pub(crate) struct ActiveDialogueRunner;
 
-pub(crate) fn spawn_dialogue_runner(mut commands: Commands, project: Res<YarnProject>) -> Result {
+pub(crate) fn spawn_dialogue_runner(
+    mut commands: Commands,
+    project: Option<Res<YarnProject>>,
+) -> Result {
+    let Some(project) = project else {
+        commands.set_state(OverlayState::ErrorScreen);
+        return Ok(());
+    };
     let mut dialogue_runner = project.create_dialogue_runner(&mut commands);
     dialogue_runner.commands_mut().add_command(
         "dialogue_over",

@@ -209,8 +209,8 @@ def attack(ctx: Struct, ent: Uns64, data: Struct, cbdata: Struct) {
 
     ## This is unintentional but the cat falls under the ground
     ## quite often, so this makes it jump a lot.
-    if pos.y < 0 then
-        vel.y = -pos.y * 5.0
+    if pos.y < 0.0 or random_number(0, 10) < 2 then
+        vel.y = -pos.y * 5.0 + 5.0
 
         if random_number(0.0, 1.0) < 0.5 * ctx.delta_time then
             bevy_call_func(ent, 'play_sound', [
